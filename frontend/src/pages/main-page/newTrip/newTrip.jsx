@@ -1,8 +1,8 @@
-import "./cars.css"
+import "./newTrip.css"
 
 import { Link } from "react-router-dom"
 
-export default function Cars(){
+export default function NewTrip(){
     return(
         <>
         

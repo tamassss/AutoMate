@@ -1,15 +1,30 @@
+import { Link } from "react-router-dom"
+import { useState } from "react"
+
+import Login from "../login/login"
+import Register from "../register/register";
+import Footer from "../../../components/footer/footer";
+
+
 export default function Home(){
+
+    const [showLogin, setShowLogin] = useState(true);
+
     return(
         <>
-            <a>Segítség kezdőknek</a>
+            <Link to="/tips">Segítség kezdőknek</Link>
+
             <div>
                 <h1>AutoMate</h1>
                 <h2>Az autód digitális naplója</h2>
             </div>
             
             <div>
-                <button>Bejelentkezés</button>
-                <a>Regisztráció</a>
+                <p onClick={()=>setShowLogin(!showLogin)}>
+                    {showLogin ? "Regisztráció" : "Belépés"}
+                </p>
+                
+                {showLogin ? <Login/> : <Register/>}
             </div>
 
             <div>
@@ -45,9 +60,9 @@ export default function Home(){
                     <p>Tekintse meg regisztráció nélkül, hogy mit jelentenek a műszerfalon megjelenő égők, hogyan spórolhat üzemanyagot és hogyan kell könnyedén parkolni</p>
                 </div>
                 
-
             </div>
-            
+
+            <Footer/>
         </>
     )
 }
