@@ -40,3 +40,9 @@
 .read-the-docs {
   color: #888;
 }
+
+body {
+  font-family: 'Orbitron', 'Oxanium', system-ui, sans-serif;
+  font-weight:100;
+  background-color: #1B1F28;
+}

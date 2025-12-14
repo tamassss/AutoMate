@@ -10,6 +10,11 @@ import DashboardLights from './pages/landing/tips/dashboardLights/dashboardLight
 import FuelSaving from './pages/landing/tips/fuelSaving/fuelSaving'
 import ParkingHelp from './pages/landing/tips/parkingHelp/parkingHelp'
 
+import Cars from './pages/car-select/cars/cars'
+import AddCar from './pages/car-select/addCar/addCar'
+import EditCar from './pages/car-select/editCar/editCar'
+import Settings from './pages/car-select/settings/settings'
+
 import Dashboard from './pages/main-page/dashboard/dashboard'
 import Events from './pages/main-page/events/events'
 import NewFuel from './pages/main-page/newFuel/newFuel'
@@ -30,6 +35,11 @@ function App() {
         <Route path="/tips/dashboardLights" element={<DashboardLights />} />
         <Route path="/tips/fuelSaving" element={<FuelSaving />} />
         <Route path="/tips/parkingHelp" element={<ParkingHelp />} />
+
+        <Route path="./pages/car-select/cars/cars" element={<Cars />} />
+        <Route path="./pages/car-select/addCar/addCar" element={<AddCar />} />
+        <Route path="./pages/car-select/editCar/editCar" element={<EditCar />} />
+        <Route path="./pages/car-select/settings/settings" element={<Settings />} />
 
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/events" element={<Events />} />

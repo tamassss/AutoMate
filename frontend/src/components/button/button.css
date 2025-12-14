@@ -1,0 +1,22 @@
+button{
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #35363B;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 5px 1px white;
+    margin-top: 30px;
+
+    display: flex;
+    justify-content: center;
+}
+
+button:active{
+    transform: scale(0.95);
+}
+
+button:focus{
+    outline: none;
+}

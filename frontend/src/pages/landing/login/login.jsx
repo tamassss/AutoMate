@@ -1,6 +1,7 @@
 import "./login.css"
 
 import { useState } from "react"
+import { Link } from "react-router-dom"
 
 import Card from "../../../components/card/card"
 import Input from "../../../components/input/input"
@@ -13,8 +14,7 @@ export default function Login(){
     const [password, setPassword] = useState("")
 
     function handleLogin(){
-        console.log({username})
-        console.log({password})
+        return
     }
 
     return(
@@ -38,10 +38,12 @@ export default function Login(){
                 placeholder="Jelszó"
             />
 
-            <Button
-                text="Bejelentkezés"
-                onClick={handleLogin}
-            />
+            <Link to="/cars">
+                <Button
+                    text="Bejelentkezés"
+                    onClick={handleLogin}
+                />
+            </Link>
 
         </Card>
     )
