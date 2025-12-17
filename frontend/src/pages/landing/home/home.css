@@ -22,6 +22,7 @@
 }
 
 .auth-tab{
+    width: 150px;
     text-align: center;
     padding-left: 20px;
     padding-right: 20px;
@@ -29,12 +30,28 @@
     transition: 0.5s;
 }
 
+
+
 .active{
     background-color: #075DBF;
     color: rgb(255, 255, 255);
 
 }
 
-body{
+h1, h2{
+    text-align: center;
+}
 
+h2{
+    margin-bottom: 50px;
+}
+
+.features{
+    margin-top: 100px;
+    margin-left: 15%;
+    width: 50%;
+}
+
+h3{
+    font-size: 24px;
 }

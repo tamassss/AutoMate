@@ -1,6 +1,6 @@
 import "./navbar.css"
 
-export default function Navbar({leftIcon, onLeftClick, altLeft, title, rightIcon, onRightClick, altRight}){
+export default function Navbar({leftIcon, onLeftClick, altLeft, rightIcon, onRightClick, altRight}){
     return(
     <nav>
         <div onClick={onLeftClick}>
@@ -8,7 +8,7 @@ export default function Navbar({leftIcon, onLeftClick, altLeft, title, rightIcon
         </div>
 
         <div>
-            {title}
+            <p>AutoMate</p>
         </div>
 
         <div onClick={onRightClick}>

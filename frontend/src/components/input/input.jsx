@@ -1,6 +1,6 @@
 import "./input.css"
 
-export default function Input({id, value, onChange, placeholder, type}){
+export default function Input({ id, value, onChange, placeholder, type}){
     return(
         <input className="input"
             type={type}

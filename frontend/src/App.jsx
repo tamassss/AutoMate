@@ -11,15 +11,8 @@ import FuelSaving from './pages/landing/tips/fuelSaving/fuelSaving'
 import ParkingHelp from './pages/landing/tips/parkingHelp/parkingHelp'
 
 import Cars from './pages/car-select/cars/cars'
-import AddCar from './pages/car-select/addCar/addCar'
-import EditCar from './pages/car-select/editCar/editCar'
-import Settings from './pages/car-select/settings/settings'
 
 import Dashboard from './pages/main-page/dashboard/dashboard'
-import Events from './pages/main-page/events/events'
-import NewFuel from './pages/main-page/newFuel/newFuel'
-import NewTrip from './pages/main-page/newTrip/newTrip'
-
 import ServiceLog from './pages/main-page/menu-points/serviceLog/serviceLog'
 import Statistics from './pages/main-page/menu-points/statistics/statistics'
 import TripsAndFuels from './pages/main-page/menu-points/tripsAndFuels/tripsAndFuels'
@@ -31,24 +24,17 @@ function App() {
         <Route path="/admin" element={<Admin />} />
 
         <Route path="/" element={<Home />} />
-        <Route path="/tips" element={<Tips />} />
-        <Route path="/tips/dashboardLights" element={<DashboardLights />} />
-        <Route path="/tips/fuelSaving" element={<FuelSaving />} />
-        <Route path="/tips/parkingHelp" element={<ParkingHelp />} />
+        <Route path="/tippek" element={<Tips />} />
+        <Route path="/tippek/muszerfal-jelzesek" element={<DashboardLights />} />
+        <Route path="/tippek/uzemanyag-sporolas" element={<FuelSaving />} />
+        <Route path="/tippek/parkolasi-tippek" element={<ParkingHelp />} />
 
-        <Route path="./pages/car-select/cars/cars" element={<Cars />} />
-        <Route path="./pages/car-select/addCar/addCar" element={<AddCar />} />
-        <Route path="./pages/car-select/editCar/editCar" element={<EditCar />} />
-        <Route path="./pages/car-select/settings/settings" element={<Settings />} />
+        <Route path="/autok" element={<Cars />} />
 
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/newFuel" element={<NewFuel />} />
-        <Route path="/newTrip" element={<NewTrip />} />
-
-        <Route path="/serviceLog" element={<ServiceLog />} />
-        <Route path="/statistics" element={<Statistics />} />
-        <Route path="/tripsAndFuels" element={<TripsAndFuels />} />
+        <Route path="/muszerfal" element={<Dashboard />} />
+        <Route path="/szerviznaplo" element={<ServiceLog />} />
+        <Route path="/statisztikak" element={<Statistics />} />
+        <Route path="/utak-tankolasok" element={<TripsAndFuels />} />
       </Routes>
       
     </>

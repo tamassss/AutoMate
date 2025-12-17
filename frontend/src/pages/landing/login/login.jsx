@@ -38,7 +38,7 @@ export default function Login(){
                 placeholder="Jelszó"
             />
 
-            <Link to="/cars">
+            <Link to="/autok">
                 <Button
                     text="Bejelentkezés"
                     onClick={handleLogin}

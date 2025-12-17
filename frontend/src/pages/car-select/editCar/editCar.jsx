@@ -1,11 +1,19 @@
+import LabeledInput from "../../../components/labeledInput/labeledInput"
+import Modal from "../../../components/modal/modal"
 import "./editCar.css"
 
-import { Link } from "react-router-dom"
-
-export default function editCar(){
+export default function EditCar({onClose}){
     return(
-        <>
-        
-        </>
+        <Modal title="Autó módosítás" onClose={onClose}>
+            <LabeledInput label={"Márka"}/>
+            <LabeledInput label={"Modell"}/>
+            <hr/>
+            <LabeledInput label={"Évjárat"}/>
+            <LabeledInput label={"Km óra állás"}/>
+            <LabeledInput label={"Teljesítmény"}/>
+            <LabeledInput label={"Átlagfogyasztás"}/>
+            <LabeledInput label={"Üzemanyag"}/>
+            <LabeledInput label={"Tank mérete"}/>
+        </Modal>
     )
 }
