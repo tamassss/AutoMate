@@ -13,6 +13,7 @@ import ParkingHelp from './pages/landing/tips/parkingHelp/parkingHelp'
 import Cars from './pages/car-select/cars/cars'
 
 import Dashboard from './pages/main-page/dashboard/dashboard'
+import AverageConsumption from './pages/main-page/averageConsumption/averageConsumption'
 import ServiceLog from './pages/main-page/menu-points/serviceLog/serviceLog'
 import Statistics from './pages/main-page/menu-points/statistics/statistics'
 import TripsAndFuels from './pages/main-page/menu-points/tripsAndFuels/tripsAndFuels'
@@ -32,9 +33,10 @@ function App() {
         <Route path="/autok" element={<Cars />} />
 
         <Route path="/muszerfal" element={<Dashboard />} />
-        <Route path="/szerviznaplo" element={<ServiceLog />} />
-        <Route path="/statisztikak" element={<Statistics />} />
-        <Route path="/utak-tankolasok" element={<TripsAndFuels />} />
+        <Route path="/muszerfal/atlagfogyasztas" element={<AverageConsumption />} />
+        <Route path="/muszerfal/szerviznaplo" element={<ServiceLog />} />
+        <Route path="/muszerfal/statisztikak" element={<Statistics />} />
+        <Route path="/muszerfal/utak-tankolasok" element={<TripsAndFuels />} />
       </Routes>
       
     </>

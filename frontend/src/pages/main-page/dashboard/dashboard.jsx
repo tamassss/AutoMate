@@ -6,12 +6,19 @@ import DashboardGauge from "./dashboardGauge/dashbboardGauge"
 import Menu from "./menu/menu"
 import Trip from "./trip/trip"
 
+import NewTrip from "./newTrip/newTrip"
+
 import backIcon from "../../../assets/icons/back.png"
 import exitIcon from "../../../assets/icons/exit.png"
 
 import "./dashboard.css"
+import { useState } from "react"
+import NewFuel from "./newFuel/newFuel"
 
 export default function Dashboard(){
+    const [showNewFuel, setShowNewFuel] = useState(false)
+    const [showNewTrip, setShowNewTrip] = useState(false)
+
     const navigate = useNavigate();
     return(
         <>
@@ -21,10 +28,25 @@ export default function Dashboard(){
             <Menu/>
 
             <DashboardGauge/>
-            <Button text={"Új tankolás"}/>
+            <Button 
+                text={"Új tankolás"}
+                onClick={() => setShowNewFuel(true)}
+            />
+
+            {showNewFuel && (
+                <NewFuel onClose={() => setShowNewFuel(false)}/>
+            )}
 
             <Trip/>
-            <Button text={"Új út"}/>
+            <Button 
+                text={"Új út"}
+                onClick={() => setShowNewTrip(true)}
+            />
+
+            {showNewTrip && (
+                <NewTrip onClose={() => setShowNewTrip(false)}/>
+            )}
+            
 
             
         </>
