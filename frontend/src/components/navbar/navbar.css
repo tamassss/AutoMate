@@ -1,0 +1,35 @@
+.navbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 40px;
+    padding: 20px;
+    font-size: 30px;
+    background-color: black;
+
+
+}
+
+.nav-icons-div{
+    width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.nav-icons{
+    height: 50px;
+    width: 50px;
+}
+
+.nav-title-div{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.mate-span{
+    color: #075DBF;
+}

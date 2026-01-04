@@ -21,34 +21,45 @@ export default function Dashboard(){
 
     const navigate = useNavigate();
     return(
-        <>
-            <Navbar rightIcon={exitIcon} altRight={"Kilépés"} onRightClick={() => navigate("/")} leftIcon={backIcon} altLeft={"Vissza az autókhoz"} onLeftClick={() => navigate("/autok")}/>
-            <h1>AUTÓ NEVE</h1>
-            <h2>ÉVJÁRAT, LE</h2>
-            <Menu/>
+        <div className="dashboard-layout">
+            
+            
 
-            <DashboardGauge/>
-            <Button 
-                text={"Új tankolás"}
-                onClick={() => setShowNewFuel(true)}
-            />
+            <div className="menu-content">
+                <Menu/>
+            </div>
 
-            {showNewFuel && (
-                <NewFuel onClose={() => setShowNewFuel(false)}/>
-            )}
+            <div className="dashboard-content">
+                <Navbar rightIcon={exitIcon} altRight={"Kilépés"} onRightClick={() => navigate("/")} leftIcon={backIcon} altLeft={"Vissza az autókhoz"} onLeftClick={() => navigate("/autok")}/>
 
-            <Trip/>
-            <Button 
-                text={"Új út"}
-                onClick={() => setShowNewTrip(true)}
-            />
+                <h1>AUTÓ NEVE</h1>
+                <h2>ÉVJÁRAT, LE</h2>
 
-            {showNewTrip && (
-                <NewTrip onClose={() => setShowNewTrip(false)}/>
-            )}
+                <DashboardGauge/>
+
+                <Button 
+                    text={"Új tankolás"}
+                    onClick={() => setShowNewFuel(true)}
+                />
+
+                {showNewFuel && (
+                    <NewFuel onClose={() => setShowNewFuel(false)}/>
+                )}
+
+                <Trip/>
+                <Button 
+                    text={"Új út"}
+                    onClick={() => setShowNewTrip(true)}
+                />
+
+                {showNewTrip && (
+                    <NewTrip onClose={() => setShowNewTrip(false)}/>
+                )}
+            </div>
+            
             
 
             
-        </>
+        </div>
     )
 }

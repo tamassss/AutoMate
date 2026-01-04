@@ -1,7 +1,9 @@
 export default function Table({children}){
     return(
         <table>
-            {children}
+            <tbody>
+                {children}
+            </tbody>
         </table>
     )
 }

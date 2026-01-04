@@ -1,18 +1,20 @@
 import "./navbar.css"
 
-export default function Navbar({leftIcon, onLeftClick, altLeft, rightIcon, onRightClick, altRight}){
+export default function Navbar({leftIcon, onLeftClick, altLeft, rightIcon, onRightClick, altRight, subtitle}){
     return(
-    <nav>
-        <div onClick={onLeftClick}>
-            {leftIcon && <img src={leftIcon} alt={altLeft} />} 
+    <nav className="navbar">
+        <div className={"nav-icons-div"} onClick={onLeftClick}>
+            {leftIcon && <img className={"nav-icons"} src={leftIcon} alt={altLeft} />} 
         </div>
 
-        <div>
-            <p>AutoMate</p>
+        <div className="nav-title-div">
+            <p>
+                Auto<span className="mate-span">Mate</span>{subtitle ? ` - ${subtitle}` : ""}
+            </p>
         </div>
 
-        <div onClick={onRightClick}>
-            {rightIcon && <img src={rightIcon} alt={altRight}/>}
+        <div className={"nav-icons-div"} onClick={onRightClick}>
+            {rightIcon && <img className={"nav-icons"} src={rightIcon} alt={altRight}/>}
         </div>
     </nav>
     )

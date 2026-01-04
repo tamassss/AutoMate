@@ -1,0 +1,131 @@
+.menu-panel {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: #51535B;
+  box-shadow: 0px 0px 10px 5px black;
+}
+
+.menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 20px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #35363B;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.menu-item:hover {
+  background: #13161b;
+  color: #075DBF;
+}
+
+.menu-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  background: #e6e6e6;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.menu-text {
+  line-height: 1;
+}
+
+/* - - - - - események - - - - - */
+.menu-events {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  background: #2f333c;
+  color: #d9dde3;
+}
+
+.menu-events h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.menu-events p {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* telefon */
+/* .menu-toggle {
+  display: none;
+  position: fixed;
+  left: 14px;
+  top: 14px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: #3a3f49;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1200;
+}
+
+.menu-toggle-bar {
+  display: block;
+  height: 3px;
+  margin: 5px 8px;
+  background: #f2f4f7;
+  border-radius: 2px;
+}
+
+.menu-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .menu-panel {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 80vw;
+    max-width: 320px;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 220ms ease;
+    z-index: 1201;
+    border-radius: 0 14px 14px 0;
+  }
+
+  .menu-panel.is-open {
+    transform: translateX(0);
+  }
+
+  .menu-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+    z-index: 1200;
+  }
+
+  .menu-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+} */

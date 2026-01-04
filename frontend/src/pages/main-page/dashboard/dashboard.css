@@ -1,0 +1,23 @@
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.menu-content {
+}
+
+.dashboard-content {
+  flex: 1;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .dashboard-layout {
+    display: block;
+  }
+
+  .menu-content {
+    flex: 0 0 auto;
+    width: 0;
+  }
+}
