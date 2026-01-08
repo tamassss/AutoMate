@@ -32,8 +32,8 @@ export default function Dashboard(){
             <div className="dashboard-content">
                 <Navbar rightIcon={exitIcon} altRight={"Kilépés"} onRightClick={() => navigate("/")} leftIcon={backIcon} altLeft={"Vissza az autókhoz"} onLeftClick={() => navigate("/autok")}/>
 
-                <h1>AUTÓ NEVE</h1>
-                <h2>ÉVJÁRAT, LE</h2>
+                <h1 className="title">AUTÓ NEVE</h1>
+                <h2 className="subtitle">ÉVJÁRAT, LE</h2>
 
                 <DashboardGauge/>
 

@@ -6,13 +6,14 @@
   padding: 16px;
   background: #51535B;
   box-shadow: 0px 0px 10px 5px black;
+  max-width: 300px;
 }
 
 .menu-items {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .menu-item {
@@ -50,18 +51,25 @@
   flex: 1;
   padding: 12px;
   border-radius: 12px;
-  background: #2f333c;
+  background: #35363B;
   color: #d9dde3;
 }
 
 .menu-events h3 {
+  text-align: center;
   margin: 0 0 8px 0;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .menu-events p {
-  margin: 0;
-  font-size: 12px;
+  text-align: center;
+  margin: 30px;
+  font-size: 14px;
+}
+
+.menu-events p:hover{
+  color: #075DBF;
+  cursor: pointer;
 }
 
 /* telefon */

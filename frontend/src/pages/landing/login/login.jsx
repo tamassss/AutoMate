@@ -1,4 +1,5 @@
 import "./login.css"
+import axios from "axios"
 
 import { useState } from "react"
 import { Link } from "react-router-dom"
@@ -13,8 +14,24 @@ export default function Login(){
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
 
-    function handleLogin(){
-        return
+    const login = async () => {
+      try {
+        const res = await axios.post("http://localhost:4000/login", {
+          username,
+          password
+        });
+    
+        const token = res.data.token;
+    
+        // store token (simple method)
+        localStorage.setItem("token", token);
+    
+        alert("Logged in!");
+        console.log(token)
+      } catch (err) {
+        alert(`Login failed ${err}`);
+      }
+      
     }
 
     return(
@@ -41,7 +58,7 @@ export default function Login(){
             <Link to="/autok">
                 <Button
                     text="Bejelentkezés"
-                    onClick={handleLogin}
+                    onClick={login}
                 />
             </Link>
 
