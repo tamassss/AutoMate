@@ -1,6 +1,6 @@
 import './App.css'
 
-import {Routes, Route} from "react-router-dom"
+import { Routes, Route, BrowserRouter } from "react-router-dom"
 
 import Admin from './admin/admin'
 
@@ -17,29 +17,30 @@ import AverageConsumption from './pages/main-page/averageConsumption/averageCons
 import ServiceLog from './pages/main-page/menu-points/serviceLog/serviceLog'
 import Statistics from './pages/main-page/menu-points/statistics/statistics'
 import TripsAndFuels from './pages/main-page/menu-points/tripsAndFuels/tripsAndFuels'
+import { AuthProvider } from './auth/AuthContext'
+import Login from './pages/landing/login/login'
 
 function App() {
   return (
-    <>
-      <Routes>
-        <Route path="/admin" element={<Admin />} />
+    <AuthProvider>
+        <Routes>
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/login" element={<Login/>}/>
+          <Route path="/" element={<Home />} />
+          <Route path="/tippek" element={<Tips />} />
+          <Route path="/tippek/muszerfal-jelzesek" element={<DashboardLights />} />
+          <Route path="/tippek/uzemanyag-sporolas" element={<FuelSaving />} />
+          <Route path="/tippek/parkolasi-tippek" element={<ParkingHelp />} />
 
-        <Route path="/" element={<Home />} />
-        <Route path="/tippek" element={<Tips />} />
-        <Route path="/tippek/muszerfal-jelzesek" element={<DashboardLights />} />
-        <Route path="/tippek/uzemanyag-sporolas" element={<FuelSaving />} />
-        <Route path="/tippek/parkolasi-tippek" element={<ParkingHelp />} />
+          <Route path="/autok" element={<Cars />} />
 
-        <Route path="/autok" element={<Cars />} />
-
-        <Route path="/muszerfal" element={<Dashboard />} />
-        <Route path="/muszerfal/atlagfogyasztas" element={<AverageConsumption />} />
-        <Route path="/muszerfal/szerviznaplo" element={<ServiceLog />} />
-        <Route path="/muszerfal/statisztikak" element={<Statistics />} />
-        <Route path="/muszerfal/utak-tankolasok" element={<TripsAndFuels />} />
-      </Routes>
-      
-    </>
+          <Route path="/muszerfal" element={<Dashboard />} />
+          <Route path="/muszerfal/atlagfogyasztas" element={<AverageConsumption />} />
+          <Route path="/muszerfal/szerviznaplo" element={<ServiceLog />} />
+          <Route path="/muszerfal/statisztikak" element={<Statistics />} />
+          <Route path="/muszerfal/utak-tankolasok" element={<TripsAndFuels />} />
+        </Routes>
+    </AuthProvider>
   )
 }
 
