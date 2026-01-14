@@ -6,9 +6,11 @@ import statisticsIcon from "../../../../assets/menu-points/statistics.png"
 import servicelogIcon from "../../../../assets/menu-points/servicelog.png"
 
 import "./menu.css"
+import NewEvent from "../newEvent/newEvent"
 
 export default function Menu() {
   const [isOpen, setIsOpen] = useState(false)
+  const [showNewEvent, setShowNewEvent] = useState(false)
 
   const closeMenu = () => setIsOpen(false)
 
@@ -50,7 +52,13 @@ export default function Menu() {
 
         <section className="menu-events">
           <h3>Események</h3>
-          <p>Kattintson ide új esemény hozzáadásához</p>
+          <div>
+            <p className="new-event-p" onClick={() => setShowNewEvent(true)}>Kattintson ide új esemény hozzáadásához</p>
+          </div>
+
+          {showNewEvent && (
+            <NewEvent onClose={() => setShowNewEvent(false)}/>
+          )}
         </section>
       </aside>
     </>

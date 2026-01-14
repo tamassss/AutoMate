@@ -1,5 +1,6 @@
 import "./modal.css";
 import backIcon from "../../assets/icons/back.png";
+import Button from "../button/button";
 
 export default function Modal({ title, children, onClose, columns = 2 }) {
   return (

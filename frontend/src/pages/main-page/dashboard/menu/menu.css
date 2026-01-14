@@ -1,5 +1,7 @@
 .menu-panel {
-  height: 100vh;
+  min-height: 100vh;
+  height: 100%;
+  width: 300px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -12,7 +14,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .menu-item {
@@ -50,18 +52,31 @@
   flex: 1;
   padding: 12px;
   border-radius: 12px;
-  background: #2f333c;
-  color: #d9dde3;
+  background: #35363B;
+  color: white;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-events div{
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .menu-events h3 {
-  margin: 0 0 8px 0;
+  margin: 8px 0 8px 0;
   font-size: 16px;
 }
 
 .menu-events p {
   margin: 0;
   font-size: 12px;
+}
+
+.new-event-p{
+  cursor: pointer;
 }
 
 /* telefon */

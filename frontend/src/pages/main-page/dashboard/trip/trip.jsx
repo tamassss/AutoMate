@@ -5,9 +5,10 @@ import Button from "../../../../components/button/button"
 
 export default function Trip(){
     return(
-        <Card title={"Út"}>
-            <h4>Indítson új utat és kövesse nyomon:</h4>
-            <ul>
+        <div>
+            <h2>Út</h2>
+            <h5>Indítson új utat és kövesse nyomon:</h5>
+            <ul className="text-start">
                 <li>várt és valós érkezés</li>
                 <li>út hossza</li>
                 <li>várt üzemanyag fogyasztás</li>
@@ -15,6 +16,6 @@ export default function Trip(){
                 <li>tankolások</li>
                 <li>költségek</li>
             </ul>
-        </Card>
+        </div>
     )
 }

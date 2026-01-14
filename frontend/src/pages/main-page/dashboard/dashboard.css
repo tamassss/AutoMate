@@ -3,15 +3,51 @@
   min-height: 100vh;
 }
 
-.menu-content {
+.menu-content{
+  display: flex;
+  flex-direction: column;
 }
 
-.dashboard-content {
-  flex: 1;
-  min-height: 100vh;
+.custom-title{
+  margin: 14px auto 18px;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
-@media (max-width: 768px) {
+.card-content-wrap{
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  overflow: hidden;
+}
+
+.dashboard-button button{
+  width: 98%;
+  margin: 15px auto;
+}
+
+@media (min-width: 992px){
+  .fixed-height-card{
+    height: 500px;
+    width: 97%;
+    margin: 0 auto;
+    display: flex;
+  }
+
+  .fixed-height-card > * {
+    flex: 1; 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* @media (max-width: 768px) {
   .dashboard-layout {
     display: block;
   }
@@ -20,4 +56,4 @@
     flex: 0 0 auto;
     width: 0;
   }
-}
+} */

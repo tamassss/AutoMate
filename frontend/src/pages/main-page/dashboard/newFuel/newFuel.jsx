@@ -11,8 +11,8 @@ export default function NewFuel({onClose}){
             <Input placeholder={"Mennyiség"} type={"number"}/>
             <Input placeholder={"Ft/liter"} type={"number"}/>
             <Input placeholder={"Km óra állás"} type={"number"}/>
-            <hr/>
-            <p>Opcionális</p>
+            <hr className="full-width"/>
+            <p className="full-width">Opcionális</p>
             <Input placeholder={"Helység"} type={"text"}/>
             <Input placeholder={"Cím"} type={"text"}/>
             <Input placeholder={"Forgalmazó"} type={"text"}/>

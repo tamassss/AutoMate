@@ -7,7 +7,7 @@ button{
     font-size: 1rem;
     cursor: pointer;
     box-shadow: 0 0 5px 1px white;
-    margin-top: 30px;
+    margin: 30px auto;
 
     display: flex;
     justify-content: center;

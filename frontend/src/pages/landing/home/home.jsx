@@ -50,7 +50,7 @@ export default function Home(){
                                 className={showLogin ? "auth-tab" : "auth-tab active"} 
                                 onClick={() => setShowLogin(false)}>
                                 <p>Regisztráció</p>
-                            </div>                       
+                            </div>                     
                     </div>
                 
                     <div>
