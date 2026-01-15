@@ -13,9 +13,9 @@ export default function DashboardGauge(){
     const [showLimit, setShowLimit] = useState(false);
 
     return(
-        <Card>
+        <div>
             <div className="limit">
-                <img src={indicatorImage} alt="limit mutató"/>
+                <img src={indicatorImage} alt="limit mutató"  className="gauge-img"/>
 
                 <Button
                     text={"limit"}
@@ -24,16 +24,16 @@ export default function DashboardGauge(){
                 {showLimit && (
                     <EditLimit onClose={() => setShowLimit(false)}/>
                 )}
+            </div>
 
-                <div>
-                    <p> KILOMÉTERÓRA ÁLLÁS</p>
-                </div>
+            <div>
+                <p> KILOMÉTERÓRA ÁLLÁS</p>
                 <Link to={"/muszerfal/atlagfogyasztas"}>
                     <div className="avg-consumption-div">
                         <h3>Átlagos fogyasztás</h3>
                     </div>
                 </Link>
             </div>
-        </Card>
+        </div>
     )
 }

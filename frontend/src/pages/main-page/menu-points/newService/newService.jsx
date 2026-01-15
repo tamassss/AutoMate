@@ -1,3 +1,4 @@
+import Button from "../../../../components/button/button"
 import Input from "../../../../components/input/input"
 import Modal from "../../../../components/modal/modal"
 import Table from "../../../../components/table/table"
@@ -10,6 +11,10 @@ export default function NewService({onClose}){
             <Input placeholder={"Ár"} type={"number"}/>
             <Input placeholder={"Emlékeztető (dátum)"} type={"date"}/>
             <Input placeholder={"Emlékeztető (km)"} type={"number"}/>
+            <br/>
+            <Button
+                text={"Hozzáadás"}
+            />
         </Modal>
     )
 }

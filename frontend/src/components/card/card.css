@@ -7,4 +7,11 @@
     text-align: center;
     align-items: center;
     box-shadow: 0 0 5px 1px white;
+    /* box-shadow: 0 0 10px 5px black; */
+    /* ^talán jobban néz ki */
+}
+
+.card h3{
+    color: white;
+    padding-top: 20px;
 }

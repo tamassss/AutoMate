@@ -2,4 +2,16 @@ body {
   font-family: 'Orbitron', 'Oxanium', system-ui, sans-serif;
   font-weight:500;
   background-color: #1B1F28;
+  color: white;
+}
+
+p{
+  margin: 0;
+  color: white;
+}
+
+.full-width{
+  grid-column: 1 / -1;
+  width: 100%;
+  text-align: center;
 }
