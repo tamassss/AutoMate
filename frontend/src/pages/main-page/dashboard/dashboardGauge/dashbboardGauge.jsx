@@ -1,12 +1,10 @@
 import Card from "../../../../components/card/card"
 import Button from "../../../../components/button/button"
-
-import indicatorImage from "../../../../assets/indicator.png"
-
 import "./dashboardGauge.css"
 import { useState } from "react"
-import EditLimit from "../editLimit/editLimit"
+import EditLimit from "../../../../modals/editLimit/editLimit"
 import { Link } from "react-router-dom"
+import BudgetLimit from "../budgetLimit/budgetLimit"
 
 
 export default function DashboardGauge(){
@@ -14,25 +12,54 @@ export default function DashboardGauge(){
 
     return(
         <div>
-            <div className="limit">
-                <img src={indicatorImage} alt="limit mutató"  className="gauge-img"/>
+            <div className="limit d-flex flex-column align-items-center">
+                <BudgetLimit
+                    currentFt={"12500"}
+                    limitFt={"50000"}
+                />
 
-                <Button
-                    text={"limit"}
-                    onClick={() => setShowLimit(true)}/>
+                
+
+                <div className="limit-btn-wrapper">
+                    <Button
+                        text={"limit"}
+                        onClick={() => setShowLimit(true)}
+                    />
+                </div>
                 
                 {showLimit && (
                     <EditLimit onClose={() => setShowLimit(false)}/>
                 )}
             </div>
 
-            <div>
-                <p> KILOMÉTERÓRA ÁLLÁS</p>
-                <Link to={"/muszerfal/atlagfogyasztas"}>
-                    <div className="avg-consumption-div">
-                        <h3>Átlagos fogyasztás</h3>
-                    </div>
-                </Link>
+            <hr className="mb-5"/>
+
+            <div className="screen d-flex flex-column align-items-center">
+                <div className="screen-div">
+                    <table className="justify-content-center align-items-center">
+                        <thead>
+                            <tr className="current-km-div">
+                                <th colSpan={2}><p>DB 123 456 km</p></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th className="odd"><p>Becsült hatótáv</p></th>
+                                <td className="odd"><Link to={"/muszerfal/atlagfogyasztas"}><p className="test-p">Kattintson ide a</p></Link></td>
+                            </tr>
+
+                            <tr>
+                                <th className="even"><p>Átlagos fogyasztás</p></th>
+                                <td className="even"><Link to={"/muszerfal/atlagfogyasztas"}><p className="test-p">teszt elvégzéséhez</p></Link></td>
+                            </tr>
+
+                            <tr>
+                                <th className="odd text-center"><p>API</p></th>
+                                <td className="odd text-center"><p>API</p></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     )

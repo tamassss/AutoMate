@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 import Card from "../../../components/card/card"
@@ -6,19 +7,25 @@ import Navbar from "../../../components/navbar/navbar"
 import DashboardGauge from "./dashboardGauge/dashbboardGauge"
 import Menu from "./menu/menu"
 import Trip from "./trip/trip"
+import Fuel from "./fuel/fuel"
+import TripInfo from "./tripInfo/tripInfo"
+import FuelInfo from "./fuelInfo/fuelInfo"
 
-import NewTrip from "./newTrip/newTrip"
+import NewTrip from "../../../modals/newTrip/newTrip"
+import NewFuel from "../../../modals/newFuel/newFuel"
 
 import backIcon from "../../../assets/icons/back.png"
 import exitIcon from "../../../assets/icons/exit.png"
 
 import "./dashboard.css"
-import { useState } from "react"
-import NewFuel from "./newFuel/newFuel"
+
 
 export default function Dashboard(){
     const [showNewFuel, setShowNewFuel] = useState(false)
     const [showNewTrip, setShowNewTrip] = useState(false)
+
+    const [hasFuels, setHasFuels] = useState(true)
+    const [ongoingTrip, setOngoingTrip] = useState(true)
 
     const navigate = useNavigate();
 
@@ -38,45 +45,66 @@ export default function Dashboard(){
                     altLeft={"Vissza az autókhoz"} 
                     onLeftClick={() => navigate("/autok")}
                 />
+                <div className="d-flex justify-content-end">
+                    <Link to={"/tippek"} className="custom-help-link">
+                        <p>Segítség kezdőknek</p>
+                    </Link>
+                </div>
+                
+                    
 
-                    <h1 className="custom-title">AUTÓ NEVE</h1>
+                <h1 className="custom-title">AUTÓ NEVE</h1>
+                    
+                    
                 
 
                 <div className="container-fluid">
                     <div className="row g-4">
-                        <div className="col-lg-6 col-12">
+
+                        <div className="col-lg-4 col-12">
                             <div className="fixed-height-card mb-3">
                                 <Card>
-                                    <div className="card-content-wrap">
+                                    <div className="card-content-wrap justify-content-center">
+                                        {ongoingTrip ? <Trip/> : <TripInfo/>}
+                                    </div>
+                                    {!ongoingTrip && (
+                                        <div className="card-btn">
+                                            <Button text={"új út"} onClick={() => setShowNewTrip(true)}/>
+                                        </div>
+                                    )}
+                                </Card>
+                            </div>
+                        </div>
+
+                        <div className="col-lg-4 col-12">
+                            <div className="fixed-height-card mb-3">
+                                <Card>
+                                    <div className="card-content-wrap justify-content-center">
                                         <DashboardGauge/>
                                     </div>
                                 </Card>
                             </div>
-                            
-                            <div className="dashboard-button">
-                                <Button 
-                                    text={"Új tankolás"}
-                                    onClick={() => setShowNewFuel(true)}
-                                />
-                            </div>
                         </div>
 
-                        <div className="col-lg-6 col-12">
+                        
+
+
+                        <div className="col-lg-4 col-12">
                             <div className="fixed-height-card mb-3">
                                 <Card>
-                                    <div className="card-content-wrap">
-                                        <Trip/>
+                                    <div className="card-content-wrap justify-content-center">
+                                        {hasFuels ? <Fuel/> : <FuelInfo/>}
+                                    </div>
+                                    <div className="card-btn">
+                                        <Button text={"új tankolás"} onClick={() => setShowNewFuel(true)}/>
                                     </div>
                                 </Card>
                             </div>
                             
-                            <div className="dashboard-button">
-                            <Button 
-                                text={"Új út"}
-                                onClick={() => setShowNewTrip(true)}
-                            />
-                            </div>
                         </div>
+
+                        
+
                     </div>
                 </div>
                 

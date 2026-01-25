@@ -34,20 +34,20 @@ export default function Home(){
 
             <div className="hero">
                 <br/>
-                <h1>Auto<span style={{color:"#075DBF"}}>Mate</span></h1>
-                <h2 style={{color:"#BFBFBF"}}>Az autód digitális naplója</h2>
+                <h1 className="custom-title">Auto<span style={{color:"#075DBF"}}>Mate</span></h1>
+                <h2 className="custom-h2" style={{color:"#BFBFBF", fontWeight:"bold"}}>Az autód digitális naplója</h2>
             </div>
             
             
                 <div className="auth-div">
                     <div className="auth-tabs">
                             <div
-                                className={showLogin ? "auth-tab active" : "auth-tab"}
+                                className={showLogin ? "auth-tab active" : "auth-tab inactive"}
                                 onClick={() => setShowLogin(true)}>
                                 <p>Bejelentkezés</p>
                             </div> 
                             <div
-                                className={showLogin ? "auth-tab" : "auth-tab active"} 
+                                className={showLogin ? "auth-tab inactive" : "auth-tab active"} 
                                 onClick={() => setShowLogin(false)}>
                                 <p>Regisztráció</p>
                             </div>                     

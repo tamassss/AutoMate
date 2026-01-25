@@ -1,0 +1,15 @@
+.table {
+    --bs-table-bg: transparent;
+    color: white;
+    text-align: left;
+}
+
+.table th {
+    color: #075DBF;
+    border-bottom: 2px solid rgb(82, 82, 82);
+}
+
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}

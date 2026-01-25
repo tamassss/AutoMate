@@ -3,15 +3,15 @@ import { Link, useNavigate } from "react-router-dom"
 
 import Navbar from "../../../components/navbar/navbar"
 import Button from "../../../components/button/button"
-import EditCar from "../editCar/editCar"
-import AddCar from "../addCar/addCar"
+import EditCar from "../../../modals/editCar/editCar"
+import AddCar from "../../../modals/addCar/addCar"
 import CarSelect from "../carSelect/carSelect"
 
 import settingsIcon from "../../../assets/icons/settings.png"
 import exitIcon from "../../../assets/icons/exit.png"
 
 import "./cars.css"
-import Settings from "../settings/settings"
+import Settings from "../../../modals/settings/settings"
 
 export default function Cars(){
     const navigate = useNavigate();
@@ -36,27 +36,31 @@ export default function Cars(){
                 <Settings onClose={() => setShowSettings(false)}/>
             )}
 
-            <h1>KERESZTNÉV autói</h1>
+            <h1 className="mt-5 title">KERESZTNÉV</h1>
+            <h2 className="subtitle">autói</h2>
 
             <CarSelect/>
-
-            {/* Módosítás gomb */}
-            <Button
-            text={"Módosítás"}
-            onClick={() => setShowEditCar(true)}/>
-
-            {showEditCar && (
-                <EditCar onClose={() => setShowEditCar(false)}/>
-            )}
-
-            {/* Új autó gomb */}
-            <Button
-            text={"Új autó"}
-            onClick={() => setShowAddCar(true)}/>
-
-            {showAddCar && (
-                <AddCar onClose={() => setShowAddCar(false)}/>
-            )}
+            
+            <div className="btn-container">
+                {/* Módosítás gomb */}
+                <Button
+                text={"Módosítás"}
+                onClick={() => setShowEditCar(true)}/>
+    
+                {showEditCar && (
+                    <EditCar onClose={() => setShowEditCar(false)}/>
+                )}
+    
+                {/* Új autó gomb */}
+                <Button
+                text={"Új autó"}
+                onClick={() => setShowAddCar(true)}/>
+    
+                {showAddCar && (
+                    <AddCar onClose={() => setShowAddCar(false)}/>
+                )}
+            </div>
+            
 
 
             

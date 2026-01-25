@@ -1,6 +1,11 @@
 body {
+  background-image: url("./assets/background/page-background.png");
+  background-repeat: no-repeat; 
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   font-family: 'Orbitron', 'Oxanium', system-ui, sans-serif;
-  font-weight:500;
+  font-weight: bold;
   background-color: #1B1F28;
   color: white;
 }
@@ -14,4 +19,24 @@ p{
   grid-column: 1 / -1;
   width: 100%;
   text-align: center;
+}
+
+input, select, textarea{
+    color: #ffffff;
+}
+
+textarea:focus, input:focus {
+  background-color: rgb(29, 29, 29);
+  color: #075DBF;
+}
+
+.modal-btn{
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+    width: 100%;
+}
+
+.custom-btn-div{
+    margin: -20px 0 -20px 0;
 }

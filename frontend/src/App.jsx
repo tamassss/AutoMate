@@ -19,6 +19,7 @@ import Statistics from './pages/main-page/menu-points/statistics/statistics'
 import TripsAndFuels from './pages/main-page/menu-points/tripsAndFuels/tripsAndFuels'
 import { AuthProvider } from './auth/AuthContext'
 import Login from './pages/landing/login/login'
+import GasStations from './pages/main-page/menu-points/gasStations/gasStations'
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="/muszerfal/szerviznaplo" element={<ServiceLog />} />
           <Route path="/muszerfal/statisztikak" element={<Statistics />} />
           <Route path="/muszerfal/utak-tankolasok" element={<TripsAndFuels />} />
+          <Route path="/muszerfal/benzinkutak" element={<GasStations />} />
         </Routes>
     </AuthProvider>
   )

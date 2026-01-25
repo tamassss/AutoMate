@@ -1,13 +1,13 @@
 .menu-panel {
   min-height: 100vh;
-  height: 100%;
+  height: 100vh;
   width: 300px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 16px;
   background: #51535B;
-  box-shadow: 0px 0px 10px 5px black;
+  box-shadow: inset 0px 0px 5px 3px black;
   max-width: 300px;
 }
 
@@ -16,9 +16,11 @@
   flex-direction: column;
   gap: 10px;
   font-size: 16px;
+  flex-shrink: 0;
 }
 
 .menu-item {
+  box-shadow: inset 0 0 10px 1px black;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -46,48 +48,42 @@
 
 .menu-text {
   line-height: 1;
+  margin-bottom: 0;
 }
 
 /* - - - - - események - - - - - */
 .menu-events {
-  flex: 1;
+  box-shadow: inset 0 0 20px 1px black;
   padding: 12px;
   border-radius: 12px;
   background: #35363B;
   color: white;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu-events div{
-  flex: 1;
-  display: flex;
-  align-items: center;
+  overflow: hidden;
 }
 
 .menu-events h3 {
-  margin: 8px 0 8px 0;
+  margin-top: 8px;
   font-size: 16px;
 }
 
-.menu-events p {
-  text-align: center;
-  margin: 30px;
+.menu-events-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.menu-events-content::-webkit-scrollbar-thumb {
+  background: #51535B;
+  border-radius: 10px;
+}
+
+.new-event-p {
+  cursor: pointer;
   font-size: 14px;
-}
-
-.menu-events p:hover{
-  color: #075DBF;
-  cursor: pointer;
-}
-
-.new-event-p{
-  cursor: pointer;
+  margin: 0 !important;
 }
 
 /* telefon */
-/* .menu-toggle {
+.menu-toggle {
   display: none;
   position: fixed;
   left: 14px;
@@ -109,45 +105,26 @@
   border-radius: 2px;
 }
 
-.menu-overlay {
-  display: none;
-}
-
 @media (max-width: 768px) {
-  .menu-toggle {
-    display: block;
-  }
-
+  .menu-toggle { display: block; }
   .menu-panel {
     position: fixed;
     left: 0;
     top: 0;
     width: 80vw;
-    max-width: 320px;
-    height: 100vh;
     transform: translateX(-100%);
     transition: transform 220ms ease;
     z-index: 1201;
-    border-radius: 0 14px 14px 0;
   }
-
-  .menu-panel.is-open {
-    transform: translateX(0);
-  }
-
+  .menu-panel.is-open { transform: translateX(0); }
   .menu-overlay {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0,0,0,0.5);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 220ms ease;
     z-index: 1200;
   }
-
-  .menu-overlay.is-open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-} */
+  .menu-overlay.is-open { opacity: 1; pointer-events: auto; }
+}

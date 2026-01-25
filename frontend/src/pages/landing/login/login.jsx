@@ -52,10 +52,13 @@ export default function Login() {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Jelszó"
             />
-            <Button
-                text="Bejelentkezés"
-                onClick={submit}
-            />
+            <div className="custom-btn-div">
+                <Button
+                    text="Bejelentkezés"
+                    onClick={submit}
+                />
+            </div>
+            
         </Card>
     )
 }

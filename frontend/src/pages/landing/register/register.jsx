@@ -71,11 +71,13 @@ export default function Register(){
                 onChange={(e) => setPasswordAgain(e.target.value)}
                 placeholder="Jelszó"
             />
-
-            <Button
-                text="Regisztráció"
-                onClick={handleRegister}
-            />
+            <div className="custom-btn-div">
+                <Button
+                    text="Regisztráció"
+                    onClick={handleRegister}
+                />
+            </div>
+            
         </Card>
     )
 }

@@ -1,0 +1,27 @@
+import Card from "../card/card"
+
+export default function TripCard({ trip }) {
+    return (
+        <Card className="custom-card">
+            <div className="trip-card-header">
+                <h3>{trip.honnan}</h3>
+                <p>-</p>
+                <h3>{trip.hova}</h3>
+            </div>
+            <hr className="full-width"/>
+            <div className="trip-card-body">
+                <p className="trip-date mt-3">{trip.datum}</p>
+                <p className="trip-time">{trip.kezdes} - {trip.vege}</p>
+                <p className={`trip-stat ${trip.javitas >= 0 ? 'text-success' : 'text-danger'}`}>
+                    {Math.abs(trip.javitas)} perc {trip.javitas >= 0 ? 'javítás' : 'rontás'}
+                </p>
+                <p className="trip-distance mb-3">{trip.tavolsag} km</p>
+            </div>
+            <div className="trip-card-footer">
+                <div style={{color:"#ffffff8e"}}>{trip.tankolas_szam} tankolás</div>
+                <div style={{color:"#ffffff8e"}}>{trip.koltseg} Ft elköltve</div>
+                <button>Módosítás</button>
+            </div>
+        </Card>
+    );
+}
