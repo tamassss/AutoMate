@@ -14,7 +14,7 @@ export default function DashboardGauge(){
         <div>
             <div className="limit d-flex flex-column align-items-center">
                 <BudgetLimit
-                    currentFt={"12500"}
+                    currentFt={"32500"}
                     limitFt={"50000"}
                 />
 

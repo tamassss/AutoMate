@@ -36,33 +36,37 @@ export default function Cars(){
                 <Settings onClose={() => setShowSettings(false)}/>
             )}
 
-            <h1 className="mt-5 title">KERESZTNÉV</h1>
-            <h2 className="subtitle">autói</h2>
-
-            <CarSelect/>
+            <h1 className="title fs-1 mt-3">KERESZTNÉV</h1>
+            <h2 className="subtitle fw-4 opacity-75">autói</h2>
             
-            <div className="btn-container">
-                {/* Módosítás gomb */}
-                <Button
-                text={"Módosítás"}
-                onClick={() => setShowEditCar(true)}/>
-    
-                {showEditCar && (
-                    <EditCar onClose={() => setShowEditCar(false)}/>
-                )}
-    
-                {/* Új autó gomb */}
-                <Button
-                text={"Új autó"}
-                onClick={() => setShowAddCar(true)}/>
-    
-                {showAddCar && (
-                    <AddCar onClose={() => setShowAddCar(false)}/>
-                )}
+            <div className="my-4">
+                <CarSelect/>
             </div>
             
+            <div className="justify-content-center g-3">
 
+                <div className="col-12 col-sm-auto">
+                    <Button
+                    text={"Módosítás"}
+                    onClick={() => setShowEditCar(true)}/>
+                </div>
 
+                    
+                <div className="col-12 col-sm-auto">
+                    <Button
+                    text={"Új autó"}
+                    onClick={() => setShowAddCar(true)}/>
+                </div>
+                    
+            </div>
+
+            {showEditCar && (
+                <EditCar onClose={() => setShowEditCar(false)}/>
+            )}
+
+            {showAddCar && (
+                <AddCar onClose={() => setShowAddCar(false)}/>
+            )}
             
         </>
     )

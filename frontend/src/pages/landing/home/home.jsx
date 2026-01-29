@@ -18,6 +18,7 @@ import icon4 from "../../../assets/home/4.png";
 import icon6 from "../../../assets/home/6.png";
 import icon7 from "../../../assets/home/7.png";
 import icon8 from "../../../assets/home/8.png";
+import Error from "../../../components/error/error";
 
 
 export default function Home(){
@@ -35,7 +36,7 @@ export default function Home(){
             <div className="hero">
                 <br/>
                 <h1 className="custom-title">Auto<span style={{color:"#075DBF"}}>Mate</span></h1>
-                <h2 className="custom-h2" style={{color:"#BFBFBF", fontWeight:"bold"}}>Az autód digitális naplója</h2>
+                <h2 className="custom-h2 fs-4" style={{color:"#BFBFBF", fontWeight:"bold"}}>Az autód digitális naplója</h2>
             </div>
             
             
@@ -62,8 +63,8 @@ export default function Home(){
                 {/* Itt majd lesznek képek a weboldalról */}
             
 
-            <div className="features">
-                <h3>Teljes körű autómenedzsment</h3>
+            <div className="features container">
+                <h3 className="fs-3 mb-4">Teljes körű autómenedzsment</h3>
 
                 <Feature
                     icon={icon1}
@@ -87,29 +88,29 @@ export default function Home(){
                 <Feature
                     icon={icon4}
                     title={"Statisztikák"}
-                    content={"Az AutoMate automatikusan statisztikákat készít a szokásairól"}
-                    content2={"Megtekintheti, hogy havonta mennyi kilométert tesz meg, mennyi üzemanyagot vásárol és az egyes hónapokban mennyibe került Önnek 1 kilométer megtétele"}
+                    content={"az AutoMate automatikusan statisztikákat készít a szokásairól"}
+                    content2={"megtekintheti, hogy havonta mennyi kilométert tesz meg, mennyi üzemanyagot vásárol és az egyes hónapokban mennyibe került Önnek 1 kilométer megtétele"}
                 />
 
                 <Feature
                     icon={icon6}
                     title={"Több autó"}
-                    content={"Tartsa nyílván az összes autóját, hasonlítsa össze a statisztikáikat"}
+                    content={"tartsa nyílván az összes autóját, hasonlítsa össze a statisztikáikat"}
                 />
 
                 <Feature
                     icon={icon7}
                     title={"Emlékeztetők"}
-                    content={"Állítson be emlékeztetőket, hogy ne feledkezzen meg a fontos eseményekről"}
+                    content={"állítson be emlékeztetőket, hogy ne feledkezzen meg a fontos eseményekről"}
                 />
 
                 <Feature
                     icon={icon8}
                     title={"Segítség kezdőknek"}
-                    content={"Tekintse meg regisztráció nélkül, hogy mit jelentenek a műszerfalon megjelenő égők, hogyan spórolhat üzemanyagot és hogyan kell könnyedén parkolni"}
+                    content={"tekintse meg regisztráció nélkül, hogy mit jelentenek a műszerfalon megjelenő égők, hogyan spórolhat üzemanyagot és hogyan kell könnyedén parkolni"}
                 />
 
-                
+                <Error/>
                 
             </div>
 

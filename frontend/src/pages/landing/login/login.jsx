@@ -38,6 +38,7 @@ export default function Login() {
     return (
         <Card>
             <h3>Bejelentkezés</h3>
+            <div className="px-2">
             <Input
                 type="text"
                 id="email"
@@ -45,6 +46,9 @@ export default function Login() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="Email cím"
             />
+            </div>
+
+            <div className="px-2">
             <Input
                 type="password"
                 id="password"
@@ -52,6 +56,8 @@ export default function Login() {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Jelszó"
             />
+            </div>
+            
             <div className="custom-btn-div">
                 <Button
                     text="Bejelentkezés"

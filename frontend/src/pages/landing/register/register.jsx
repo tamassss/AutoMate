@@ -32,6 +32,7 @@ export default function Register(){
         <Card>
             <h3>Regisztráció</h3>
 
+            <div className="px-2">
             <Input
                 type="text"
                 id="username"
@@ -39,7 +40,9 @@ export default function Register(){
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Felhasználónév"
             />
+            </div>
 
+            <div className="px-2">
             <Input
                 type="text"
                 id="surname"
@@ -47,7 +50,9 @@ export default function Register(){
                 onChange={(e) => setSurname(e.target.value)}
                 placeholder="Keresztnév"
             />
+            </div>
 
+            <div className="px-2">
             <Input
                 type="email"
                 id="email"
@@ -55,7 +60,9 @@ export default function Register(){
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="E-mail cím"
             />
+            </div>
 
+            <div className="px-2">
             <Input
                 type="password"
                 id="password"
@@ -63,7 +70,9 @@ export default function Register(){
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Jelszó"
             />
+            </div>
 
+            <div className="px-2">
             <Input
                 type="password"
                 id="passwordAgain"
@@ -71,6 +80,8 @@ export default function Register(){
                 onChange={(e) => setPasswordAgain(e.target.value)}
                 placeholder="Jelszó"
             />
+            </div>
+            
             <div className="custom-btn-div">
                 <Button
                     text="Regisztráció"

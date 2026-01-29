@@ -6,16 +6,12 @@ import "./editCar.css"
 
 export default function EditCar({onClose}){
     return(
-        <Modal title="Autó módosítás" onClose={onClose} footer={<Button text={"Módosítás"}/>}>
+        <Modal title="Autó módosítás" columns={1} onClose={onClose} footer={<Button text={"Módosítás"}/>}>
             <LabeledInput label={"Márka"}/>
             <LabeledInput label={"Modell"}/>
             <HrOptional/>
-            <LabeledInput label={"Évjárat"}/>
             <LabeledInput label={"Km óra állás"}/>
-            <LabeledInput label={"Teljesítmény"}/>
             <LabeledInput label={"Átlagfogyasztás"}/>
-            <LabeledInput label={"Üzemanyag"}/>
-            <LabeledInput label={"Tank mérete"}/>
         </Modal>
     )
 }

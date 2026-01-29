@@ -6,16 +6,12 @@ import "./addCar.css"
 
 export default function AddCar({onClose}){
     return(
-        <Modal title="Autó hozzáadása" onClose={onClose} footer={<Button text={"Hozzáadás"}/>}>
+        <Modal title="Autó hozzáadása" columns={1} onClose={onClose} footer={<Button text={"Hozzáadás"}/>}>
             <LabeledInput label={"Márka"}/>
             <LabeledInput label={"Modell"}/>
             <HrOptional/>
-            <LabeledInput label={"Évjárat"}/>
             <LabeledInput label={"Km óra állás"}/>
-            <LabeledInput label={"Teljesítmény"}/>
             <LabeledInput label={"Átlagfogyasztás"}/>
-            <LabeledInput label={"Üzemanyag"}/>
-            <LabeledInput label={"Tank mérete"}/>
         </Modal>
     )
 }

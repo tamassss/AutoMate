@@ -4,7 +4,7 @@
     right: 3%;
     text-decoration: underline;
     color: white;
-    font-size: 16px;
+    font-size: 1rem;
 }
 
 .auth-div{
@@ -70,7 +70,16 @@ h3{
     font-size: 24px;
 }
 
-@media (max-width:600px) {
+@media (max-width: 1400px) {
+    .custom-title {
+        font-size: 3rem;
+    }
+    .custom-h2 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width:768px) {
     .custom-title{
         padding-top: 30px;
     }
@@ -78,6 +87,10 @@ h3{
     .features{
         margin-left: 5%;
         width: 90%;
+    }
+
+    .auth-tab{
+        font-size: 1rem;
     }
 
     .auth-div{

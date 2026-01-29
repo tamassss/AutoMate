@@ -1,6 +1,6 @@
 button{
     transition: 0.3s;
-    padding: 12px;
+    padding: 0.8rem 1rem;
     border-radius: 10px;
     border: none;
     background: #35363B;
@@ -29,4 +29,9 @@ button:active{
 
 button:focus{
     outline: none;
+}
+@media (max-width: 768px) {
+    .button{
+        font-size: 0.8rem;
+}
 }

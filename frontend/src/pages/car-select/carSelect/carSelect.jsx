@@ -55,13 +55,12 @@ return(
             <div className="main-car">
                 <div className="main-image">
                     <img src={placeholder} alt={current.name} className="main-car-img"/>
-                    <Link to="/muszerfal" className="select-link">
-                      <Button text={"Kiválasztás"} className="select-btn"/>
-                    </Link>
                 </div>
                 <div className="main-info">
                     <h2 className="main-title">{current.name}</h2>
-                    <p className="main-year">{current.year}</p>
+                    <Link to="/muszerfal" className="select-link">
+                      <Button text={"Kiválasztás"} className="select-btn"/>
+                    </Link>
                 </div>
             </div>
 

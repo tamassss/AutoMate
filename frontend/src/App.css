@@ -8,6 +8,8 @@ body {
   font-weight: bold;
   background-color: #1B1F28;
   color: white;
+
+  min-width: 320px;
 }
 
 p{
