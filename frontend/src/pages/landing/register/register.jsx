@@ -30,7 +30,7 @@ export default function Register(){
 
     return(
         <Card>
-            <h3>Regisztráció</h3>
+            <h3 className="mt-2">Regisztráció</h3>
 
             <div className="px-2">
             <Input

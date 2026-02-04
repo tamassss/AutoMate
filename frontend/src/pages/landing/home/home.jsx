@@ -27,12 +27,6 @@ export default function Home(){
 
     return(
         <>
-            <div className="help-div">
-                <Link to="/tippek" className="help-link">
-                    Segítség kezdőknek
-                </Link>
-            </div>
-
             <div className="hero">
                 <br/>
                 <h1 className="custom-title">Auto<span style={{color:"#075DBF"}}>Mate</span></h1>
@@ -109,8 +103,6 @@ export default function Home(){
                     title={"Segítség kezdőknek"}
                     content={"tekintse meg regisztráció nélkül, hogy mit jelentenek a műszerfalon megjelenő égők, hogyan spórolhat üzemanyagot és hogyan kell könnyedén parkolni"}
                 />
-
-                <Error/>
                 
             </div>
 

@@ -10,18 +10,6 @@
 
 .screen-div
 
-/* .screen{
-    background-color: #35363b;
-    width: 50vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: fit-content;
-    min-width: 300px;
-    border-radius: 5px;
-    overflow: hidden;
-} */
-
 
 .current-km-div th{
     background-color: #35363b;
@@ -53,5 +41,4 @@
 
 .test-p{
     color: #075DBF;
-    font-size: 1.2rem;
 }

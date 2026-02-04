@@ -7,3 +7,13 @@
     width: 100%;
     height: 100px;
 }
+
+@media (max-width: 768px){
+    .footerComponent p{
+        font-size: 0.8rem;
+    }
+
+    .footerComponent{
+        height: 60px;
+    }
+}

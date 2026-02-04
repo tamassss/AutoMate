@@ -12,60 +12,58 @@ export default function AverageConsumption(){
     const navigate = useNavigate();
 
     return(
-        <>
+        <div className="align-middle">
             <Navbar leftIcon={backIcon} onLeftClick={()=>navigate("/muszerfal")}/>
 
-                
-            <h1 className="mt-4 mb-3">Átlag fogyasztás</h1>
-            <h3 className="text-center mb-3 custom-subtitle">Tudja meg, mennyit fogyaszt az autója egy rövid teszttel!</h3>
+            <div className="container avg-cons-div">
+                <h1 className="text-center custom-title">Átlag fogyasztás</h1>
+                <h3 className="text-center mb-3 custom-subtitle">
+                    Tudja meg, mennyit fogyaszt az autója egy rövid teszttel!
+                </h3>
 
-            <div className="d-flex justify-content-center align-items-center card-wrap">
-            <Card>
-                <div className="card-content">
-                <div>
-                    <p> <span className="step-span">1. lépés:</span> Tankolja tele az autóját és írja le a kilométeróra állását</p>
-                    <div className="text-center mt-3">
-                        <Input placeholder={"Kilométeróra állás"} type={"number"}/>
-                    </div>
-                    
-                </div>
+                <div className="row justify-content-center">
+                    <div className="col-12 col-md-10 col-lg-7">
+                        <Card>
+                            <div className="p-3 text-start">
+                                
+                                <div className="mt-2">
+                                    <p><span className="step-span">1. lépés:</span> Tankolja tele az autóját és írja le a kilométeróra állását</p>
+                                    <div className="mt-3 col-12 col-sm-6 mx-auto">
+                                        <Input placeholder={"Kilométeróra állás"} type={"number"}/>
+                                    </div>
+                                </div>
 
-                <hr/>
+                                <hr/>
 
-                <div>
-                    <p> <span className="step-span">2. lépés:</span> Utazzon az autójával valamennyit</p>
-                    <p className="fs-5">(minél nagyobb távot tesz meg, annál pontosabb lesz a számítás)</p>
-                </div>
+                                <div>
+                                    <p><span className="step-span">2. lépés:</span> Utazzon az autójával valamennyit</p>
+                                    <p className="small opacity-75">(minél nagyobb távot tesz meg, annál pontosabb lesz a számítás)</p>
+                                </div>
 
-                <hr/>
+                                <hr/>
 
-                <div>
-                    <p> <span className="step-span">3. lépés:</span> Ismét tankolja tele az autóját, majd írja le:</p>
-                    <ul className="mt-3">
-                        <li>kilométeróra állása</li>
-                        <li>tankolt mennyiség</li>
-                    </ul>
-                    <div className=" d-flex justify-content-center align-items-center">
-                        <div className="row">
-                            <div className="col-lg-6">
-                                <Input placeholder={"Kilométeróra állás"} type={"number"}/>
+                                <div>
+                                    <p><span className="step-span">3. lépés:</span> Ismét tankolja tele az autóját, majd írja le:</p>
+                                    
+                                    <div className="row g-3 mt-2">
+                                        <div className="col-12 col-sm-6">
+                                            <Input placeholder={"Kilométeróra állás"} type={"number"}/>
+                                        </div>
+                                        <div className="col-12 col-sm-6">
+                                            <Input placeholder={"Tankolt mennyiség (liter)"} type={"number"}/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="text-center btn-div">
+                                    <Button text={"Kalkulálás"}/>
+                                </div>
+
                             </div>
-                            <div className="col-lg-6">
-                                <Input placeholder={"Tankolt mennyiség"} type={"number"}/>
-                            </div>
-
-                        </div>
+                        </Card>
                     </div>
-                    
-                        <Button 
-                            text={"Kalkulálás"}
-                        />
-                    
-                    
                 </div>
-                </div>
-            </Card>
             </div>
-        </>
+        </div>
     )
 }

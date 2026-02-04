@@ -1,4 +1,5 @@
 import Input from "../input/input";
+import "./labeledInput.css"
 
 export default function LabeledInput({label, ...inputProps}){
     return(

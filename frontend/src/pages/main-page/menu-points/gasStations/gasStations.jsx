@@ -18,7 +18,6 @@ export default function GasStations(){
             <Navbar
                 leftIcon={backIcon}
                 onLeftClick={() => navigate("/muszerfal")}
-                subtitle={"Benzinkutak"}
             />
 
             <div className="container mt-4">

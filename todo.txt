@@ -1,0 +1,19 @@
+MODAL:
+- benzinkút módosítás
+- benzinkút törlés
+- út módosítás
+- út törlés
+- tankolás módosítás
+- tankolás törlés
+
+DESIGN:
+- tankolás módosítás, törlés (gombok)
+- statisztikák (normálisabb design)
+- segítség kezdőknek (egészet megcsinálni)
+- date-picker
+- admin oldal
+- landing page-en képek
+- dashboard gauge reszponzivitás
+- navbar ikonok
+- hamburger menu + kijelentkezés mindenhol legyen
+- egér hover kiírja hogy mit csinál valami

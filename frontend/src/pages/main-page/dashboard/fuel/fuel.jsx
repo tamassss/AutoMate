@@ -40,19 +40,19 @@ export default function Fuel() {
             <table className="fuel-table">
                 <tbody>
                     <tr>
-                        <td className="odd text-center" colSpan={2}>Legutóbbi tankolás (2025. 10. 20.)</td>
+                        <td className="odd text-center field" colSpan={2}>Legutóbbi tankolás <span className="last-fuel-date">(2025. 10. 20.)</span></td>
                     </tr>
                     <tr>
-                        <td className="even">Mennyiség</td>
-                        <td className="even">45 l</td>
+                        <td className="even field">Mennyiség</td>
+                        <td className="even field">45 l</td>
                     </tr>
                     <tr>
-                        <td className="odd">Elköltött Pénz</td>
-                        <td className="odd">20.000 Ft</td>
+                        <td className="odd field">Elköltött Pénz</td>
+                        <td className="odd field">20.000 Ft</td>
                     </tr>
                     <tr>
-                        <td className="even">Becsült hatótáv</td>
-                        <td className="even">650 km</td>
+                        <td className="even field">Becsült hatótáv</td>
+                        <td className="even field">650 km</td>
                     </tr>
                     
                 </tbody>

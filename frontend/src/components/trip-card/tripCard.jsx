@@ -1,14 +1,17 @@
 import Card from "../card/card"
+import "./tripCard.css"
 
 export default function TripCard({ trip }) {
     return (
-        <Card className="custom-card">
+        <Card>
             <div className="trip-card-header">
                 <h3>{trip.honnan}</h3>
                 <p>-</p>
                 <h3>{trip.hova}</h3>
             </div>
-            <hr className="full-width"/>
+            <div className="w-100 hr-div">
+                <hr className="full-width"/>
+            </div>
             <div className="trip-card-body">
                 <p className="trip-date mt-3">{trip.datum}</p>
                 <p className="trip-time">{trip.kezdes} - {trip.vege}</p>

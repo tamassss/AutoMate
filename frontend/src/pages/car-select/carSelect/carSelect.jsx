@@ -37,7 +37,7 @@ export default function CarSelect(){
 return(
     <div className="car-select">
         <div className="car-layout">
-
+        
             <div className="side left" onClick={prevCar}>
                 <div className="mobile-arrow">
                     <img src={leftArrow} alt="Előző" className="left-arrow"/>

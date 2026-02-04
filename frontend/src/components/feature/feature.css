@@ -16,7 +16,7 @@
 
 .feature h4 {
     margin: 0 0 4px 0;
-    font-size: 1.40rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: #075DBF;
     text-decoration: underline;
@@ -32,8 +32,14 @@
     margin-bottom: 16px;
 }
 
-@media (max-width:600px){
+@media (max-width:768px){
     .feature p{
         line-height: 1;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+
+    .feature h4{
+        font-size: 1.2rem;
     }
 }

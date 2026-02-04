@@ -43,19 +43,21 @@ export default function Cars(){
                 <CarSelect/>
             </div>
             
-            <div className="justify-content-center g-3">
+            <div className="justify-content-center g-3 cars-buttons">
 
                 <div className="col-12 col-sm-auto">
                     <Button
-                    text={"Módosítás"}
-                    onClick={() => setShowEditCar(true)}/>
+                        text={"Módosítás"}
+                        onClick={() => setShowEditCar(true)}
+                    />
                 </div>
 
                     
                 <div className="col-12 col-sm-auto">
                     <Button
-                    text={"Új autó"}
-                    onClick={() => setShowAddCar(true)}/>
+                        text={"Új autó"}
+                        onClick={() => setShowAddCar(true)}
+                    />
                 </div>
                     
             </div>

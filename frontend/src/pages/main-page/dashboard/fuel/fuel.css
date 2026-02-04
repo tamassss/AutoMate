@@ -5,7 +5,7 @@
 }
 
 .fuel-title {
-    color: #075dbf;
+    color: #4a9fff;
     font-size: 1.8rem;
     text-align: center;
     margin-bottom: 15px;
@@ -29,4 +29,14 @@
 .fuel-table td {
     padding: 12px 15px;
     width: 60%;
+}
+
+.last-fuel-date{
+    display: inline-block;
+}
+
+@media(max-width:768px){
+    .fuel-title{
+        font-size: 20px;
+    }
 }

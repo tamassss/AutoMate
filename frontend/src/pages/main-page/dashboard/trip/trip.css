@@ -31,3 +31,19 @@
     flex: 1;
     padding: 15px;
 }
+
+@media(max-width:1600px){
+    .trip-title{
+        font-size: 24px;
+    }
+
+    .trip-timer{
+        font-size: 26px;
+    }
+}
+
+@media(max-width:768px){
+    .trip-title{
+        font-size: 20px;
+    }
+}

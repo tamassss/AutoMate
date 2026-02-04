@@ -1,12 +1,13 @@
 .custom-help-link{
   right: 0;
   text-decoration: white underline;
-  margin: 20px 50px 0 0;
+  margin:0;
 }
+
 
 .dashboard-layout {
   display: flex;
-  height: 100vh;
+  max-height: 100vh;
 }
 
 .menu-content{
@@ -62,16 +63,27 @@
   padding: 15px;
 }
 
-@media (min-width: 992px) {
+
+@media (min-width: 1201px) {
     .fixed-height-card {
         height: 75vh;
     }
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1200px) {
     .fixed-height-card {
         height: auto;
         min-height: 400px;
+    }
+  
+    .custom-title{
+      margin: 14px auto 18px;
+    }
+  
+    .custom-help-link{
+      display: block;
+      margin: 20px 50px 0 0;
+      text-align: right;
     }
 }
 
@@ -85,18 +97,3 @@
     width: 0;
   }
 }
-
-/* @media (max-width:600px){
-  .btn-div{
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-  }
-
-  .dashboard-button button{
-    margin: 5px auto;
-    width: 100%;
-    height: 10vh;
-    align-items: center;
-  }
-} */

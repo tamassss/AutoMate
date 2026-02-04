@@ -27,7 +27,7 @@ export default function TripsAndFuels(){
 
     return(
         <>
-            <Navbar leftIcon={backIcon} altLeft={"Vissza"} onLeftClick={() => navigate("/muszerfal")} subtitle={"Utak & Tankolások"}/>
+            <Navbar leftIcon={backIcon} altLeft={"Vissza"} onLeftClick={() => navigate("/muszerfal")}/>
             <div>
                 <div className="container-fluid p-0 tf-nav-tabs">
                     <div className="row g-0">

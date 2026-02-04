@@ -79,34 +79,43 @@
 .new-event-p {
   cursor: pointer;
   font-size: 14px;
-  margin: 0 !important;
+  margin: 0;
 }
 
-/* telefon */
+/* Hamburger */
 .menu-toggle {
   display: none;
   position: fixed;
   left: 14px;
-  top: 14px;
+  top: 4px;
   width: 44px;
   height: 44px;
   border: none;
   border-radius: 10px;
   background: #3a3f49;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 1200;
+  z-index: 20;
+
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
 }
 
 .menu-toggle-bar {
   display: block;
+  width: 22px;
   height: 3px;
-  margin: 5px 8px;
   background: #f2f4f7;
   border-radius: 2px;
 }
 
-@media (max-width: 768px) {
-  .menu-toggle { display: block; }
+@media (max-width: 1600px) {
+  .menu-toggle { 
+    display: flex;
+  }
+
   .menu-panel {
     position: fixed;
     left: 0;
@@ -116,7 +125,11 @@
     transition: transform 220ms ease;
     z-index: 1201;
   }
-  .menu-panel.is-open { transform: translateX(0); }
+
+  .menu-panel.is-open {
+    transform: translateX(0);
+  }
+
   .menu-overlay {
     display: block;
     position: fixed;
@@ -126,5 +139,6 @@
     pointer-events: none;
     z-index: 1200;
   }
+
   .menu-overlay.is-open { opacity: 1; pointer-events: auto; }
 }

@@ -24,3 +24,30 @@
 .station-address {
     font-size: 0.9rem;
 }
+
+.fuel-button button{
+    width: 120px;
+}
+
+@media(max-width:768px){
+
+    .card{
+        padding: 0;
+    }
+
+    .price{
+        font-size: 1.5rem;
+    }
+
+    .station-city{
+        font-size: 1rem;
+    }
+
+    .station-address{
+        font-size: 0.8rem;
+    }
+
+    .fuel-button button{
+        margin: 20px auto;
+    }
+}

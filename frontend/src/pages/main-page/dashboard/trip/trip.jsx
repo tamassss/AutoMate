@@ -18,41 +18,41 @@ export default function Trip() {
 
     return (
         <div className="ongoing-trip-container mt-1">
-            <h2 style={{color:"#075DBF"}}>{tripData.from} – {tripData.to}</h2>
+            <h2 style={{color:"#4a9fff"}} className="trip-title">{tripData.from} – {tripData.to}</h2>
 
             <table className="trip-table">
                 <tbody>
                     <tr>
-                        <td className="odd">Indulás</td>
-                        <td className="odd">{tripData.startTime}</td>
+                        <td className="odd field">Indulás</td>
+                        <td className="odd field">{tripData.startTime}</td>
                     </tr>
                     <tr>
-                        <td className="even">Várható érkezés</td>
-                        <td className="even">{tripData.expectedArrival}</td>
+                        <td className="even field">Várható érkezés</td>
+                        <td className="even field">{tripData.expectedArrival}</td>
                     </tr>
                     <tr>
-                        <td className="odd">Út hossza</td>
-                        <td className="odd">{tripData.distance}</td>
+                        <td className="odd field">Út hossza</td>
+                        <td className="odd field">{tripData.distance}</td>
                     </tr>
                     <tr>
-                        <td className="even">Várható fogyasztás</td>
-                        <td className="even">{tripData.expectedConsumption}</td>
+                        <td className="even field">Várható fogyasztás</td>
+                        <td className="even field">{tripData.expectedConsumption}</td>
                     </tr>
                     <tr>
-                        <td className="odd">Út ára</td>
-                        <td className="odd">{tripData.tripPrice}</td>
+                        <td className="odd field">Út ára</td>
+                        <td className="odd field">{tripData.tripPrice}</td>
                     </tr>
                     <tr>
-                        <td className="even">Tankolások száma</td>
-                        <td className="even">{tripData.refuelCount}</td>
+                        <td className="even field">Tankolások száma</td>
+                        <td className="even field">{tripData.refuelCount}</td>
                     </tr>
                     <tr>
-                        <td className="odd">Tankolt mennyiség</td>
-                        <td className="odd">{tripData.refuelAmount}</td>
+                        <td className="odd field">Tankolt mennyiség</td>
+                        <td className="odd field">{tripData.refuelAmount}</td>
                     </tr>
                     <tr>
-                        <td className="even">Elköltött pénz</td>
-                        <td className="even">{tripData.moneySpent}</td>
+                        <td className="even field"><p className="field">Elköltött pénz</p></td>
+                        <td className="even field">{tripData.moneySpent}</td>
                     </tr>
                 </tbody>
             </table>

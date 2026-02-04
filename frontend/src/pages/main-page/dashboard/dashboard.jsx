@@ -45,23 +45,14 @@ export default function Dashboard(){
                     altLeft={"Vissza az autókhoz"} 
                     onLeftClick={() => navigate("/autok")}
                 />
-                <div className="d-flex justify-content-end">
-                    <Link to={"/tippek"} className="custom-help-link">
-                        <p>Segítség kezdőknek</p>
-                    </Link>
+                <div className="dashboard-header">
+                    <h1 className="custom-title">AUTÓ NEVE</h1>
                 </div>
                 
-                    
-
-                <h1 className="custom-title">AUTÓ NEVE</h1>
-                    
-                    
-                
-
                 <div className="container-fluid">
                     <div className="row g-4">
 
-                        <div className="col-lg-4 col-12">
+                        <div className="col-xl-4 col-12">
                             <div className="fixed-height-card mb-3">
                                 <Card>
                                     <div className="card-content-wrap justify-content-center">
@@ -76,7 +67,7 @@ export default function Dashboard(){
                             </div>
                         </div>
 
-                        <div className="col-lg-4 col-12">
+                        <div className="col-xl-4 col-12">
                             <div className="fixed-height-card mb-3">
                                 <Card>
                                     <div className="card-content-wrap justify-content-center">
@@ -89,7 +80,7 @@ export default function Dashboard(){
                         
 
 
-                        <div className="col-lg-4 col-12">
+                        <div className="col-xl-4 col-12">
                             <div className="fixed-height-card mb-3">
                                 <Card>
                                     <div className="card-content-wrap justify-content-center">

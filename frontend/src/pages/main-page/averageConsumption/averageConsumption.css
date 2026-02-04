@@ -1,43 +1,47 @@
-.card-wrap{
+.avg-cons-div{
+    margin-bottom: 50px;
+}
+
+.custom-title{
+    font-size: 30px;
+}
+
+.custom-subtitle {
+    font-size: 20px;
+    color: #ffffff90;
+}
+
+.avg-cons-div .input{
+  font-size: 16px;
+  padding: 8px;
+  height: 40px;
 }
 
 
-.card-wrap p{
-    
-    font-size: 1.2rem;
-}
-
-.card-wrap span{
-    font-size: 1.5rem;
+.step-span {
     color: rgb(150, 150, 150);
-}
-
-.card-content{
-    text-align: left;
-    padding: 40px;
-    height: 70vh;
-    width: 50vw;
-}
-
-.card-content button{
-    padding: 20px;
     font-size: 1.3rem;
 }
 
-.custom-subtitle{
-    color: rgb(150, 150, 150);
+.btn-div button{
+    margin-bottom: 10px;
 }
 
-hr{
-    margin: 20px 0 20px 0;
-    color: white;
-    border: 1px solid white;
-    box-shadow: 0 0 10px 2px white;
+.card-content {
+    width: 100%;
+    height: auto;
 }
 
-li{
-    margin-left: 50px;
-    color: white;
-    font-size: 1.2rem;
-}
+@media (max-width: 768px) {
+    .step-span {
+        font-size: 1rem; 
+    }
 
+    .custom-title{
+        font-size: 20px;
+    }
+
+    .custom-subtitle{
+        font-size: 15px;
+    }
+}

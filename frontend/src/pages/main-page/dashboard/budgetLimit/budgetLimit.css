@@ -11,6 +11,7 @@
 
 .budget-title {
     margin-bottom: 15px;
+    font-size: 22px;
 }
 
 .bar-wrapper {
@@ -41,8 +42,25 @@
 
 .stats-ft{
     color: white;
+    font-size: 18px;
+    letter-spacing: 1px;
 }
 
 .stats-percentage{
-    color: #1d85fc;
+    font-size: 16px;
+    color: #3592fe;
+}
+
+@media (max-width:768px){
+    .budget-container{
+        padding: 14px;
+    }
+
+    .stats-ft{
+        font-size: 20px;
+    }
+
+    .stats-percentage{
+        font-size: 18px;
+    }
 }

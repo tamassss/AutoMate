@@ -36,26 +36,26 @@ export default function DashboardGauge(){
 
             <div className="screen d-flex flex-column align-items-center">
                 <div className="screen-div">
-                    <table className="justify-content-center align-items-center">
+                    <table className="dg-table justify-content-center align-items-center">
                         <thead>
                             <tr className="current-km-div">
-                                <th colSpan={2}><p>DB 123 456 km</p></th>
+                                <th colSpan={2}><p className="field">DB 123 456 km</p></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <th className="odd"><p>Becsült hatótáv</p></th>
-                                <td className="odd"><Link to={"/muszerfal/atlagfogyasztas"}><p className="test-p">Kattintson ide a</p></Link></td>
+                                <th className="odd field"><p>Becsült hatótáv</p></th>
+                                <td className="odd field"><Link to={"/muszerfal/atlagfogyasztas"}><p className="test-p field">Kattintson ide a</p></Link></td>
                             </tr>
 
                             <tr>
-                                <th className="even"><p>Átlagos fogyasztás</p></th>
-                                <td className="even"><Link to={"/muszerfal/atlagfogyasztas"}><p className="test-p">teszt elvégzéséhez</p></Link></td>
+                                <th className="even field">Átlagos fogyasztás</th>
+                                <td className="even field"><Link to={"/muszerfal/atlagfogyasztas"}><p className="test-p field">teszt elvégzéséhez</p></Link></td>
                             </tr>
 
                             <tr>
-                                <th className="odd text-center"><p>API</p></th>
-                                <td className="odd text-center"><p>API</p></td>
+                                <th className="odd text-center field"><p>API</p></th>
+                                <td className="odd text-center field"><p>API</p></td>
                             </tr>
                         </tbody>
                     </table>

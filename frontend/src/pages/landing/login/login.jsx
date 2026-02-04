@@ -37,7 +37,7 @@ export default function Login() {
     };
     return (
         <Card>
-            <h3>Bejelentkezés</h3>
+            <h3 className="mt-2">Bejelentkezés</h3>
             <div className="px-2">
             <Input
                 type="text"

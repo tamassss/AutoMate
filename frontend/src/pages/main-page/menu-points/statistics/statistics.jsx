@@ -16,7 +16,7 @@ export default function Statistics(){
 
     return(
         <>
-            <Navbar leftIcon={backIcon} altLeft={"Vissza"} onLeftClick={() => navigate("/muszerfal")} subtitle={"Statisztikák"}/>
+            <Navbar leftIcon={backIcon} altLeft={"Vissza"} onLeftClick={() => navigate("/muszerfal")}/>
             <div className="container py-5">
               <h1 className="text-center text-primary mb-5 fw-bold">Statisztikák</h1>
               <div className="row justify-content-center">

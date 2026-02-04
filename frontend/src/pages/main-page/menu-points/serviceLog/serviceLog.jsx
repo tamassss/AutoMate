@@ -24,7 +24,7 @@ export default function ServiceLog(){
 
     return(
         <>
-            <Navbar leftIcon={backIcon} altLeft={"Vissza"} onLeftClick={() => navigate("/muszerfal")} subtitle={"Szerviznapló"}/>
+            <Navbar leftIcon={backIcon} altLeft={"Vissza"} onLeftClick={() => navigate("/muszerfal")}/>
             
             <div className="container mt-4">
                 <h1 className="mb-4">Szerviznapló</h1>
