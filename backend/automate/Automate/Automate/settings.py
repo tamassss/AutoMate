@@ -1,25 +1,42 @@
 import os
+from datetime import timedelta
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# --------------------------------------------------
+# Base directory
+# --------------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+# --------------------------------------------------
+# Security
+# --------------------------------------------------
 SECRET_KEY = "change-me-for-production"
-
 DEBUG = True
-
 ALLOWED_HOSTS = []
 
+
+# --------------------------------------------------
+# Applications
+# --------------------------------------------------
 INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "AutoApp",
 ]
 
+
+# --------------------------------------------------
+# Middleware
+# --------------------------------------------------
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -30,8 +47,17 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
-ROOT_URLCONF = "Automate.urls"
 
+# --------------------------------------------------
+# URL & WSGI
+# --------------------------------------------------
+ROOT_URLCONF = "Automate.urls"
+WSGI_APPLICATION = "Automate.wsgi.application"
+
+
+# --------------------------------------------------
+# Templates
+# --------------------------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -48,8 +74,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "Automate.wsgi.application"
 
+# --------------------------------------------------
+# Database
+# --------------------------------------------------
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -61,29 +89,56 @@ DATABASES = {
     }
 }
 
+
+# --------------------------------------------------
+# Internationalization
+# --------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+
+# --------------------------------------------------
+# Static files
+# --------------------------------------------------
 STATIC_URL = "/static/"
 
+
+# --------------------------------------------------
+# CORS
+# --------------------------------------------------
 CORS_ALLOW_ALL_ORIGINS = True
 
-AUTH_USER_MODEL = "AutoApp.Felhasznalo"
 
-# JWT
-from datetime import timedelta
+# --------------------------------------------------
+# Authentication
+# --------------------------------------------------
+AUTH_USER_MODEL = "AutoApp.User"
+
+
+# --------------------------------------------------
+# Django REST Framework
+# --------------------------------------------------
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
     ),
 }
 
+
+# --------------------------------------------------
+# JWT Configuration
+# --------------------------------------------------
 SIMPLE_JWT = {
-    "USER_ID_FIELD": "felhasznalo_id",
+    "USER_ID_FIELD": "user_id",
     "USER_ID_CLAIM": "user_id",
 
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }

@@ -1,179 +1,182 @@
 DROP DATABASE IF EXISTS automate;
 CREATE DATABASE automate
   CHARACTER SET utf8mb4
-  COLLATE utf8mb4_hungarian_ci;
+  COLLATE utf8mb4_unicode_ci;
 
 USE automate;
 
 -- =======================
--- Felhasználó
+-- User
 -- =======================
-CREATE TABLE felhasznalo (
-    felhasznalo_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE user (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     last_login DATETIME NULL,
     is_active BOOLEAN DEFAULT TRUE,
     is_staff BOOLEAN DEFAULT FALSE,
-    nev VARCHAR(255),
-    szerep ENUM('admin','user') DEFAULT 'user',
+    full_name VARCHAR(255),
+    role ENUM('admin','user') DEFAULT 'user',
     is_superuser BOOLEAN DEFAULT FALSE
 ) ENGINE=InnoDB;
 
 -- =======================
--- Márka
+-- Brand
 -- =======================
-CREATE TABLE marka (
-    marka_id INT AUTO_INCREMENT PRIMARY KEY,
-    nev VARCHAR(255) NOT NULL UNIQUE
+CREATE TABLE brand (
+    brand_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
 
 -- =======================
--- Modell
+-- Car Model
 -- =======================
-CREATE TABLE modell (
-    modell_id INT AUTO_INCREMENT PRIMARY KEY,
-    marka_id INT NOT NULL,
-    modellnev VARCHAR(255) NOT NULL,
-    FOREIGN KEY (marka_id) REFERENCES marka(marka_id)
+CREATE TABLE car_model (
+    model_id INT AUTO_INCREMENT PRIMARY KEY,
+    brand_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    FOREIGN KEY (brand_id) REFERENCES brand(brand_id)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Üzemanyag típus
+-- Fuel Type
 -- =======================
-CREATE TABLE uzemanyag_tipus (
-    uzemanyag_tipus_id INT AUTO_INCREMENT PRIMARY KEY,
-    megnevezes VARCHAR(100) NOT NULL UNIQUE
+CREATE TABLE fuel_type (
+    fuel_type_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
 
 -- =======================
--- Autó
+-- Car
 -- =======================
-CREATE TABLE auto (
-    auto_id INT AUTO_INCREMENT PRIMARY KEY,
-    rendszam VARCHAR(20) NOT NULL UNIQUE,
-    marka_id INT NOT NULL,
-    modell_id INT NOT NULL,
-    uzemanyag_tipus_id INT NOT NULL,
-    tank_kapacitas DECIMAL(5,2),
-    teljesitmeny INT,
-    gyartasi_ev INT,
-    km_ora_allas INT NOT NULL,
-    FOREIGN KEY (marka_id) REFERENCES marka(marka_id),
-    FOREIGN KEY (modell_id) REFERENCES modell(modell_id),
-    FOREIGN KEY (uzemanyag_tipus_id) REFERENCES uzemanyag_tipus(uzemanyag_tipus_id)
+CREATE TABLE car (
+    car_id INT AUTO_INCREMENT PRIMARY KEY,
+    license_plate VARCHAR(20) NOT NULL UNIQUE,
+    brand_id INT NOT NULL,
+    model_id INT NOT NULL,
+    fuel_type_id INT NOT NULL,
+    tank_capacity DECIMAL(5,2),
+    horsepower INT,
+    production_year INT,
+    odometer_km INT NOT NULL,
+    FOREIGN KEY (brand_id) REFERENCES brand(brand_id),
+    FOREIGN KEY (model_id) REFERENCES car_model(model_id),
+    FOREIGN KEY (fuel_type_id) REFERENCES fuel_type(fuel_type_id)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Autó–Felhasználó
+-- Car - User
 -- =======================
-CREATE TABLE auto_felhasznalo (
-    auto_id INT NOT NULL,
-    felhasznalo_id INT NOT NULL,
-    jogosultsag ENUM('tulaj','hasznalo') NOT NULL,
-    PRIMARY KEY (auto_id, felhasznalo_id),
-    FOREIGN KEY (auto_id) REFERENCES auto(auto_id),
-    FOREIGN KEY (felhasznalo_id) REFERENCES felhasznalo(felhasznalo_id)
+CREATE TABLE car_user (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    car_id INT NOT NULL,
+    user_id INT NOT NULL,
+    permission ENUM('owner','driver') NOT NULL,
+    UNIQUE KEY uq_car_user (car_id, user_id),
+    FOREIGN KEY (car_id) REFERENCES car(car_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Cím
+-- Address
 -- =======================
-CREATE TABLE cim (
-    cim_id INT AUTO_INCREMENT PRIMARY KEY,
-    orszag VARCHAR(100),
-    varos VARCHAR(100) NOT NULL,
-    iranyitoszam VARCHAR(10),
-    utca VARCHAR(255),
-    hazszam VARCHAR(10)
+CREATE TABLE address (
+    address_id INT AUTO_INCREMENT PRIMARY KEY,
+    country VARCHAR(100),
+    city VARCHAR(100) NOT NULL,
+    postal_code VARCHAR(10),
+    street VARCHAR(255),
+    house_number VARCHAR(10)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Útvonal
+-- Route
 -- =======================
-CREATE TABLE utvonal (
-    utvonal_id INT AUTO_INCREMENT PRIMARY KEY,
-    honnan_cim_id INT NOT NULL,
-    hova_cim_id INT NOT NULL,
-    FOREIGN KEY (honnan_cim_id) REFERENCES cim(cim_id),
-    FOREIGN KEY (hova_cim_id) REFERENCES cim(cim_id)
+CREATE TABLE route (
+    route_id INT AUTO_INCREMENT PRIMARY KEY,
+    from_address_id INT NOT NULL,
+    to_address_id INT NOT NULL,
+    FOREIGN KEY (from_address_id) REFERENCES address(address_id),
+    FOREIGN KEY (to_address_id) REFERENCES address(address_id)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Útvonal használat
+-- Route Usage
 -- =======================
-CREATE TABLE utvonal_hasznalat (
-    utvonal_hasznalat_id INT AUTO_INCREMENT PRIMARY KEY,
-    auto_id INT NOT NULL,
-    felhasznalo_id INT NOT NULL,
-    utvonal_id INT NOT NULL,
-    datum DATETIME NOT NULL,
-    indulas INT,
-    erkezes INT,
-    hossz DECIMAL(7,2),
-    FOREIGN KEY (auto_id) REFERENCES auto(auto_id),
-    FOREIGN KEY (felhasznalo_id) REFERENCES felhasznalo(felhasznalo_id),
-    FOREIGN KEY (utvonal_id) REFERENCES utvonal(utvonal_id)
+CREATE TABLE route_usage (
+    route_usage_id INT AUTO_INCREMENT PRIMARY KEY,
+    car_id INT NOT NULL,
+    user_id INT NOT NULL,
+    route_id INT NOT NULL,
+    date DATETIME NOT NULL,
+    departure_time INT,
+    arrival_time INT,
+    distance_km DECIMAL(7,2),
+    FOREIGN KEY (car_id) REFERENCES car(car_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id),
+    FOREIGN KEY (route_id) REFERENCES route(route_id)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Benzinkút
+-- Gas Station
 -- =======================
-CREATE TABLE benzinkut (
-    benzinkut_id INT AUTO_INCREMENT PRIMARY KEY,
-    nev VARCHAR(255),
-    varos VARCHAR(100),
-    iranyitoszam VARCHAR(10),
-    utca VARCHAR(255),
-    hazszam VARCHAR(10)
+CREATE TABLE gas_station (
+    gas_station_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    city VARCHAR(100),
+    postal_code VARCHAR(10),
+    street VARCHAR(255),
+    house_number VARCHAR(10)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Tankolás
+-- Fueling
 -- =======================
-CREATE TABLE tankolas (
-    tankolas_id INT AUTO_INCREMENT PRIMARY KEY,
-    felhasznalo_id INT NOT NULL,
-    auto_id INT NOT NULL,
-    benzinkut_id INT NOT NULL,
-    uzemanyag_id INT NOT NULL,
-    datum DATETIME NOT NULL,
-    liter DECIMAL(7,2) NOT NULL,
-    ar_per_liter DECIMAL(7,2) NOT NULL,
-    forgalmazo VARCHAR(100),
-    km_allas INT NOT NULL,
-    FOREIGN KEY (felhasznalo_id) REFERENCES felhasznalo(felhasznalo_id),
-    FOREIGN KEY (auto_id) REFERENCES auto(auto_id),
-    FOREIGN KEY (benzinkut_id) REFERENCES benzinkut(benzinkut_id),
-    FOREIGN KEY (uzemanyag_id) REFERENCES uzemanyag_tipus(uzemanyag_tipus_id)
+CREATE TABLE fueling (
+    fueling_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    car_id INT NOT NULL,
+    gas_station_id INT NOT NULL,
+    fuel_type_id INT NOT NULL,
+    date DATETIME NOT NULL,
+    liters DECIMAL(7,2) NOT NULL,
+    price_per_liter DECIMAL(7,2) NOT NULL,
+    supplier VARCHAR(100),
+    odometer_km INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(user_id),
+    FOREIGN KEY (car_id) REFERENCES car(car_id),
+    FOREIGN KEY (gas_station_id) REFERENCES gas_station(gas_station_id),
+    FOREIGN KEY (fuel_type_id) REFERENCES fuel_type(fuel_type_id)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Szerviz
+-- Service Center
 -- =======================
-CREATE TABLE szerviz (
-    szerviz_id INT AUTO_INCREMENT PRIMARY KEY,
-    nev VARCHAR(255) NOT NULL,
-    varos VARCHAR(100),
-    iranyitoszam VARCHAR(10),
-    utca VARCHAR(255),
-    hazszam VARCHAR(10)
+CREATE TABLE service_center (
+    service_center_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    city VARCHAR(100),
+    postal_code VARCHAR(10),
+    street VARCHAR(255),
+    house_number VARCHAR(10)
 ) ENGINE=InnoDB;
 
 -- =======================
--- Karbantartás
+-- Maintenance
 -- =======================
-CREATE TABLE karbantartas (
-    karbantartas_id INT AUTO_INCREMENT PRIMARY KEY,
-    auto_id INT NOT NULL,
-    szerviz_id INT NOT NULL,
-    felhasznalo_id INT NOT NULL,
-    datum DATETIME NOT NULL,
-    leiras TEXT,
-    koltseg DECIMAL(10,2),
-    FOREIGN KEY (auto_id) REFERENCES auto(auto_id),
-    FOREIGN KEY (szerviz_id) REFERENCES szerviz(szerviz_id),
-    FOREIGN KEY (felhasznalo_id) REFERENCES felhasznalo(felhasznalo_id)
+CREATE TABLE maintenance (
+    maintenance_id INT AUTO_INCREMENT PRIMARY KEY,
+    car_id INT NOT NULL,
+    service_center_id INT NOT NULL,
+    user_id INT NOT NULL,
+    date DATETIME NOT NULL,
+    description TEXT,
+    cost DECIMAL(10,2),
+    reminder VARCHAR(255),
+    part_name VARCHAR(100),
+    FOREIGN KEY (car_id) REFERENCES car(car_id),
+    FOREIGN KEY (service_center_id) REFERENCES service_center(service_center_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
 ) ENGINE=InnoDB;
 
 -- =======================
@@ -239,14 +242,27 @@ INSERT INTO auto VALUES
 (19,'SSS-999',19,19,1,45,115,2018,110000),
 (20,'TTT-000',20,20,1,50,130,2022,40000);
 
-INSERT INTO auto_felhasznalo VALUES
-(1,2,'tulaj'),(2,3,'tulaj'),(3,4,'tulaj'),(4,5,'tulaj'),
-(5,6,'tulaj'),(6,7,'tulaj'),(7,8,'tulaj'),(8,9,'tulaj'),
-(9,10,'tulaj'),(10,1,'tulaj'),
-(11,2,'hasznalo'),(12,3,'hasznalo'),(13,4,'hasznalo'),
-(14,5,'hasznalo'),(15,6,'hasznalo'),(16,7,'hasznalo'),
-(17,8,'hasznalo'),(18,9,'hasznalo'),(19,10,'hasznalo'),
-(20,1,'hasznalo');
+INSERT INTO auto_felhasznalo (id, auto_id, felhasznalo_id, jogosultsag) VALUES
+(1, 1, 1, 'tulaj'),
+(2, 2, 2, 'tulaj'),
+(3, 3, 3, 'tulaj'),
+(4, 4, 4, 'tulaj'),
+(5, 5, 5, 'tulaj'),
+(6, 6, 6, 'tulaj'),
+(7, 7, 7, 'tulaj'),
+(8, 8, 8, 'tulaj'),
+(9, 9, 9, 'tulaj'),
+(10, 10, 10, 'tulaj'),
+(11, 11, 1, 'hasznalo'),
+(12, 12, 2, 'hasznalo'),
+(13, 13, 3, 'hasznalo'),
+(14, 14, 4, 'hasznalo'),
+(15, 15, 5, 'hasznalo'),
+(16, 16, 6, 'hasznalo'),
+(17, 17, 7, 'hasznalo'),
+(18, 18, 8, 'hasznalo'),
+(19, 19, 9, 'hasznalo'),
+(20, 20, 10, 'hasznalo');
 
 INSERT INTO cim VALUES
 (1,'HU','Budapest','1117','Dombóvári út','23'),
@@ -365,24 +381,26 @@ INSERT INTO szerviz VALUES
 (19,'Suzuki Szerviz','Esztergom','2500','Széchenyi tér','13'),
 (20,'Citroen Szerviz','Siófok','8600','Petőfi sétány','22');
 
-INSERT INTO karbantartas VALUES
-(1,1,1,2,'2025-01-10','Olajcsere',30000),
-(2,2,2,3,'2025-01-20','Fék javítás',45000),
-(3,3,3,4,'2025-02-10','Szűrő csere',20000),
-(4,4,4,5,'2025-02-25','Motor diagnosztika',50000),
-(5,5,10,6,'2025-03-05','Szoftver frissítés',0),
-(6,6,5,7,'2025-03-20','Futómű állítás',35000),
-(7,7,7,8,'2025-04-05','Kuplung csere',120000),
-(8,8,8,9,'2025-04-25','Vezérlés csere',180000),
-(9,9,9,10,'2025-05-05','Hűtő javítás',40000),
-(10,10,6,1,'2025-05-15','Általános átvizsgálás',15000),
-(11,11,11,2,'2025-05-20','Fékbetét csere',38000),
-(12,12,12,3,'2025-05-25','Olajcsere',29000),
-(13,13,13,4,'2025-06-01','Gyújtógyertya csere',25000),
-(14,14,14,5,'2025-06-05','Futómű javítás',60000),
-(15,15,15,6,'2025-06-10','Szerviz ellenőrzés',20000),
-(16,16,16,7,'2025-06-15','Fékfolyadék csere',18000),
-(17,17,17,8,'2025-06-20','Kuplung beállítás',55000),
-(18,18,18,9,'2025-06-25','Motor tisztítás',30000),
-(19,19,19,10,'2025-06-28','Olajcsere',27000),
-(20,20,20,1,'2025-07-01','Első átvizsgálás',15000);
+INSERT INTO karbantartas (
+  karbantartas_id, auto_id, szerviz_id, felhasznalo_id, datum, leiras, koltseg
+) VALUES
+(1,1,1,2,'2025-01-10 00:00:00','Olajcsere',30000),
+(2,2,2,3,'2025-01-20 00:00:00','Fék javítás',45000),
+(3,3,3,4,'2025-02-10 00:00:00','Szűrő csere',20000),
+(4,4,4,5,'2025-02-25 00:00:00','Motor diagnosztika',50000),
+(5,5,10,6,'2025-03-05 00:00:00','Szoftver frissítés',0),
+(6,6,5,7,'2025-03-20 00:00:00','Futómű állítás',35000),
+(7,7,7,8,'2025-04-05 00:00:00','Kuplung csere',120000),
+(8,8,8,9,'2025-04-25 00:00:00','Vezérlés csere',180000),
+(9,9,9,10,'2025-05-05 00:00:00','Hűtő javítás',40000),
+(10,10,6,1,'2025-05-15 00:00:00','Általános átvizsgálás',15000),
+(11,11,11,2,'2025-05-20 00:00:00','Fékbetét csere',38000),
+(12,12,12,3,'2025-05-25 00:00:00','Olajcsere',29000),
+(13,13,13,4,'2025-06-01 00:00:00','Gyújtógyertya csere',25000),
+(14,14,14,5,'2025-06-05 00:00:00','Futómű javítás',60000),
+(15,15,15,6,'2025-06-10 00:00:00','Szerviz ellenőrzés',20000),
+(16,16,16,7,'2025-06-15 00:00:00','Fékfolyadék csere',18000),
+(17,17,17,8,'2025-06-20 00:00:00','Kuplung beállítás',55000),
+(18,18,18,9,'2025-06-25 00:00:00','Motor tisztítás',30000),
+(19,19,19,10,'2025-06-28 00:00:00','Olajcsere',27000),
+(20,20,20,1,'2025-07-01 00:00:00','Első átvizsgálás',15000);
