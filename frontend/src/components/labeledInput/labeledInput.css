@@ -1,0 +1,9 @@
+@media (max-width:768px){
+    .labeled-input p{
+        font-size: 15px;
+    }
+
+    .labeled-input{
+        margin: 10px auto;
+    }
+}

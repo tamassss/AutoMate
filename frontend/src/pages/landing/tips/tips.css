@@ -1,0 +1,56 @@
+.tips-page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background-color: #1a1b1f; /* Hogy ne legyen fehér villanás */
+}
+
+.tips-full-height {
+    flex: 1; /* Kitölti a Navbar alatti összes helyet */
+    display: flex;
+}
+
+/* Eltávolítjuk a Bootstrap alap margóit, amik eltolhatják */
+.tips-full-height .row {
+    margin: 0;
+    width: 100%;
+}
+
+.tip-link {
+    flex: 1; /* Ez a kulcs: a link kitölti az oszlop teljes szélességét és magasságát */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tip-link p {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-top: 20px;
+    text-transform: uppercase;
+}
+
+.tip-link img {
+    max-width: 150px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+/* Mobilon egymás alá, teljes szélességben */
+@media (max-width: 992px) {
+    .tips-full-height .row {
+        flex-direction: column;
+    }
+    .tip-link {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}

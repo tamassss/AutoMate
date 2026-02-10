@@ -1,0 +1,4 @@
+dashboard.py/get_week_fueling_chart -> points: csak az adatok kellenek
+            /get_sidebar_events -> cost nem kell
+                                -> kell km(számolja a km óra állás alapján, hogy mennyi van hátra) (remaining_km)
+                                -> date nem kell -> helyette, hogy hány nap van hátra(kiszámolni)  (remaining_day)

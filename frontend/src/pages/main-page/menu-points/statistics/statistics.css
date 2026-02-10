@@ -1,0 +1,10 @@
+tr, h2{
+    color: white;
+}
+
+
+.statistics-div{
+    width: 90vw;
+    align-items: center;
+    margin: 0 auto 0 auto;
+}

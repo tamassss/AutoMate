@@ -1,0 +1,48 @@
+import Navbar from "../../../components/navbar/navbar"
+import backIcon from "../../../assets/icons/back.png"
+
+import "./tips.css"
+
+
+import { Link, useNavigate } from "react-router-dom"
+
+
+export default function Tips(){
+    const navigate = useNavigate();
+    return(
+        <div className="tips-page-wrapper">
+    <Navbar
+        leftIcon={backIcon}
+        altLeft={"Vissza"}
+        onLeftClick={() => navigate("/muszerfal")}    
+    />
+    {/* A container-fluid-hoz hozzáadjuk a h-100-at és a d-flex-et */}
+    <div className="container-fluid p-0 tips-full-height">
+        <div className="row g-0 h-100 w-100">
+            {/* Minden oszlop d-flex, hogy a benne lévő Link kitöltse */}
+            <div className="col-lg-4 d-flex indicators">
+                <Link to="/tippek/muszerfal-jelzesek" className="tip-link">
+                    <img src="../../assets/background/indicators.png" alt="Műszerfal jelzések" />
+                    <p>Műszerfal jelzések</p>
+                </Link>
+            </div>
+
+            <div className="col-lg-4 d-flex fuel-saving">
+                <Link to="/tippek/uzemanyag-sporolas" className="tip-link">
+                    <img src="../../assets/placeholder.jpg" alt="Üzemanyag Spórolás" />
+                    <p>Üzemanyag spórolás</p>
+                </Link>
+            </div>
+
+            <div className="col-lg-4 d-flex parking-tips">
+                <Link to="/tippek/parkolasi-tippek" className="tip-link">
+                    <img src="../../assets/placeholder.jpg" alt="Parkolási tippek" />
+                    <p>Parkolási tippek</p>
+                </Link>
+            </div>
+        </div>
+    </div>
+</div>
+    )
+}
+
