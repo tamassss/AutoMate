@@ -1,25 +1,17 @@
 import Navbar from "../../../components/navbar/navbar"
-import backIcon from "../../../assets/icons/back.png"
 
 import "./tips.css"
 
 
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 
 
 export default function Tips(){
-    const navigate = useNavigate();
     return(
         <div className="tips-page-wrapper">
-    <Navbar
-        leftIcon={backIcon}
-        altLeft={"Vissza"}
-        onLeftClick={() => navigate("/muszerfal")}    
-    />
-    {/* A container-fluid-hoz hozzáadjuk a h-100-at és a d-flex-et */}
+    <Navbar />
     <div className="container-fluid p-0 tips-full-height">
         <div className="row g-0 h-100 w-100">
-            {/* Minden oszlop d-flex, hogy a benne lévő Link kitöltse */}
             <div className="col-lg-4 d-flex indicators">
                 <Link to="/tippek/muszerfal-jelzesek" className="tip-link">
                     <img src="../../assets/background/indicators.png" alt="Műszerfal jelzések" />
@@ -45,4 +37,5 @@ export default function Tips(){
 </div>
     )
 }
+
 

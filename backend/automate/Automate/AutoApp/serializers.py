@@ -62,6 +62,7 @@ class CarSerializer(serializers.ModelSerializer):
             "model",
             "fuel_type",
             "tank_capacity",
+            "average_consumption",
             "horsepower",
             "production_year",
             "odometer_km",

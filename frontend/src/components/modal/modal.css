@@ -95,6 +95,16 @@
   max-width: 360px;
 }
 
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+  
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: #51535B;
+  border-radius: 10px;
+}
+
 @media (max-width: 768px) {
   .modal-body.two-col {
     grid-template-columns: 1fr;

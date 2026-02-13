@@ -1,94 +1,74 @@
-import "./register.css"
+import { useRef, useState } from "react";
+import Input from "../../../components/input/input";
+import Card from "../../../components/card/card";
+import Button from "../../../components/button/button";
+import ErrorModal from "../../../components/error-modal/errorModal";
+import { register } from "../../../actions/auth";
+import { useNavigate } from "react-router-dom";
 
-import Card from "../../../components/card/card"
-import Input from "../../../components/input/input"
-import Button from "../../../components/button/button"
+export default function Register() {
+    const fullNameRef = useRef();
+    const emailRef = useRef();
+    const passwordRef = useRef();
+    const passwordAgainRef = useRef();
+    
+    const [errorMessage, setErrorMessage] = useState(null);
+    const navigate = useNavigate();
 
-import { useState } from "react"
+    async function handleRegister(e) {
+        e.preventDefault()
+        setErrorMessage(null);
 
-export default function Register(){
-    const [username, setUsername] = useState("")
-    const [surname, setSurname] = useState("")
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [passwordAgain, setPasswordAgain] = useState("")
+        const fn = fullNameRef.current.value;
+        const em = emailRef.current.value;
+        const pw = passwordRef.current.value;
+        const pwA = passwordAgainRef.current.value;
 
-    function handleRegister(){
-        console.log({username})
-        console.log({surname})
-        console.log({email})
-        console.log({password})
-        console.log({passwordAgain})
-    }
-
-    function checkPasswordMatching(){
-        if(password != passwordAgain){
-            return false
+        if (pw !== pwA) {
+            setErrorMessage("A két jelszó nem egyezik!");
+            return;
         }
-            return true
+
+        try {
+            await register(em, pw, fn);
+            alert("Sikeres regisztráció! Most jelentkezz be.");
+            navigate("/");
+        } catch (err) {
+            setErrorMessage(err.message);
+        }
     }
 
-    return(
+    return (
         <Card>
+            {errorMessage && 
+                <ErrorModal
+                    onClose={() => setErrorMessage(null)}
+                    title={"Regisztrálási hiba"}
+                    description={errorMessage}
+                />
+            }
+            
             <h3 className="mt-2">Regisztráció</h3>
+            {errorMessage && <p style={{color: "red"}}>{errorMessage}</p>}
 
+            <form onSubmit={handleRegister}>
             <div className="px-2">
-            <Input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Felhasználónév"
-            />
+                <Input type="text" inputRef={fullNameRef} placeholder="Teljes név" />
             </div>
-
             <div className="px-2">
-            <Input
-                type="text"
-                id="surname"
-                value={surname}
-                onChange={(e) => setSurname(e.target.value)}
-                placeholder="Keresztnév"
-            />
+                <Input type="email" inputRef={emailRef} placeholder="E-mail cím" />
             </div>
-
             <div className="px-2">
-            <Input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-mail cím"
-            />
+                <Input type="password" inputRef={passwordRef} placeholder="Jelszó" />
             </div>
-
             <div className="px-2">
-            <Input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Jelszó"
-            />
-            </div>
-
-            <div className="px-2">
-            <Input
-                type="password"
-                id="passwordAgain"
-                value={passwordAgain}
-                onChange={(e) => setPasswordAgain(e.target.value)}
-                placeholder="Jelszó"
-            />
+                <Input type="password" inputRef={passwordAgainRef} placeholder="Jelszó ismét" />
             </div>
             
             <div className="custom-btn-div">
-                <Button
-                    text="Regisztráció"
-                    onClick={handleRegister}
-                />
+                <Button text="Regisztráció" type={"submit"} />
             </div>
-            
+            </form>
         </Card>
-    )
+    );
 }

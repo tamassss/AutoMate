@@ -1,70 +1,76 @@
 import "./login.css"
 
-import api from "../../../api/axios"
-import { useAuth } from "../../../auth/AuthContext";
-
-import { useState } from "react"
+import { useState, useRef } from "react"
+import { useNavigate } from "react-router-dom"
+import { login } from "../../../actions/auth"
 
 import Card from "../../../components/card/card"
 import Input from "../../../components/input/input"
 import Button from "../../../components/button/button"
-
+import ErrorModal from "../../../components/error-modal/errorModal"
 
 export default function Login() {
+    const navigate = useNavigate();
 
-    const { loginUser, logoutUser } = useAuth();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const emailRef = useRef()
+    const passwordRef = useRef()
 
-    const submit = async (e) => {
-        e.preventDefault();
+    const [errorMessage, setErrorMessage] = useState(null)
 
-        const res = await loginUser(email, password);
-        if (res.status == 200) {
-            console.log("User succesfully loged in")
-            try {
-                const who = await api.get("/api/whoami");
-                console.log("Whoami:", who.data);
-                logoutUser()
-                console.log("user is logged out")
-            } catch (err) {
-                console.error("Error fetching whoami:", err.response?.status || err.message);
-            }
+    async function handleLogin(e){
+        e.preventDefault()
+        setErrorMessage(null)
+
+        const em = emailRef.current.value
+        const pw = passwordRef.current.value
+        try{
+            await login(em, pw);
+            navigate("/autok")
+        } catch (err){
+            setErrorMessage(err.message || "Ismeretlen hiba!")
         }
-        else {
-            console.log("This login did not work now.\nTry again with another email or password")
-        }
-    };
+        
+    }
+
+    
     return (
         <Card>
-            <h3 className="mt-2">Bejelentkezés</h3>
-            <div className="px-2">
-            <Input
-                type="text"
-                id="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="Email cím"
-            />
-            </div>
-
-            <div className="px-2">
-            <Input
-                type="password"
-                id="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Jelszó"
-            />
-            </div>
-            
-            <div className="custom-btn-div">
-                <Button
-                    text="Bejelentkezés"
-                    onClick={submit}
+            {errorMessage &&
+                <ErrorModal
+                    onClose={() => setErrorMessage(null)}
+                    title={"Bejelentkezési hiba"}
+                    description={errorMessage}
                 />
-            </div>
+            }
             
+            
+            <h3 className="mt-2">Bejelentkezés</h3>
+            {errorMessage && <p style={{color: "red"}}>{errorMessage}</p>}
+
+            <form onSubmit={handleLogin}>
+                <div className="px-2">
+                <Input
+                    type="text"
+                    inputRef={emailRef}
+                    placeholder="Email cím"
+                />
+                </div>
+
+                <div className="px-2">
+                <Input
+                    type="password"
+                    inputRef={passwordRef}
+                    placeholder="Jelszó"
+                />
+                </div>
+
+                <div className="custom-btn-div">
+                    <Button
+                        text="Bejelentkezés"
+                        type={"submit"}
+                    />
+                </div>
+            </form>           
         </Card>
     )
 }

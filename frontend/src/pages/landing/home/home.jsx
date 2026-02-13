@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom"
-import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react"
 
 import "./home.css"
 
@@ -14,27 +14,29 @@ import icon1 from "../../../assets/home/1.png";
 import icon2 from "../../../assets/home/2.png";
 import icon3 from "../../../assets/home/3.png";
 import icon4 from "../../../assets/home/4.png";
-// import icon5 from "../../../assets/home/5.png";
 import icon6 from "../../../assets/home/6.png";
 import icon7 from "../../../assets/home/7.png";
 import icon8 from "../../../assets/home/8.png";
-import Error from "../../../components/error/error";
+import Error from "../../../components/error-modal/errorModal";
 
 
 export default function Home(){
-
+    const navigate = useNavigate()
     const [showLogin, setShowLogin] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("token"))
 
     return(
         <>
+            {isLoggedIn &&
+                <p className="ms-4 mt-4 fs-4">Bejelentkezve: {localStorage.getItem("full_name")}</p>}
             <div className="hero">
                 <br/>
                 <h1 className="custom-title">Auto<span style={{color:"#075DBF"}}>Mate</span></h1>
                 <h2 className="custom-h2 fs-4" style={{color:"#BFBFBF", fontWeight:"bold"}}>Az autód digitális naplója</h2>
             </div>
             
-            
-                <div className="auth-div">
+            {!isLoggedIn ? 
+                (<div className="auth-div">
                     <div className="auth-tabs">
                             <div
                                 className={showLogin ? "auth-tab active" : "auth-tab inactive"}
@@ -52,9 +54,13 @@ export default function Home(){
                         {showLogin ? <Login/> : <Register/>}
                     </div>
                 
-                </div>
+                </div>)
+                :
+                (<Button text={"Garázs"} onClick={() => navigate("/autok")}/>)
+            }
                 
-                {/* Itt majd lesznek képek a weboldalról */}
+                
+            {/* Itt lesznek képek az oldalról */}
             
 
             <div className="features container">

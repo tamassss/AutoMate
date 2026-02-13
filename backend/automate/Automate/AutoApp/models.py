@@ -86,11 +86,12 @@ class Car(models.Model):
     license_plate = models.CharField(max_length=20, unique=True)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     model = models.ForeignKey(CarModel, on_delete=models.CASCADE)
-    fuel_type = models.ForeignKey(FuelType, on_delete=models.CASCADE)
+    fuel_type = models.ForeignKey(FuelType, on_delete=models.CASCADE, null=True, blank=True)
     tank_capacity = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    average_consumption = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     horsepower = models.IntegerField(null=True, blank=True)
     production_year = models.IntegerField(null=True, blank=True)
-    odometer_km = models.IntegerField()
+    odometer_km = models.IntegerField(null=True, blank=True)
 
     class Meta:
         db_table = "car"
@@ -184,7 +185,7 @@ class Fueling(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     car = models.ForeignKey(Car, on_delete=models.CASCADE)
     gas_station = models.ForeignKey(GasStation, on_delete=models.CASCADE)
-    fuel_type = models.ForeignKey(FuelType, on_delete=models.CASCADE)
+    fuel_type = models.ForeignKey(FuelType, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateTimeField()
     liters = models.DecimalField(max_digits=7, decimal_places=2)
     price_per_liter = models.DecimalField(max_digits=7, decimal_places=2)

@@ -1,12 +1,51 @@
-import Card from "../../../../../components/card/card";
+﻿import Card from "../../../../../components/card/card";
 
-export default function GeneralStats() {
+function formatMoney(value) {
+  if (value == null) return "-";
+  return `${Math.round(Number(value))} Ft`;
+}
+
+function formatDate(iso) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "-";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}. ${m}. ${day}.`;
+}
+
+export default function GeneralStats({ generalStats }) {
   const stats = [
-    { label: "Regisztrálás időpontja:", value: "2024. 12. 24." },
-    { label: "Megtett táv használat óta:", value: "4112 km" },
-    { label: "Tankolások használat óta:", value: "24 db | 308 l | 175 800 Ft" },
-    { label: "Javított / Rontott idő:", value: "32 perc javítás", color: "#28a745" },
-    { label: "Leghosszabb út:", value: "Budapest - Zágráb | 343 km | 03:46:39" },
+    {
+      label: "Kiválasztott autó:",
+      value: generalStats?.car?.display_name || "-",
+    },
+    {
+      label: "Megtett táv használat óta:",
+      value: generalStats?.distance_km_total != null ? `${Number(generalStats.distance_km_total).toFixed(1)} km` : "-",
+    },
+    {
+      label: "Tankolások használat óta:",
+      value:
+        generalStats?.fuelings
+          ? `${generalStats.fuelings.count} db | ${Number(generalStats.fuelings.liters || 0).toFixed(1)} l | ${formatMoney(generalStats.fuelings.spent)}`
+          : "-",
+    },
+    {
+      label: "Szerviz költség összesen:",
+      value: generalStats?.maintenance ? formatMoney(generalStats.maintenance.total_cost) : "-",
+    },
+    {
+      label: "Leghosszabb út:",
+      value: generalStats?.longest_route
+        ? `${generalStats.longest_route.from_city} - ${generalStats.longest_route.to_city} | ${Number(generalStats.longest_route.distance_km || 0).toFixed(1)} km | ${generalStats.longest_route.departure_time_hhmm || "-"} - ${generalStats.longest_route.arrival_time_hhmm || "-"}`
+        : "-",
+    },
+    {
+      label: "Utolsó szerviz dátum:",
+      value: formatDate(generalStats?.maintenance?.last_date),
+    },
   ];
 
   return (
@@ -15,9 +54,9 @@ export default function GeneralStats() {
         <h5 className="text-center text-primary mb-3 fs-4">Általános statisztikák</h5>
         <div className="container">
           {stats.map((stat, index) => (
-            <div key={index} className={`row p-2 ${index % 2 === 0 ? 'odd' : 'even'}`}>
-              <div className="col-6 text-end" style={{color:"white", opacity:"0.7"}}>{stat.label}</div>
-              <div className="col-6 stat-value" style={{ color: stat.color || 'white' }}>
+            <div key={index} className={`row p-2 ${index % 2 === 0 ? "odd" : "even"}`}>
+              <div className="col-6 text-end" style={{ color: "white", opacity: "0.7" }}>{stat.label}</div>
+              <div className="col-6 stat-value" style={{ color: "white" }}>
                 {stat.value}
               </div>
             </div>
@@ -27,3 +66,7 @@ export default function GeneralStats() {
     </Card>
   );
 }
+
+
+
+

@@ -1,12 +1,7 @@
-import { getBudget } from "../../../../actions/dashboard";
 import "./budgetLimit.css"
 
-export default function BudgetLimit() {
-    const budget = getBudget()
-    const currentFt = budget.spent
-    const limitFt = budget.limit
-    
-    const percentage = Math.min(Math.round((currentFt / limitFt) * 100), 100);
+export default function BudgetLimit({spent = 0, limit = 0}) {
+    const percentage = limit ? Math.min(Math.round((spent / limit) * 100), 100) : 0;
 
     return (
         <div className="budget-container mx-auto">
@@ -22,7 +17,7 @@ export default function BudgetLimit() {
             </div>
 
             <div className="d-flex flex-column">
-                <p  className="stats-ft">{currentFt}/{limitFt}</p>
+                <p  className="stats-ft">{spent}/{limit}</p>
                 <p  className="stats-percentage">{percentage}%</p>
             </div>
         </div>

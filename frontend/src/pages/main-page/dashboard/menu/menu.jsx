@@ -1,25 +1,22 @@
-import { Link } from "react-router-dom"
-import { useState } from "react"
-import { getSidebarEvents } from "../../../../actions/dashboard"
+﻿import { Link } from "react-router-dom";
+import { useState } from "react";
 
-import tripsAndFuelsIcon from "../../../../assets/menu-points/trips-fuels.png"
-import gasStationsIcon from "../../../../assets/menu-points/gas-stations.png"
-import statisticsIcon from "../../../../assets/menu-points/statistics.png"
-import servicelogIcon from "../../../../assets/menu-points/servicelog.png"
+import tripsAndFuelsIcon from "../../../../assets/menu-points/trips-fuels.png";
+import gasStationsIcon from "../../../../assets/menu-points/gas-stations.png";
+import statisticsIcon from "../../../../assets/menu-points/statistics.png";
+import servicelogIcon from "../../../../assets/menu-points/servicelog.png";
 
-import EventItem from "../../../../components/event-item/eventItem"
-import NewEvent from "../../../../modals/newEvent/newEvent"
-import Button from "../../../../components/button/button"
+import EventItem from "../../../../components/event-item/eventItem";
+import NewEvent from "../../../../modals/newEvent/newEvent";
+import Button from "../../../../components/button/button";
 
-import "./menu.css"
+import "./menu.css";
 
-export default function Menu() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [showNewEvent, setShowNewEvent] = useState(false)
+export default function Menu({ events = [], onEventCreated }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showNewEvent, setShowNewEvent] = useState(false);
 
-  const closeMenu = () => setIsOpen(false)
-
-  const events = getSidebarEvents();
+  const closeMenu = () => setIsOpen(false);
 
   return (
     <>
@@ -43,11 +40,11 @@ export default function Menu() {
         <div className="menu-items">
           <Link className="menu-item" to="/muszerfal/utak-tankolasok" onClick={closeMenu}>
             <img className="menu-icon" src={tripsAndFuelsIcon} alt="UT"/>
-            <p className="menu-text">Utak & Tankolások</p>
+            <p className="menu-text">Utak és tankolások</p>
           </Link>
 
           <Link className="menu-item" to="/muszerfal/benzinkutak" onClick={closeMenu}>
-            <img className="menu-icon" src={gasStationsIcon} alt="SZN"/>
+            <img className="menu-icon" src={gasStationsIcon} alt="BK"/>
             <p className="menu-text">Benzinkutak</p>
           </Link>
 
@@ -67,38 +64,51 @@ export default function Menu() {
             <h3>Események</h3>
             <hr className="my-2 mx-3"/>
           </div>
-          
+
           <div className="menu-events-content overflow-auto">
             {events.length > 0 ? (
-              events.map(event => (
-                <EventItem 
-                  key={event.id} 
-                  title={event.part_name} 
-                  days={event.remaining_day} 
-                  km={event.remaining_km} 
+              events.map((event) => (
+                <EventItem
+                  key={event.maintenance_id}
+                  title={event.part_name || "Esemény"}
+                  km={event.reminder}
                 />
               ))
             ) : (
               <div>
-                <p>Még nem adott hozzá eseményt.</p>
+                <p>Még nincs felvett esemény.</p>
               </div>
             )}
           </div>
-            
-            <hr className="my-2 mx-3"/>
-          
+
+          <hr className="my-2 mx-3"/>
+
           <div>
-             <Button 
-              text="Új esemény" 
+            <Button
+              text="Új esemény"
               onClick={() => setShowNewEvent(true)}
-             />
+            />
           </div>
         </div>
       </div>
-      
+
       {showNewEvent && (
-        <NewEvent onClose={() => setShowNewEvent(false)}/>
+        <NewEvent
+          onClose={() => setShowNewEvent(false)}
+          onSave={async (payload) => {
+            await onEventCreated?.(payload);
+            setShowNewEvent(false);
+          }}
+        />
       )}
     </>
-  )
+  );
 }
+
+
+
+
+
+
+
+

@@ -1,40 +1,57 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+﻿import { useEffect, useState } from "react";
 
-import Button from "../../../../components/button/button"
-import Card from "../../../../components/card/card"
-import Navbar from "../../../../components/navbar/navbar"
+import Button from "../../../../components/button/button";
+import Card from "../../../../components/card/card";
+import Navbar from "../../../../components/navbar/navbar";
 
-import NewService from "../../../../modals/newService/newService"
+import NewService from "../../../../modals/newService/newService";
+import { createServiceLogEntry, getServiceLog } from "../../../../actions/serviceLog";
 
-import backIcon from "../../../../assets/icons/back.png"
+import "./serviceLog.css";
 
-import "./serviceLog.css"
+export default function ServiceLog() {
+    const [showNewService, setShowNewService] = useState(false);
+    const [services, setServices] = useState([]);
+    const [error, setError] = useState("");
 
-export default function ServiceLog(){
-    const [showNewService, setShowNewService] = useState(false)
-    const navigate = useNavigate();
+    async function loadServices() {
+        setError("");
+        try {
+            const data = await getServiceLog();
+            setServices(data);
+        } catch (err) {
+            setError(err.message || "Nem sikerült betölteni a szerviznaplót.");
+            setServices([]);
+        }
+    }
 
-    const staticServices = [
-        { id: 1, alkatresz: "Olajszűrő", ido: "2025. 05. 12.", ar: "15 000 Ft", emlekeztetoDatum: "2026. 05. 12.", emlekeztetoKm: "15 000 km" },
-        { id: 2, alkatresz: "Fékbetét", ido: "2024. 11. 02.", ar: "45 000 Ft", emlekeztetoDatum: "2026. 11. 02.", emlekeztetoKm: "30 000 km" }
-    ];
+    useEffect(() => {
+        loadServices();
+    }, []);
 
-    const hasServices = staticServices.length > 0;
+    const hasServices = services.length > 0;
 
-    return(
+    return (
         <>
-            <Navbar leftIcon={backIcon} altLeft={"Vissza"} onLeftClick={() => navigate("/muszerfal")}/>
-            
+            <Navbar />
+
             <div className="container mt-4">
                 <h1 className="mb-4">Szerviznapló</h1>
-                <Button text={"Új szerviz"} onClick={() => setShowNewService(true)}/>
-                
+                <Button text={"Új szerviz"} onClick={() => setShowNewService(true)} />
+
                 {showNewService && (
-                    <NewService onClose={() => setShowNewService(false)}/>
+                    <NewService
+                        onClose={() => setShowNewService(false)}
+                        onSave={async (formData) => {
+                            await createServiceLogEntry(formData);
+                            await loadServices();
+                        }}
+                    />
                 )}
 
                 <div className="mt-5">
+                    {error && <p className="text-danger">{error}</p>}
+
                     {hasServices ? (
                         <Card>
                             <table className="custom-table mt-2">
@@ -47,14 +64,16 @@ export default function ServiceLog(){
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {staticServices.map((service) => (
-                                        <tr key={service.id} >
+                                    {services.map((service) => (
+                                        <tr key={service.id}>
                                             <td>{service.alkatresz}</td>
                                             <td>{service.ido}</td>
                                             <td>{service.ar}</td>
                                             <td>
                                                 <div className="reminder-date">{service.emlekeztetoDatum}</div>
-                                                <div className="reminder-km">{service.emlekeztetoKm}</div>
+                                                {service.emlekeztetoKm && (
+                                                    <div className="reminder-km">{service.emlekeztetoKm}</div>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -62,12 +81,19 @@ export default function ServiceLog(){
                             </table>
                         </Card>
                     ) : (
-                        <div className="d-flex justify-content-center align-items-center" style={{minHeight: "50vh"}}>
+                        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
                             <p className="fs-5">Még nem adtál hozzá szervizt</p>
                         </div>
                     )}
                 </div>
             </div>
         </>
-    )
+    );
 }
+
+
+
+
+
+
+

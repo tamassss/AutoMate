@@ -1,14 +1,14 @@
 import { Line } from "react-chartjs-2";
-import { getFuelChartData } from "../../../../actions/dashboard";
 import "./fuel.css"
 
-export default function Fuel() {
+export default function Fuel({fuelingChart, latestFueling}) {
+    const chartDatas = fuelingChart?.points?.map((p) => p.value) || []
     const chartData = {
         labels: ["H", "K", "Sze", "Cs", "P", "Szo", "V"],
         datasets: [
             {
                 label: "Költés (Ft)",
-                data: getFuelChartData(),
+                data: chartDatas,
                 borderColor: "#075DBF",
                 backgroundColor: "#ffffff",
             }
@@ -40,7 +40,9 @@ export default function Fuel() {
             <table className="fuel-table">
                 <tbody>
                     <tr>
-                        <td className="odd text-center field" colSpan={2}>Legutóbbi tankolás <span className="last-fuel-date">(2025. 10. 20.)</span></td>
+                        <td className="odd text-center field" colSpan={2}>
+                            Legutóbbi tankolás <span className="last-fuel-date">{latestFueling?.date ? new Date(latestFueling.date).toLocaleDateString("hu-HU") : "-"}
+                        </span></td>
                     </tr>
                     <tr>
                         <td className="even field">Mennyiség</td>

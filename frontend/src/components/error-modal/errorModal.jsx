@@ -1,10 +1,10 @@
 import xIcon from "../../assets/icons/x-icon.png";
 
-import "./error.css"
+import "./errorModal.css"
 
-export default function Error({onClose, title, description}){
+export default function ErrorModal({onClose, title, description}){
     return(
-        <div className="error-div" onClick={() => onClose()}>
+        <div className="error-div" onClose={() => onClose()}>
             <div className="error-close-img-div">
                 <img src={xIcon} onClick={() => onClose()} className="error-close-img"/>
             </div>

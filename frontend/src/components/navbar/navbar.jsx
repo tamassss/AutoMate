@@ -1,32 +1,58 @@
+import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
+
 import helpIcon from "../../assets/icons/help.png"
+import backIcon from "../../assets/icons/back.png"
+import exitIcon from "../../assets/icons//exit.png"
+
+import SuccessModal from "../success-modal/successModal"
+
 import "./navbar.css"
 
-export default function Navbar({leftIcon, onLeftClick, altLeft, rightIcon, onRightClick, altRight}){
+export default function Navbar(){
     const navigate = useNavigate();
-    return(
-    <nav className="custom-navbar">
-        <div className={"nav-icons-div"} onClick={onLeftClick}>
-            {leftIcon && <img className={"nav-icons"} src={leftIcon} alt={altLeft} />} 
-        </div>
+    const [showLogoutSuccess, setShowLogoutSuccess] = useState(false);
 
-        <div className="nav-title-div">
-            <p className="brand" onClick={() => navigate("/")}>
-                Auto<span className="mate-span">Mate</span>
-            </p>
-        </div>
-
-        <div className={"nav-icons-div"} onClick={onRightClick}>
-            {rightIcon && <img className={"nav-icons"} src={rightIcon} alt={altRight}/>}
-        </div>
-
-        <div className="help-div">
-            <Link to="/tippek" className="help-link">
-                <img src={helpIcon} alt="Segítség kezdőknek"/>
-            </Link>
-        </div>
-
-    </nav>
-    )
     
+    function logout(){
+        localStorage.clear()
+        setShowLogoutSuccess(true)
+    }
+
+    return(
+        <>
+            <nav className="custom-navbar">
+                <div className={"nav-icons-div"} onClick={() => navigate(-1)}>
+                    <img className={"nav-icons"} src={backIcon} alt={"Vissza"} />
+                </div>
+
+                <div className="nav-title-div">
+                    <p className="brand" onClick={() => navigate("/")}>
+                        Auto<span className="mate-span">Mate</span>
+                    </p>
+                </div>
+
+                <div className={"nav-icons-div"} onClick={logout}>
+                    <img className={"nav-icons"} src={exitIcon} alt={"Kilépés"}/>
+                </div>
+
+                <div className="help-div">
+                    <Link to="/tippek" className="help-link">
+                        <img src={helpIcon} alt="Segítség kezdőknek"/>
+                    </Link>
+                </div>
+            </nav>
+
+            {showLogoutSuccess && (
+                <SuccessModal
+                    onClose={() => {
+                        setShowLogoutSuccess(false)
+                        navigate("/")
+                    }}
+                    title={"Siker!"}
+                    description={"Sikeresen kijelentkeztél!"}
+                />
+            )}
+        </>
+    )
 }

@@ -9,6 +9,7 @@ import DeleteGasStation from "../../modals/deleteGasStation/deleteGasStation";
 
 export default function GasStationCard({ station }) {
     const[showDeleteGasStation, setShowDeleteGasStation] = useState(false);
+    const priceText = station?.literft ? `${station.literft.toFixed(1)} Ft` : "-";
 
     return (
         <Card>
@@ -22,7 +23,7 @@ export default function GasStationCard({ station }) {
                 <div className="p-1">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <img src={molLogo} alt="MOL" className="station-icon"/>
-                        <h2 className="price">573.0 Ft</h2>
+                        <h2 className="price">{priceText}</h2>
                     </div>
 
                     <div className="d-flex justify-content-between align-items-center mb-4">
@@ -48,7 +49,11 @@ export default function GasStationCard({ station }) {
                 </div>
 
                 {showDeleteGasStation && (
-                    <DeleteGasStation onClose={() => setShowDeleteGasStation(false)} helyseg={"proba"} cim={"proba"}/>
+                    <DeleteGasStation
+                        onClose={() => setShowDeleteGasStation(false)}
+                        helyseg={station?.helyseg || "-"}
+                        cim={station?.cim || "-"}
+                    />
                 )}
 
             </div>

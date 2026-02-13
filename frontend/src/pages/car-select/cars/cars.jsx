@@ -1,6 +1,5 @@
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { getCars } from "../../../actions/cars"
+import { Link } from "react-router-dom"
 
 import Navbar from "../../../components/navbar/navbar"
 import Button from "../../../components/button/button"
@@ -8,41 +7,42 @@ import EditCar from "../../../modals/editCar/editCar"
 import AddCar from "../../../modals/addCar/addCar"
 import CarSelect from "../carSelect/carSelect"
 
-import settingsIcon from "../../../assets/icons/settings.png"
-import exitIcon from "../../../assets/icons/exit.png"
-
 import "./cars.css"
 import Settings from "../../../modals/settings/settings"
 
 export default function Cars(){
-    const cars = getCars();
-    const navigate = useNavigate();
+    const fullName = localStorage.getItem("full_name") || "Felhasználó";
 
     const [showAddCar, setShowAddCar] = useState(false);
     const [showEditCar, setShowEditCar] = useState(false);
     const [showSetting, setShowSettings] = useState(false);
+    const [selectedCar, setSelectedCar] = useState(null)
+    const [refreshOnChange, setRefreshOnChange] = useState(0)
     
+
+    function handleCarSaved(){
+        setRefreshOnChange((r) => r+1)
+        setShowAddCar(false);
+    }
+
+    function handleCarEdited(){
+        setRefreshOnChange((r) => r + 1);
+        setShowEditCar(false);
+    }
 
     return(
         <>
-            <Navbar 
-                leftIcon={settingsIcon} 
-                altLeft={"Beállítások"}
-                onLeftClick={() => setShowSettings(true)}
-                rightIcon={exitIcon}
-                altRight={"Kilépés"}
-                onRightClick={() => navigate("/")} 
-            />
+            <Navbar />
 
             {showSetting && (
                 <Settings onClose={() => setShowSettings(false)}/>
             )}
 
-            <h1 className="title fs-1 mt-3">/////////////////////////////////////////////////////////////////////////////////////////////////////////////</h1>
-            <h2 className="subtitle fw-4 opacity-75">autói</h2>
+            <h1 className="title fs-1 mt-3">{fullName}</h1>
+            <h2 className="subtitle fw-4 opacity-75">garázsa</h2>
             
             <div className="my-4">
-                <CarSelect/>
+                <CarSelect refreshKey={refreshOnChange} onCarChange={setSelectedCar}/>
             </div>
             
             <div className="justify-content-center g-3 cars-buttons">
@@ -65,11 +65,18 @@ export default function Cars(){
             </div>
 
             {showEditCar && (
-                <EditCar onClose={() => setShowEditCar(false)}/>
+                <EditCar 
+                    onClose={() => setShowEditCar(false)}
+                    onSave={handleCarEdited}
+                    selectedCar={selectedCar}
+                />
             )}
 
             {showAddCar && (
-                <AddCar onClose={() => setShowAddCar(false)}/>
+                <AddCar 
+                    onClose={() => setShowAddCar(false)}
+                    onSave={handleCarSaved}
+                />
             )}
             
         </>

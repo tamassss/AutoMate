@@ -253,53 +253,42 @@ def api_car_create(request):
     Body:
     {
       "license_plate": "ABC-123",
-      "brand_id": 1,
-      "model_id": 10,
-      "fuel_type_id": 2,
-      "odometer_km": 120000,
-      "tank_capacity": "55.00", (optional)
-      "horsepower": 110, (optional)
-      "production_year": 2016 (optional)
+      "brand": "BMW",
+      "model": "320d",
+      "average_consumption": "6.80", (optional)
+      "odometer_km": 120000 (optional)
     }
     """
     user = get_current_user(request)
     d = request.data
 
-    required = ["license_plate", "brand_id", "model_id", "fuel_type_id", "odometer_km"]
+    required = ["license_plate", "brand", "model"]
     missing = [k for k in required if d.get(k) in (None, "")]
     if missing:
         return _bad(f"Missing fields: {', '.join(missing)}")
 
     try:
-        brand_id = _to_int(d.get("brand_id"), "brand_id")
-        model_id = _to_int(d.get("model_id"), "model_id")
-        fuel_type_id = _to_int(d.get("fuel_type_id"), "fuel_type_id")
-        odometer_km = _to_int(d.get("odometer_km"), "odometer_km")
-        horsepower = _to_int(d.get("horsepower"), "horsepower") if d.get("horsepower") not in (None, "") else None
-        production_year = _to_int(d.get("production_year"), "production_year") if d.get("production_year") not in (None, "") else None
-        tank_capacity = _to_decimal_str(d.get("tank_capacity"), "tank_capacity") if d.get("tank_capacity") not in (None, "") else None
+        brand_name = str(d.get("brand")).strip()
+        model_name = str(d.get("model")).strip()
+        odometer_km = _to_int(d.get("odometer_km"), "odometer_km") if d.get("odometer_km") not in (None, "") else None
+        average_consumption = _to_decimal_str(d.get("average_consumption"), "average_consumption") if d.get("average_consumption") not in (None, "") else None
     except ValueError as e:
         return _bad(str(e))
 
-    # Validate FK existence + relationship
-    if not Brand.objects.filter(brand_id=brand_id).exists():
-        return _bad("Invalid brand_id")
-    if not CarModel.objects.filter(model_id=model_id, brand_id=brand_id).exists():
-        return _bad("Invalid model_id for the given brand_id")
-    if not FuelType.objects.filter(fuel_type_id=fuel_type_id).exists():
-        return _bad("Invalid fuel_type_id")
+    if not brand_name or not model_name:
+        return _bad("brand and model must be non-empty strings")
+
+    brand, _ = Brand.objects.get_or_create(name=brand_name)
+    model, _ = CarModel.objects.get_or_create(brand=brand, name=model_name)
 
     try:
         with transaction.atomic():
             car = Car.objects.create(
                 license_plate=d["license_plate"],
-                brand_id=brand_id,
-                model_id=model_id,
-                fuel_type_id=fuel_type_id,
+                brand=brand,
+                model=model,
                 odometer_km=odometer_km,
-                tank_capacity=tank_capacity,
-                horsepower=horsepower,
-                production_year=production_year,
+                average_consumption=average_consumption,
             )
             CarUser.objects.create(car=car, user=user, permission="owner")
     except IntegrityError:
@@ -320,47 +309,35 @@ def api_car_update(request, car_id: int):
         return Response({"detail": "Forbidden"}, status=403)
 
     d = request.data
-    fields = [
-        "license_plate", "brand_id", "model_id", "fuel_type_id",
-        "tank_capacity", "horsepower", "production_year", "odometer_km"
-    ]
-
     try:
-        # If FK fields updated, validate them first (avoid 500)
-        new_brand_id = car.brand_id
-        new_model_id = car.model_id
-        if "brand_id" in d and d["brand_id"] not in (None, ""):
-            new_brand_id = _to_int(d["brand_id"], "brand_id")
-            if not Brand.objects.filter(brand_id=new_brand_id).exists():
-                return _bad("Invalid brand_id")
-
-        if "model_id" in d and d["model_id"] not in (None, ""):
-            new_model_id = _to_int(d["model_id"], "model_id")
-
-        if ("brand_id" in d and d["brand_id"] not in (None, "")) or ("model_id" in d and d["model_id"] not in (None, "")):
-            if not CarModel.objects.filter(model_id=new_model_id, brand_id=new_brand_id).exists():
-                return _bad("Invalid model_id for the given brand_id")
-
-        if "fuel_type_id" in d and d["fuel_type_id"] not in (None, ""):
-            ft_id = _to_int(d["fuel_type_id"], "fuel_type_id")
-            if not FuelType.objects.filter(fuel_type_id=ft_id).exists():
-                return _bad("Invalid fuel_type_id")
+        if "brand" in d and d["brand"] in (None, ""):
+            return _bad("brand cannot be empty")
+        if "model" in d and d["model"] in (None, ""):
+            return _bad("model cannot be empty")
     except ValueError as e:
         return _bad(str(e))
 
-    for f in fields:
-        if f in d:
-            try:
-                if f.endswith("_id"):
-                    setattr(car, f, _to_int(d[f], f) if d[f] not in (None, "") else None)
-                elif f in ("horsepower", "production_year", "odometer_km"):
-                    setattr(car, f, _to_int(d[f], f) if d[f] not in (None, "") else None)
-                elif f == "tank_capacity":
-                    setattr(car, f, _to_decimal_str(d[f], "tank_capacity") if d[f] not in (None, "") else None)
-                else:
-                    setattr(car, f, d[f] if d[f] != "" else None)
-            except ValueError as e:
-                return _bad(str(e))
+    try:
+        if "license_plate" in d:
+            car.license_plate = d["license_plate"] if d["license_plate"] != "" else None
+
+        if "brand" in d or "model" in d:
+            brand_name = str(d.get("brand", car.brand.name)).strip()
+            model_name = str(d.get("model", car.model.name)).strip()
+            if not brand_name or not model_name:
+                return _bad("brand and model must be non-empty strings")
+            brand, _ = Brand.objects.get_or_create(name=brand_name)
+            model, _ = CarModel.objects.get_or_create(brand=brand, name=model_name)
+            car.brand = brand
+            car.model = model
+
+        if "average_consumption" in d:
+            car.average_consumption = _to_decimal_str(d["average_consumption"], "average_consumption") if d["average_consumption"] not in (None, "") else None
+
+        if "odometer_km" in d:
+            car.odometer_km = _to_int(d["odometer_km"], "odometer_km") if d["odometer_km"] not in (None, "") else None
+    except ValueError as e:
+        return _bad(str(e))
 
     try:
         car.save()
@@ -409,7 +386,7 @@ def api_fueling_create(request):
     {
       "car_id": 1,
       "gas_station_id": 3,
-      "fuel_type_id": 2,
+      "fuel_type_id": 2, (optional)
       "date": "2026-02-05T10:30:00Z",
       "liters": "42.50",
       "price_per_liter": "615.00",
@@ -420,7 +397,7 @@ def api_fueling_create(request):
     user = get_current_user(request)
     d = request.data
 
-    required = ["car_id", "gas_station_id", "fuel_type_id", "date", "liters", "price_per_liter", "odometer_km"]
+    required = ["car_id", "gas_station_id", "date", "liters", "price_per_liter", "odometer_km"]
     missing = [k for k in required if d.get(k) in (None, "")]
     if missing:
         return _bad(f"Missing fields: {', '.join(missing)}")
@@ -428,7 +405,7 @@ def api_fueling_create(request):
     try:
         car_id = _to_int(d.get("car_id"), "car_id")
         gas_station_id = _to_int(d.get("gas_station_id"), "gas_station_id")
-        fuel_type_id = _to_int(d.get("fuel_type_id"), "fuel_type_id")
+        fuel_type_id = _to_int(d.get("fuel_type_id"), "fuel_type_id") if d.get("fuel_type_id") not in (None, "") else None
         odometer_km = _to_int(d.get("odometer_km"), "odometer_km")
         dt = _parse_dt(d.get("date"), "date")
         liters = _to_decimal_str(d.get("liters"), "liters")
@@ -442,7 +419,7 @@ def api_fueling_create(request):
 
     if not GasStation.objects.filter(gas_station_id=gas_station_id).exists():
         return _bad("Invalid gas_station_id")
-    if not FuelType.objects.filter(fuel_type_id=fuel_type_id).exists():
+    if fuel_type_id is not None and not FuelType.objects.filter(fuel_type_id=fuel_type_id).exists():
         return _bad("Invalid fuel_type_id")
 
     try:

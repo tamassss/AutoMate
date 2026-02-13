@@ -14,6 +14,21 @@
     box-shadow: inset 0 0 5px 1px black;
 }
 
+.error-message {
+    color: #ff4d4d;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    margin-left: 2px;
+
+    animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 768px){
     .input{
         font-size: 14px;
