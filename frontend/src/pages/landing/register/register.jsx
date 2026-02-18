@@ -1,9 +1,9 @@
-import { useRef, useState } from "react";
+﻿import { useRef, useState } from "react";
 import Input from "../../../components/input/input";
 import Card from "../../../components/card/card";
 import Button from "../../../components/button/button";
 import ErrorModal from "../../../components/error-modal/errorModal";
-import { register } from "../../../actions/auth";
+import { register } from "../../../actions/auth/authActions";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
@@ -13,19 +13,32 @@ export default function Register() {
     const passwordAgainRef = useRef();
     
     const [errorMessage, setErrorMessage] = useState(null);
+    const [fieldErrors, setFieldErrors] = useState({});
     const navigate = useNavigate();
 
     async function handleRegister(e) {
         e.preventDefault()
         setErrorMessage(null);
+        setFieldErrors({});
 
-        const fn = fullNameRef.current.value;
-        const em = emailRef.current.value;
+        const fn = fullNameRef.current.value?.trim();
+        const em = emailRef.current.value?.trim();
         const pw = passwordRef.current.value;
         const pwA = passwordAgainRef.current.value;
 
+        const tempErrors = {};
+        if (!fn) tempErrors.fullName = "A teljes név megadása kötelező!";
+        if (!em) tempErrors.email = "Az e-mail cím megadása kötelező!";
+        if (!pw) tempErrors.password = "A jelszó megadása kötelező!";
+        if (!pwA) tempErrors.passwordAgain = "A jelszó ismétlése kötelező!";
+
+        if (Object.keys(tempErrors).length > 0) {
+            setFieldErrors(tempErrors);
+            return;
+        }
+
         if (pw !== pwA) {
-            setErrorMessage("A két jelszó nem egyezik!");
+            setFieldErrors({ passwordAgain: "A két jelszó nem egyezik!" });
             return;
         }
 
@@ -53,16 +66,16 @@ export default function Register() {
 
             <form onSubmit={handleRegister}>
             <div className="px-2">
-                <Input type="text" inputRef={fullNameRef} placeholder="Teljes név" />
+                <Input type="text" inputRef={fullNameRef} placeholder="Teljes név" error={fieldErrors.fullName} onChange={() => fieldErrors.fullName && setFieldErrors((prev) => ({ ...prev, fullName: "" }))} />
             </div>
             <div className="px-2">
-                <Input type="email" inputRef={emailRef} placeholder="E-mail cím" />
+                <Input type="email" inputRef={emailRef} placeholder="E-mail cím" error={fieldErrors.email} onChange={() => fieldErrors.email && setFieldErrors((prev) => ({ ...prev, email: "" }))} />
             </div>
             <div className="px-2">
-                <Input type="password" inputRef={passwordRef} placeholder="Jelszó" />
+                <Input type="password" inputRef={passwordRef} placeholder="Jelszó" error={fieldErrors.password} onChange={() => fieldErrors.password && setFieldErrors((prev) => ({ ...prev, password: "" }))} />
             </div>
             <div className="px-2">
-                <Input type="password" inputRef={passwordAgainRef} placeholder="Jelszó ismét" />
+                <Input type="password" inputRef={passwordAgainRef} placeholder="Jelszó ismét" error={fieldErrors.passwordAgain} onChange={() => fieldErrors.passwordAgain && setFieldErrors((prev) => ({ ...prev, passwordAgain: "" }))} />
             </div>
             
             <div className="custom-btn-div">
@@ -72,3 +85,5 @@ export default function Register() {
         </Card>
     );
 }
+
+

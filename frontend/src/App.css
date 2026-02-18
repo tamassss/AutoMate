@@ -58,6 +58,24 @@ body{
   margin: 10px auto;
 }
 
+.odd{
+    background-color: #1515158e;
+    padding: 8px;
+    font-size: 1.2rem;
+}
+
+.even{
+    background-color: #35363b8e;
+    padding: 8px;
+    font-size: 1.2rem
+}
+
+.odd, .even{
+    box-shadow: inset 0 0 5px 1px black;
+    border: 1px solid black;
+    text-align: left;
+}
+
 @media(max-width:1600px){
   td.field, th.field, .field{
     font-size: 14px;

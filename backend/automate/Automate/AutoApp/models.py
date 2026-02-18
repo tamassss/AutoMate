@@ -184,7 +184,7 @@ class Fueling(models.Model):
     fueling_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     car = models.ForeignKey(Car, on_delete=models.CASCADE)
-    gas_station = models.ForeignKey(GasStation, on_delete=models.CASCADE)
+    gas_station = models.ForeignKey(GasStation, on_delete=models.SET_NULL, null=True, blank=True)
     fuel_type = models.ForeignKey(FuelType, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateTimeField()
     liters = models.DecimalField(max_digits=7, decimal_places=2)

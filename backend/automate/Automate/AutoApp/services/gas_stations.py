@@ -7,7 +7,7 @@ from AutoApp.models import Fueling, User, Car
 
 def list_gas_station_cards(user: User, car: Car, limit: int = 50) -> List[Dict[str, Any]]:
     qs = (
-        Fueling.objects.filter(user=user, car=car)
+        Fueling.objects.filter(user=user, car=car, gas_station__isnull=False)
         .select_related("gas_station", "fuel_type")
         .order_by("-date")[:limit]
     )
@@ -19,7 +19,9 @@ def list_gas_station_cards(user: User, car: Car, limit: int = 50) -> List[Dict[s
             "fueling_id": f.fueling_id,
             "date": f.date,
             "price_per_liter": float(f.price_per_liter),
-            "fuel_type": f.fuel_type.name,
+            "supplier": f.supplier,
+            "fuel_type": f.fuel_type.name if f.fuel_type else None,
+            "fuel_type_id": f.fuel_type_id,
             "gas_station": {
                 "gas_station_id": gs.gas_station_id,
                 "name": gs.name,

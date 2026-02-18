@@ -1,5 +1,6 @@
 import Card from "../card/card"
 import "./tripCard.css"
+import Button from "../button/button";
 
 export default function TripCard({ trip }) {
     return (
@@ -23,7 +24,19 @@ export default function TripCard({ trip }) {
             <div className="trip-card-footer">
                 <div style={{color:"#ffffff8e"}}>{trip.tankolas_szam} tankolás</div>
                 <div style={{color:"#ffffff8e"}}>{trip.koltseg} Ft elköltve</div>
-                <button>Módosítás</button>
+                
+            </div>
+            <div className="d-flex gap-2 ">
+                <div className="fuel-button">
+                    <Button 
+                        text="Módosítás"
+                    />
+                </div>
+                <div className="fuel-button">
+                    <Button 
+                        text="Törlés"
+                    />
+                </div>
             </div>
         </Card>
     );

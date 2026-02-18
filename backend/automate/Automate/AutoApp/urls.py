@@ -17,7 +17,9 @@ from AutoApp.views import (
     api_car_create,
     api_car_update,
     api_gas_station_create,
+    api_gas_station_update,
     api_fueling_create,
+    api_fueling_update,
     api_service_center_create,
     api_maintenance_create,
     api_address_create,
@@ -61,7 +63,9 @@ urlpatterns = [
 
 
     path("gas-stations/create/", api_gas_station_create, name="api_gas_station_create"),
+    path("gas-stations/<int:gas_station_id>/", api_gas_station_update, name="api_gas_station_update"),
     path("fuelings/create/", api_fueling_create, name="api_fueling_create"),
+    path("fuelings/<int:fueling_id>/", api_fueling_update, name="api_fueling_update"),
 
     path("service-centers/create/", api_service_center_create, name="api_service_center_create"),
     path("maintenance/create/", api_maintenance_create, name="api_maintenance_create"),

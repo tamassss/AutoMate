@@ -1,0 +1,9 @@
+1. backend\automate\Automate\venv DELETE
+2. cd .\backend\automate\Automate\
+3. python -m venv .venv
+4. venv\Scripts\activate
+5. pip install -r requirements.txt
+6. python manage.py makemigrations
+7. python manage.py migrate
+8. docker-compose up --build
+9. python manage.py runserver

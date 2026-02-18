@@ -5,7 +5,7 @@ import Card from "../../../../components/card/card";
 import Navbar from "../../../../components/navbar/navbar";
 
 import NewService from "../../../../modals/newService/newService";
-import { createServiceLogEntry, getServiceLog } from "../../../../actions/serviceLog";
+import { createServiceLogEntry, getServiceLog } from "../../../../actions/serviceLog/serviceLogActions";
 
 import "./serviceLog.css";
 

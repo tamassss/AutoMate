@@ -2,9 +2,9 @@
 import Card from "../../../components/card/card";
 import Navbar from "../../../components/navbar/navbar";
 import "./averageConsumption.css";
-import Input from "../../../components/input/input";
+import LabeledInput from "../../../components/labeledInput/labeledInput";
 import Button from "../../../components/button/button";
-import { editCar } from "../../../actions/cars";
+import { editCar } from "../../../actions/cars/carsActions";
 
 export default function AverageConsumption() {
     const selectedCarId = localStorage.getItem("selected_car_id") || "default";
@@ -15,6 +15,7 @@ export default function AverageConsumption() {
     const [refueledLiters, setRefueledLiters] = useState("");
     const [calculatedAvg, setCalculatedAvg] = useState(null);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [success, setSuccess] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
@@ -46,14 +47,29 @@ export default function AverageConsumption() {
 
     function handleCalculate() {
         setError("");
+        setFieldErrors({});
         setSuccess("");
 
         const start = Number(startKm);
         const end = Number(endKm);
         const liters = Number(refueledLiters);
 
-        if (Number.isNaN(start) || Number.isNaN(end) || Number.isNaN(liters)) {
-            setError("Minden mezőbe érvényes számot adj meg.");
+        const tempErrors = {};
+        if (!startKm) tempErrors.startKm = "A kezdő kilométeróra-állás megadása kötelező!";
+        if (!endKm) tempErrors.endKm = "A végső kilométeróra-állás megadása kötelező!";
+        if (!refueledLiters) tempErrors.refueledLiters = "A tankolt mennyiség megadása kötelező!";
+
+        if (Object.keys(tempErrors).length > 0) {
+            setFieldErrors(tempErrors);
+            return;
+        }
+
+        const numberErrors = {};
+        if (Number.isNaN(start)) numberErrors.startKm = "Érvényes számot adj meg.";
+        if (Number.isNaN(end)) numberErrors.endKm = "Érvényes számot adj meg.";
+        if (Number.isNaN(liters)) numberErrors.refueledLiters = "Érvényes számot adj meg.";
+        if (Object.keys(numberErrors).length > 0) {
+            setFieldErrors(numberErrors);
             return;
         }
 
@@ -113,11 +129,15 @@ export default function AverageConsumption() {
                                 <div className="mt-2">
                                     <p><span className="step-span">1. lépés:</span> Tankold tele az autót, majd írd be a kilométeróra-állást</p>
                                     <div className="mt-3 col-12 col-sm-6 mx-auto">
-                                        <Input
-                                            placeholder={"Kezdő kilométeróra-állás"}
+                                        <LabeledInput
+                                            label={"Kezdő kilométeróra-állás"}
                                             type={"number"}
                                             value={startKm}
-                                            onChange={(e) => setStartKm(e.target.value)}
+                                            onChange={(e) => {
+                                                setStartKm(e.target.value);
+                                                if (fieldErrors.startKm) setFieldErrors((prev) => ({ ...prev, startKm: "" }));
+                                            }}
+                                            error={fieldErrors.startKm}
                                         />
                                     </div>
                                 </div>
@@ -136,19 +156,27 @@ export default function AverageConsumption() {
 
                                     <div className="row g-3 mt-2">
                                         <div className="col-12 col-sm-6">
-                                            <Input
-                                                placeholder={"Végső kilométeróra-állás"}
+                                            <LabeledInput
+                                                label={"Végső kilométeróra-állás"}
                                                 type={"number"}
                                                 value={endKm}
-                                                onChange={(e) => setEndKm(e.target.value)}
+                                                onChange={(e) => {
+                                                    setEndKm(e.target.value);
+                                                    if (fieldErrors.endKm) setFieldErrors((prev) => ({ ...prev, endKm: "" }));
+                                                }}
+                                                error={fieldErrors.endKm}
                                             />
                                         </div>
                                         <div className="col-12 col-sm-6">
-                                            <Input
-                                                placeholder={"Tankolt mennyiség (liter)"}
+                                            <LabeledInput
+                                                label={"Tankolt mennyiség (liter)"}
                                                 type={"number"}
                                                 value={refueledLiters}
-                                                onChange={(e) => setRefueledLiters(e.target.value)}
+                                                onChange={(e) => {
+                                                    setRefueledLiters(e.target.value);
+                                                    if (fieldErrors.refueledLiters) setFieldErrors((prev) => ({ ...prev, refueledLiters: "" }));
+                                                }}
+                                                error={fieldErrors.refueledLiters}
                                             />
                                         </div>
                                     </div>

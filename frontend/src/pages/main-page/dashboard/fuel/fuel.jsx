@@ -1,64 +1,62 @@
 import { Line } from "react-chartjs-2";
-import "./fuel.css"
+import { formatDateLocale } from "../../../../actions/shared/formatters";
+import "./fuel.css";
 
-export default function Fuel({fuelingChart, latestFueling}) {
-    const chartDatas = fuelingChart?.points?.map((p) => p.value) || []
-    const chartData = {
-        labels: ["H", "K", "Sze", "Cs", "P", "Szo", "V"],
-        datasets: [
-            {
-                label: "Költés (Ft)",
-                data: chartDatas,
-                borderColor: "#075DBF",
-                backgroundColor: "#ffffff",
-            }
-        ],
-    };
+export default function Fuel({ fuelingChart, latestFueling }) {
+  const chartDatas = fuelingChart?.points?.map((p) => p.value) || [];
 
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false }, 
-        },
-        scales: {
-            y: { display: false },
-            x: { grid: { display: false }, ticks: { color: "#ccc" } }
-        }
-    };
+  const chartData = {
+    labels: ["H", "K", "Sze", "Cs", "P", "Szo", "V"],
+    datasets: [
+      {
+        label: "Költés (Ft)",
+        data: chartDatas,
+        borderColor: "#075DBF",
+        backgroundColor: "#ffffff",
+      },
+    ],
+  };
 
-    return (
-        <div className="fuel-container">
-            <h2 className="fuel-title">Tankolás</h2>
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+    },
+    scales: {
+      y: { display: false },
+      x: { grid: { display: false }, ticks: { color: "#ccc" } },
+    },
+  };
 
-            <div className="fuel-chart-wrap">
-                <Line data={chartData} options={options} />
-            </div>
+  return (
+    <div className="fuel-container">
+      <h2 className="fuel-title">Tankolás</h2>
 
-            <hr className="mb-5"/>
+      <div className="fuel-chart-wrap">
+        <Line data={chartData} options={options} />
+      </div>
 
-            <table className="fuel-table">
-                <tbody>
-                    <tr>
-                        <td className="odd text-center field" colSpan={2}>
-                            Legutóbbi tankolás <span className="last-fuel-date">{latestFueling?.date ? new Date(latestFueling.date).toLocaleDateString("hu-HU") : "-"}
-                        </span></td>
-                    </tr>
-                    <tr>
-                        <td className="even field">Mennyiség</td>
-                        <td className="even field">45 l</td>
-                    </tr>
-                    <tr>
-                        <td className="odd field">Elköltött Pénz</td>
-                        <td className="odd field">20.000 Ft</td>
-                    </tr>
-                    <tr>
-                        <td className="even field">Becsült hatótáv</td>
-                        <td className="even field">650 km</td>
-                    </tr>
-                    
-                </tbody>
-            </table>
-        </div>
-    );
+      <hr className="mb-5" />
+
+      <table className="fuel-table">
+        <tbody>
+          <tr>
+            <td className="odd text-center field" colSpan={2}>
+              Legutóbbi tankolás{" "}
+              <span className="last-fuel-date">{formatDateLocale(latestFueling?.date)}</span>
+            </td>
+          </tr>
+          <tr>
+            <td className="even field">Mennyiség</td>
+            <td className="even field">45 l</td>
+          </tr>
+          <tr>
+            <td className="odd field">Elköltött Pénz</td>
+            <td className="odd field">20.000 Ft</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }

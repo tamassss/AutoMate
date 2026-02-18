@@ -6,8 +6,10 @@ import fuel95Icon from "../../assets/icons/fuel95.png";
 import "./gasStationCard.css"
 import { useState } from "react";
 import DeleteGasStation from "../../modals/deleteGasStation/deleteGasStation";
+import EditGasStation from "../../modals/editGasStation/editGasStation";
 
-export default function GasStationCard({ station }) {
+export default function GasStationCard({ station, onDeleted, onUpdated }) {
+    const [showEditGasStation, setShowEditGasStation] = useState(false);
     const[showDeleteGasStation, setShowDeleteGasStation] = useState(false);
     const priceText = station?.literft ? `${station.literft.toFixed(1)} Ft` : "-";
 
@@ -37,6 +39,7 @@ export default function GasStationCard({ station }) {
                         <div className="fuel-button">
                             <Button 
                                 text="Módosítás"
+                                onClick={() => setShowEditGasStation(true)}
                             />
                         </div>
                         <div className="fuel-button">
@@ -51,8 +54,18 @@ export default function GasStationCard({ station }) {
                 {showDeleteGasStation && (
                     <DeleteGasStation
                         onClose={() => setShowDeleteGasStation(false)}
+                        onDeleted={onDeleted}
+                        gasStationId={station?.gasStationId}
                         helyseg={station?.helyseg || "-"}
                         cim={station?.cim || "-"}
+                    />
+                )}
+
+                {showEditGasStation && (
+                    <EditGasStation
+                        onClose={() => setShowEditGasStation(false)}
+                        selectedStation={station}
+                        onSave={(updatedStation) => onUpdated?.(updatedStation)}
                     />
                 )}
 

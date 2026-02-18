@@ -13,7 +13,6 @@ DESIGN:
 - date-picker
 - admin oldal
 - landing page-en képek
-- dashboard gauge reszponzivitás
 - navbar ikonok
 - hamburger menu + kijelentkezés mindenhol legyen
 - egér hover kiírja hogy mit csinál valami
@@ -21,7 +20,6 @@ DESIGN:
 BACKEND:
 - loading komponens
 - 2 külső API
-- ha nincs token, jelentkeztessen ki
 - kijelentkezés üzenet normálisabban
 - dashboardot javítani
 - összes menüpontot megcsinálni 

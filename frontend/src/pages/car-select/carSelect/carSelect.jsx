@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import {getCars, returnSelectedCard} from "../../../actions/cars" ;
+import { getCars, returnSelectedCard } from "../../../actions/cars/carsActions";
 import { Link, useNavigate } from "react-router-dom";
 
 import Button from "../../../components/button/button";

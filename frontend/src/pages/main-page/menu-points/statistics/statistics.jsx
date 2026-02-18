@@ -1,6 +1,6 @@
 ﻿import Navbar from "../../../../components/navbar/navbar";
 import { useEffect, useState } from "react";
-import { getGeneralStats, getSummaryStats } from "../../../../actions/stats";
+import { getGeneralStats, getSummaryStats } from "../../../../actions/stats/statsActions";
 
 import GeneralStats from "./general-stats/generalStats";
 import DataVisual from "./data-visual/dataVisual";

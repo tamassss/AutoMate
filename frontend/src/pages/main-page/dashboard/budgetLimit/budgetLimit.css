@@ -46,6 +46,10 @@
     letter-spacing: 1px;
 }
 
+.stats-ft-over{
+    color: #ff4d4f;
+}
+
 .stats-percentage{
     font-size: 16px;
     color: #3592fe;

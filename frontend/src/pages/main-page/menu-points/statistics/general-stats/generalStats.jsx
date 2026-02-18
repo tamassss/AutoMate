@@ -1,18 +1,9 @@
-﻿import Card from "../../../../../components/card/card";
+import Card from "../../../../../components/card/card";
+import { formatDate } from "../../../../../actions/shared/formatters";
 
 function formatMoney(value) {
   if (value == null) return "-";
   return `${Math.round(Number(value))} Ft`;
-}
-
-function formatDate(iso) {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "-";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}. ${m}. ${day}.`;
 }
 
 export default function GeneralStats({ generalStats }) {
@@ -55,7 +46,7 @@ export default function GeneralStats({ generalStats }) {
         <div className="container">
           {stats.map((stat, index) => (
             <div key={index} className={`row p-2 ${index % 2 === 0 ? "odd" : "even"}`}>
-              <div className="col-6 text-end" style={{ color: "white", opacity: "0.7" }}>{stat.label}</div>
+              <div className="col-6 text-start" style={{ color: "white", opacity: "0.7" }}>{stat.label}</div>
               <div className="col-6 stat-value" style={{ color: "white" }}>
                 {stat.value}
               </div>
@@ -66,7 +57,6 @@ export default function GeneralStats({ generalStats }) {
     </Card>
   );
 }
-
 
 
 

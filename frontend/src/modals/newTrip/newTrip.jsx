@@ -1,24 +1,33 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import Button from "../../components/button/button";
-import Input from "../../components/input/input";
+import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
-import { estimateRoute } from "../../actions/dashboard";
+import { estimateRoute } from "../../actions/trips/routeEstimateActions";
+import { formatHHMMFromDate } from "../../actions/shared/formatters";
 import "./newTrip.css";
-
-function toHHMM(d) {
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
 
 export default function NewTrip({ onClose, avgConsumption, onStart }) {
     const [from, setFrom] = useState("");
     const [to, setTo] = useState("");
     const [result, setResult] = useState(null);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
     async function handleEstimate() {
         setError("");
+        setFieldErrors({});
         setResult(null);
+
+        const tempErrors = {};
+        if (!from.trim()) tempErrors.from = "A kiindulási hely megadása kötelező!";
+        if (!to.trim()) tempErrors.to = "A célállomás megadása kötelező!";
+
+        if (Object.keys(tempErrors).length > 0) {
+            setFieldErrors(tempErrors);
+            return;
+        }
+
         setLoading(true);
         try {
             const data = await estimateRoute(from, to, avgConsumption);
@@ -31,6 +40,14 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
     }
 
     function handleStartTrip() {
+        const tempErrors = {};
+        if (!from.trim()) tempErrors.from = "A kiindulási hely megadása kötelező!";
+        if (!to.trim()) tempErrors.to = "A célállomás megadása kötelező!";
+        if (Object.keys(tempErrors).length > 0) {
+            setFieldErrors(tempErrors);
+            return;
+        }
+
         if (!result) {
             setError("Először számold ki az utat.");
             return;
@@ -46,8 +63,8 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
             title: `${from} - ${to}`,
             from,
             to,
-            startTime: toHHMM(now),
-            expectedArrival: toHHMM(arrival),
+            startTime: formatHHMMFromDate(now),
+            expectedArrival: formatHHMMFromDate(arrival),
             distanceKm: result.km,
             avgConsumption: avg,
             expectedConsumptionLiters: result.liters,
@@ -64,8 +81,26 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
             columns={1}
             footer={<Button text={"Út indítása"} onClick={handleStartTrip} />}
         >
-            <Input placeholder={"Honnan"} type={"text"} value={from} onChange={(e) => setFrom(e.target.value)} />
-            <Input placeholder={"Hová"} type={"text"} value={to} onChange={(e) => setTo(e.target.value)} />
+            <LabeledInput
+                label={"Honnan"}
+                type={"text"}
+                value={from}
+                onChange={(e) => {
+                    setFrom(e.target.value);
+                    if (fieldErrors.from) setFieldErrors((prev) => ({ ...prev, from: "" }));
+                }}
+                error={fieldErrors.from}
+            />
+            <LabeledInput
+                label={"Hová"}
+                type={"text"}
+                value={to}
+                onChange={(e) => {
+                    setTo(e.target.value);
+                    if (fieldErrors.to) setFieldErrors((prev) => ({ ...prev, to: "" }));
+                }}
+                error={fieldErrors.to}
+            />
 
             <div style={{ marginTop: "10px" }}>
                 <Button text={loading ? "Számítás..." : "Számítás"} onClick={handleEstimate} />

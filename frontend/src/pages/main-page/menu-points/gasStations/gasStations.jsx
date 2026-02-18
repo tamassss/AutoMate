@@ -2,7 +2,7 @@
 import "./gasStations.css"
 import GasStationCard from "../../../../components/gas-station-card/gasStationCard"
 import { useEffect, useState } from "react"
-import { getGasStations } from "../../../../actions/gasStations"
+import { getGasStations } from "../../../../actions/gasStations/gasStationActions"
 
 export default function GasStations(){
     const [stations, setStations] = useState([]);
@@ -13,6 +13,35 @@ export default function GasStations(){
             .then(setStations)
             .catch((err) => setError(err.message || "Nem sikerült betölteni a benzinkutakat."));
     }, []);
+
+    function handleDeletedGasStation(deletedGasStationId) {
+        setStations((prev) =>
+            prev.filter((s) => s.gasStationId !== deletedGasStationId)
+        );
+    }
+
+    function handleUpdatedGasStation(updatedStation) {
+        const buildAddress = (s) => {
+            const parts = [s.stationStreet, s.stationHouseNumber].filter(Boolean);
+            if (parts.length > 0) return parts.join(" ");
+            return s.stationName || "-";
+        };
+
+        setStations((prev) =>
+            prev.map((s) => {
+                if (s.gasStationId !== updatedStation.gasStationId) return s;
+                const next = {
+                    ...s,
+                    ...updatedStation,
+                    helyseg: updatedStation.stationCity || "-",
+                };
+                return {
+                    ...next,
+                    cim: buildAddress(next),
+                };
+            })
+        );
+    }
 
     return(
         <>
@@ -28,7 +57,11 @@ export default function GasStations(){
                 <div className="row g-4 justify-content-center">
                     {stations.map(station => (
                         <div key={station.id} className="col-11 col-md-6 col-lg-4 d-flex justify-content-center">
-                            <GasStationCard station={station} />
+                            <GasStationCard
+                                station={station}
+                                onDeleted={handleDeletedGasStation}
+                                onUpdated={handleUpdatedGasStation}
+                            />
                         </div>
                     ))}
                 </div>

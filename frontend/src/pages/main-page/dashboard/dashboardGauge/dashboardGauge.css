@@ -1,44 +1,21 @@
-.gauge-img{
-    width: 500px;
-    margin-top: 0;
-    margin-bottom: -40px;
-}
-
 .limit-btn-wrapper button{
     width: 12vh;
 }
 
-.screen-div
-
-
-.current-km-div th{
+.table-title-tr th{
     background-color: #35363b;
     font-size: 1.3rem;
-    box-shadow: inset 0 0 10px 5px black;
+    box-shadow: inset 0 0 10px 2px black;
     border: 2px solid black;
     padding: 10px;
     letter-spacing: 2px;
 }
 
 
-.odd{
-    background-color: #1515158e;
-    padding: 8px;
-    font-size: 1.2rem;
-}
 
-.even{
-    background-color: #35363b8e;
-    padding: 8px;
-    font-size: 1.2rem
-}
-
-.odd, .even{
-    box-shadow: inset 0 0 5px 1px black;
-    border: 1px solid black;
-    text-align: left;
-}
 
 .test-p{
     color: #075DBF;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }

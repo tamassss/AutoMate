@@ -3,8 +3,8 @@ import "./tripsAndFuels.css";
 import { useEffect, useState } from "react";
 import Trips from "./trips/trips";
 import Fuels from "./fuels/fuels";
-import { getRoutes } from "../../../../actions/routes";
-import { getFuelings } from "../../../../actions/fuelings";
+import { getRoutes } from "../../../../actions/routes/routeActions";
+import { getFuelings } from "../../../../actions/fuelings/fuelingActions";
 
 export default function TripsAndFuels() {
     const [showTrips, setShowTrips] = useState(true);
@@ -30,6 +30,17 @@ export default function TripsAndFuels() {
         loadData();
     }, []);
 
+    function handleDeletedFuel(deletedFuelId) {
+        setFuelGroups((prev) =>
+            prev
+                .map((group) => ({
+                    ...group,
+                    items: (group.items || []).filter((item) => item.id !== deletedFuelId),
+                }))
+                .filter((group) => (group.items || []).length > 0)
+        );
+    }
+
     return (
         <>
             <Navbar />
@@ -53,7 +64,7 @@ export default function TripsAndFuels() {
 
                 <div className="container mt-4">
                     {error && <p className="text-danger">{error}</p>}
-                    {showTrips ? <Trips trips={trips} /> : <Fuels fuelGroups={fuelGroups} />}
+                    {showTrips ? <Trips trips={trips} /> : <Fuels fuelGroups={fuelGroups} onDeletedFuel={handleDeletedFuel} />}
                 </div>
             </div>
         </>

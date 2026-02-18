@@ -2,6 +2,7 @@ import "./budgetLimit.css"
 
 export default function BudgetLimit({spent = 0, limit = 0}) {
     const percentage = limit ? Math.min(Math.round((spent / limit) * 100), 100) : 0;
+    const isOverLimit = limit > 0 && spent > limit;
 
     return (
         <div className="budget-container mx-auto">
@@ -17,7 +18,7 @@ export default function BudgetLimit({spent = 0, limit = 0}) {
             </div>
 
             <div className="d-flex flex-column">
-                <p  className="stats-ft">{spent}/{limit}</p>
+                <p className={`stats-ft ${isOverLimit ? "stats-ft-over" : ""}`}>{spent}/{limit}</p>
                 <p  className="stats-percentage">{percentage}%</p>
             </div>
         </div>

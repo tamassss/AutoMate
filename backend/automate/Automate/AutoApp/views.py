@@ -374,6 +374,47 @@ def api_gas_station_create(request):
     return Response({"gas_station_id": gas_station.gas_station_id}, status=201)
 
 
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def api_gas_station_update(request, gas_station_id: int):
+    try:
+        gs = GasStation.objects.get(gas_station_id=gas_station_id)
+    except GasStation.DoesNotExist:
+        return Response({"detail": "Not found"}, status=404)
+
+    d = request.data or {}
+
+    if "name" in d:
+        gs.name = d.get("name") or None
+    if "city" in d:
+        gs.city = d.get("city") or None
+    if "postal_code" in d:
+        gs.postal_code = d.get("postal_code") or None
+    if "street" in d:
+        gs.street = d.get("street") or None
+    if "house_number" in d:
+        gs.house_number = d.get("house_number") or None
+
+    try:
+        gs.save()
+    except IntegrityError:
+        return _bad("Could not update gas station (integrity error).")
+
+    return Response(
+        {
+            "ok": True,
+            "gas_station": {
+                "gas_station_id": gs.gas_station_id,
+                "name": gs.name,
+                "city": gs.city,
+                "postal_code": gs.postal_code,
+                "street": gs.street,
+                "house_number": gs.house_number,
+            },
+        }
+    )
+
+
 # --------------------------
 # Fueling create
 # --------------------------
@@ -438,6 +479,55 @@ def api_fueling_create(request):
         return _bad("Could not create fueling (integrity error). Check ids and values.")
 
     return Response({"fueling_id": fueling.fueling_id}, status=201)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def api_fueling_update(request, fueling_id: int):
+    user = get_current_user(request)
+
+    try:
+        fueling = Fueling.objects.select_related("car").get(fueling_id=fueling_id)
+    except Fueling.DoesNotExist:
+        return Response({"detail": "Not found"}, status=404)
+
+    if not user_has_access_to_car(user, fueling.car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    d = request.data or {}
+
+    try:
+        if "price_per_liter" in d:
+            fueling.price_per_liter = _to_decimal_str(d.get("price_per_liter"), "price_per_liter") if d.get("price_per_liter") not in (None, "") else fueling.price_per_liter
+
+        if "supplier" in d:
+            fueling.supplier = d.get("supplier") or None
+
+        if "fuel_type_id" in d:
+            fuel_type_id = _to_int(d.get("fuel_type_id"), "fuel_type_id") if d.get("fuel_type_id") not in (None, "") else None
+            if fuel_type_id is not None and not FuelType.objects.filter(fuel_type_id=fuel_type_id).exists():
+                return _bad("Invalid fuel_type_id")
+            fueling.fuel_type_id = fuel_type_id
+    except ValueError as e:
+        return _bad(str(e))
+
+    try:
+        fueling.save()
+    except IntegrityError:
+        return _bad("Could not update fueling (integrity error).")
+
+    return Response(
+        {
+            "ok": True,
+            "fueling": {
+                "fueling_id": fueling.fueling_id,
+                "price_per_liter": float(fueling.price_per_liter),
+                "supplier": fueling.supplier,
+                "fuel_type_id": fueling.fuel_type_id,
+                "fuel_type": fueling.fuel_type.name if fueling.fuel_type else None,
+            },
+        }
+    )
 
 
 # --------------------------
@@ -743,9 +833,6 @@ def api_gas_station_delete(request, gas_station_id: int):
         gs = GasStation.objects.get(gas_station_id=gas_station_id)
     except GasStation.DoesNotExist:
         return Response({"detail": "Not found"}, status=404)
-
-    if Fueling.objects.filter(gas_station=gs).exists():
-        return Response({"detail": "Cannot delete gas station: it is used by fuelings"}, status=409)
 
     gs.delete()
     return Response(status=204)

@@ -3,8 +3,12 @@ import Card from "../card/card"
 import Button from "../button/button"
 import editIcon from "../../assets/icons/edit.png"
 import deleteIcon from "../../assets/icons/delete.png"
+import { useState } from "react"
+import DeleteFuel from "../../modals/deleteFuel/deleteFuel"
 
-export default function FuelTable({month, data}){
+export default function FuelTable({month, data, onDeletedFuel}){
+    const [selectedFuel, setSelectedFuel] = useState(null)
+
     return(
         <div className="mb-5">
             <h3 className="text-left mb-3 fuel-table-date" style={{ color: "#89C4FF" }}>{month}</h3>
@@ -26,12 +30,12 @@ export default function FuelTable({month, data}){
                                 <td>{fuel.datum}</td>
                                 <td>{fuel.mennyiseg} l</td>
                                 <td>{fuel.literft} Ft/l</td>
-                                <td>{fuel.kmallas} km</td>
+                                <td>{fuel.kmallas === "-" ? "-" : `${fuel.kmallas} km`}</td>
                                 <td className="td-btns">
                                     <button>
                                         <img src={editIcon} className="td-btn"/>
                                     </button>
-                                    <button>
+                                    <button onClick={() => setSelectedFuel(fuel)}>
                                         <img src={deleteIcon} className="td-btn"/>
                                     </button>
                                 </td>
@@ -40,6 +44,18 @@ export default function FuelTable({month, data}){
                     </tbody>
                 </table>
             </Card>
+
+            {selectedFuel && (
+                <DeleteFuel
+                    onClose={() => setSelectedFuel(null)}
+                    fuelingId={selectedFuel.id}
+                    datum={selectedFuel.datum}
+                    onDeleted={(deletedFuelId) => {
+                        onDeletedFuel?.(deletedFuelId)
+                        setSelectedFuel(null)
+                    }}
+                />
+            )}
         </div>
     )
 }

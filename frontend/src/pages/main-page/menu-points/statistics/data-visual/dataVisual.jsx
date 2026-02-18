@@ -2,8 +2,8 @@
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import Card from "../../../../../components/card/card";
-import { getRoutes } from "../../../../../actions/routes";
-import { getFuelings } from "../../../../../actions/fuelings";
+import { getRoutes } from "../../../../../actions/routes/routeActions";
+import { getFuelings } from "../../../../../actions/fuelings/fuelingActions";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
