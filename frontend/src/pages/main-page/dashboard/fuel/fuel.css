@@ -4,11 +4,21 @@
     flex-direction: column;
 }
 
-.fuel-title {
-    color: #4a9fff;
-    font-size: 1.8rem;
+.fuel-heading {
     text-align: center;
     margin-bottom: 15px;
+}
+
+.fuel-title-main {
+    color: #4A9FFF;
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.fuel-subtitle {
+    color: #ffffff;
+    margin: 2px 0 0;
+    font-size: 1.1rem;
 }
 
 .fuel-chart-wrap {
@@ -36,7 +46,11 @@
 }
 
 @media(max-width:768px){
-    .fuel-title{
+    .fuel-title-main{
         font-size: 20px;
+    }
+
+    .fuel-subtitle{
+        font-size: 15px;
     }
 }

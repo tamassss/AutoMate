@@ -58,11 +58,25 @@ export default function Login() {
 
       <form onSubmit={handleLogin}>
         <div className="px-2">
-          <Input type="text" inputRef={emailRef} placeholder="Email cím" error={fieldErrors.email} onChange={() => fieldErrors.email && setFieldErrors((prev) => ({ ...prev, email: "" }))} />
+          <Input
+            type="text"
+            inputRef={emailRef}
+            placeholder="Email cím"
+            error={fieldErrors.email}
+            maxLength={50}
+            onChange={() => fieldErrors.email && setFieldErrors((prev) => ({ ...prev, email: "" }))}
+          />
         </div>
 
         <div className="px-2">
-          <Input type="password" inputRef={passwordRef} placeholder="Jelszó" error={fieldErrors.password} onChange={() => fieldErrors.password && setFieldErrors((prev) => ({ ...prev, password: "" }))} />
+          <Input
+            type="password"
+            inputRef={passwordRef}
+            placeholder="Jelszó"
+            error={fieldErrors.password}
+            maxLength={50}
+            onChange={() => fieldErrors.password && setFieldErrors((prev) => ({ ...prev, password: "" }))}
+          />
         </div>
 
         <div className="custom-btn-div">

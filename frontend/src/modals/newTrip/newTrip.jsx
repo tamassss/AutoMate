@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
@@ -79,12 +79,20 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
             title={"Új út"}
             onClose={onClose}
             columns={1}
-            footer={<Button text={"Út indítása"} onClick={handleStartTrip} />}
+            footer={
+                <Button
+                    text={"Út indítása"}
+                    onClick={handleStartTrip}
+                    disabled={!result}
+                    className={!result ? "unavailable" : ""}
+                />
+            }
         >
             <LabeledInput
                 label={"Honnan"}
                 type={"text"}
                 value={from}
+                placeholder={"pl. Budapest"}
                 onChange={(e) => {
                     setFrom(e.target.value);
                     if (fieldErrors.from) setFieldErrors((prev) => ({ ...prev, from: "" }));
@@ -95,6 +103,7 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
                 label={"Hová"}
                 type={"text"}
                 value={to}
+                placeholder={"pl. Fót"}
                 onChange={(e) => {
                     setTo(e.target.value);
                     if (fieldErrors.to) setFieldErrors((prev) => ({ ...prev, to: "" }));
@@ -109,12 +118,31 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
             {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
 
             {result && (
-                <div style={{ marginTop: "12px", textAlign: "left" }}>
-                    <p>Távolság: {result.km} km</p>
-                    <p>Várható idő: kb. {result.minutes} perc</p>
-                    <p>Várható fogyasztás: {result.liters ?? "-"} l</p>
+                <div className="new-trip-result-table-wrap">
+                    <table className="fuel-table">
+                        <tbody>
+                            <tr>
+                                <td className="odd text-center field" colSpan={2}>
+                                    Becsült adatok
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="even field">Távolság</td>
+                                <td className="even field">{result.km} km</td>
+                            </tr>
+                            <tr>
+                                <td className="odd field">Idő</td>
+                                <td className="odd field">{result.minutes} perc</td>
+                            </tr>
+                            <tr>
+                                <td className="even field">Fogyasztás</td>
+                                <td className="even field">{result.liters ?? "-"} l</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             )}
         </Modal>
     );
 }
+

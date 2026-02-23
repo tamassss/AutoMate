@@ -32,3 +32,24 @@ export async function getRoutes() {
     koltseg: Math.round(Number(route.fuelings_spent || 0)),
   }));
 }
+
+// Út törlése (route_usage)
+export async function deleteTrip(routeUsageId) {
+  if (!routeUsageId) {
+    throw new Error("Hiányzik az út azonosítója.");
+  }
+
+  const response = await fetch(apiUrl(`/route-usage/${routeUsageId}/delete/`), {
+    method: "DELETE",
+    headers: { Authorization: authHeaders().Authorization },
+  });
+
+  const data = await parseJsonSafe(response);
+  handleUnauthorized(response);
+
+  if (!response.ok) {
+    throw new Error(data.detail || "Nem sikerült törölni az utat.");
+  }
+
+  return true;
+}

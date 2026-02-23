@@ -16,11 +16,13 @@ import FuelInfo from "./fuelInfo/fuelInfo";
 
 import NewTrip from "../../../modals/newTrip/newTrip";
 import NewFuel from "../../../modals/newFuel/newFuel";
+import NewGasStation from "../../../modals/newGasStation/newGasStation";
 
 import "./dashboard.css";
 
 export default function Dashboard() {
   const [showNewFuel, setShowNewFuel] = useState(false);
+  const [showNewGasStation, setShowNewGasStation] = useState(false);
   const [showNewTrip, setShowNewTrip] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
   const [activeTrip, setActiveTrip] = useState(() => {
@@ -231,8 +233,9 @@ export default function Dashboard() {
                     )}
                   </div>
 
-                  <div className="card-btn">
+                  <div className="card-btn dashboard-fuel-actions">
                     <Button text={"Új tankolás"} onClick={() => setShowNewFuel(true)} />
+                    <Button text={"Új benzinkút"} onClick={() => setShowNewGasStation(true)} />
                   </div>
                 </Card>
               </div>
@@ -241,6 +244,12 @@ export default function Dashboard() {
         </div>
 
         {showNewFuel && <NewFuel onClose={() => setShowNewFuel(false)} onSave={handleSaveFuel} />}
+        {showNewGasStation && (
+          <NewGasStation
+            onClose={() => setShowNewGasStation(false)}
+            onSave={loadDashboardData}
+          />
+        )}
 
         {showNewTrip && (
           <NewTrip

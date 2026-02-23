@@ -2,6 +2,7 @@
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
+import { clampNumberInput } from "../../actions/shared/inputValidation";
 
 import "./editLimit.css";
 
@@ -11,8 +12,8 @@ export default function EditLimit({ onClose, onSave, initialLimit = 0 }) {
 
     function handleSave() {
         const n = Number(maxLimit);
-        if (Number.isNaN(n) || n < 0) {
-            setFieldError("A maximum limit legalább 0 lehet.");
+        if (Number.isNaN(n) || n < 0 || n > 9999999) {
+            setFieldError("A maximum limit 0 és 9.999.999 között lehet.");
             return;
         }
 
@@ -29,13 +30,14 @@ export default function EditLimit({ onClose, onSave, initialLimit = 0 }) {
             footer={<Button text={"Mentés"} onClick={handleSave} />}
         >
             <p className="full-width">Mennyit szeretnél költeni üzemanyagra ebben a hónapban?</p>
-            <p className="full-width">Minimum: 0 Ft (fix)</p>
             <LabeledInput
                 label={"Maximum"}
                 type={"number"}
                 value={maxLimit}
+                min={0}
+                max={9999999}
                 onChange={(e) => {
-                    setMaxLimit(e.target.value);
+                    setMaxLimit(clampNumberInput(e.target.value, { min: 0, max: 9999999, integer: true }));
                     if (fieldError) setFieldError("");
                 }}
                 error={fieldError}

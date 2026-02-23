@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Button from "../../../../components/button/button";
-import { formatHmsFromSeconds, hhmmToMinutes } from "../../../../actions/shared/formatters";
+import { formatGroupedNumber, formatHmsFromSeconds, formatMoney, hhmmToMinutes } from "../../../../actions/shared/formatters";
 import "./trip.css";
 
 function getElapsed(runtime) {
@@ -148,23 +148,27 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
           </tr>
           <tr>
             <td className="odd field">Út hossza</td>
-            <td className="odd field">{distanceKm ? `${distanceKm.toFixed(1)} km` : "-"}</td>
+            <td className="odd field">
+              {distanceKm ? `${formatGroupedNumber(distanceKm, { decimals: 1, trimTrailingZeros: true })} km` : "-"}
+            </td>
           </tr>
           <tr>
             <td className="even field">Várható fogyasztás</td>
-            <td className="even field">{calculatedLiters ? `${calculatedLiters.toFixed(2)} l` : "-"}</td>
+            <td className="even field">
+              {calculatedLiters ? `${formatGroupedNumber(calculatedLiters, { decimals: 2, trimTrailingZeros: true })} l` : "-"}
+            </td>
           </tr>
           <tr>
             <td className="odd field">Tankolások száma</td>
-            <td className="odd field">{fuelings.length}</td>
+            <td className="odd field">{formatGroupedNumber(fuelings.length)}</td>
           </tr>
           <tr>
             <td className="even field">Tankolt mennyiség</td>
-            <td className="even field">{fueledLiters.toFixed(2)} l</td>
+            <td className="even field">{`${formatGroupedNumber(fueledLiters, { decimals: 2, trimTrailingZeros: true })} l`}</td>
           </tr>
           <tr>
             <td className="odd field">Elköltött pénz</td>
-            <td className="odd field">{fueledSpent.toFixed(0)} Ft</td>
+            <td className="odd field">{formatMoney(fueledSpent)}</td>
           </tr>
         </tbody>
       </table>

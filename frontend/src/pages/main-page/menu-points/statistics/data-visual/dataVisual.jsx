@@ -1,11 +1,12 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { Bar, Line, Pie } from "react-chartjs-2";
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend } from "chart.js";
 import Card from "../../../../../components/card/card";
 import { getRoutes } from "../../../../../actions/routes/routeActions";
 import { getFuelings } from "../../../../../actions/fuelings/fuelingActions";
+import { getServiceLog } from "../../../../../actions/serviceLog/serviceLogActions";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
 
 function monthIndexFromDateText(datum) {
   // format expected: YYYY. MM. DD.
@@ -30,6 +31,7 @@ function monthIndexFromMonthLabel(monthLabel) {
 export default function DataVisual() {
   const [routes, setRoutes] = useState([]);
   const [fuelGroups, setFuelGroups] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -38,12 +40,14 @@ export default function DataVisual() {
       setLoading(true);
       setError("");
       try {
-        const [routesData, fuelsData] = await Promise.all([
+        const [routesData, fuelsData, servicesData] = await Promise.all([
           getRoutes(),
           getFuelings(),
+          getServiceLog(),
         ]);
         setRoutes(routesData);
         setFuelGroups(fuelsData);
+        setServices(servicesData);
       } catch (err) {
         setError(err.message || "Nem sikerült betölteni a grafikon adatokat.");
       } finally {
@@ -54,10 +58,11 @@ export default function DataVisual() {
     loadData();
   }, []);
 
-  const { distanceByMonth, litersByMonth, pricePerKmByMonth } = useMemo(() => {
+  const { distanceByMonth, litersByMonth, pricePerKmByMonth, fuelSpentByMonth, serviceSpentByMonth } = useMemo(() => {
     const distance = Array(12).fill(0);
     const liters = Array(12).fill(0);
-    const spent = Array(12).fill(0);
+    const spentFuel = Array(12).fill(0);
+    const spentService = Array(12).fill(0);
 
     for (const route of routes) {
       const idx = monthIndexFromDateText(route?.datum);
@@ -73,21 +78,30 @@ export default function DataVisual() {
         const l = Number(item?.mennyiseg || 0);
         const p = Number(item?.literft || 0);
         liters[idx] += l;
-        spent[idx] += l * p;
+        spentFuel[idx] += l * p;
       }
+    }
+
+    for (const service of services) {
+      const idx = monthIndexFromDateText(service?.ido);
+      if (idx == null) continue;
+      const numericCost = Number(String(service?.ar || "0").replace(/[^\d]/g, ""));
+      spentService[idx] += Number.isNaN(numericCost) ? 0 : numericCost;
     }
 
     const pricePerKm = distance.map((km, i) => {
       if (km <= 0) return 0;
-      return Number((spent[i] / km).toFixed(1));
+      return Number((spentFuel[i] / km).toFixed(1));
     });
 
     return {
       distanceByMonth: distance.map((v) => Number(v.toFixed(1))),
       litersByMonth: liters.map((v) => Number(v.toFixed(1))),
       pricePerKmByMonth: pricePerKm,
+      fuelSpentByMonth: spentFuel.map((v) => Number(v.toFixed(0))),
+      serviceSpentByMonth: spentService.map((v) => Number(v.toFixed(0))),
     };
-  }, [routes, fuelGroups]);
+  }, [routes, fuelGroups, services]);
 
   const months = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
 
@@ -135,6 +149,34 @@ export default function DataVisual() {
     ],
   });
 
+  const currentMonthIndex = new Date().getMonth();
+  const pieData = {
+    labels: ["Szerviz", "Tankolás"],
+    datasets: [
+      {
+        data: [
+          serviceSpentByMonth[currentMonthIndex] || 0,
+          fuelSpentByMonth[currentMonthIndex] || 0,
+        ],
+        backgroundColor: ["#2CB67D", "#075DBF"],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const pieOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: "bottom", labels: { color: "#ccc" } },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `${ctx.label}: ${Number(ctx.parsed || 0).toLocaleString("hu-HU")} Ft`,
+        },
+      },
+    },
+  };
+
   return (
     <Card>
       <div className="p-3 w-100">
@@ -159,10 +201,34 @@ export default function DataVisual() {
               </div>
             </div>
 
-            <div className="col-md-12 mt-5 d-flex flex-column align-items-center">
+            <div className="col-md-6 mt-2">
               <p className="text-center text-light opacity-75 small">1 km ára havonta</p>
-              <div className="w-75" style={{ height: "300px" }}>
-                <Bar data={barData("Ft/km", pricePerKmByMonth)} options={getOptions("Ft/km")} />
+              <div style={{ height: "300px" }}>
+                <Line
+                  data={{
+                    labels: months,
+                    datasets: [
+                      {
+                        label: "Ft/km",
+                        data: pricePerKmByMonth,
+                        borderColor: "#075DBF",
+                        backgroundColor: "rgba(7, 93, 191, 0.2)",
+                        fill: true,
+                        tension: 0.3,
+                      },
+                    ],
+                  }}
+                  options={getOptions("Ft/km")}
+                />
+              </div>
+            </div>
+
+            <div className="col-md-6 mt-2">
+              <p className="text-center text-light opacity-75 small">
+                Kiadások megoszlása ({currentMonthIndex + 1}. hónap)
+              </p>
+              <div style={{ height: "300px" }}>
+                <Pie data={pieData} options={pieOptions} />
               </div>
             </div>
           </div>

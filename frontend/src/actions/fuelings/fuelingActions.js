@@ -27,8 +27,37 @@ export async function getFuelings() {
       mennyiseg: Number(fueling.liters || 0),
       literft: Number(fueling.price_per_liter || 0),
       kmallas: Number(fueling.odometer_km) > 0 ? fueling.odometer_km : "-",
+      supplier: fueling.supplier || "",
+      fuelTypeId: fueling.fuel_type?.fuel_type_id || "",
+      fuelType: fueling.fuel_type?.name || "-",
     })),
   }));
+}
+
+// Tankolás módosítása
+export async function editFuel(fuelingId, fuelingData) {
+  if (!fuelingId) {
+    throw new Error("Hiányzik a tankolás azonosítója.");
+  }
+
+  const response = await fetch(apiUrl(`/fuelings/${fuelingId}/`), {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      liters: fuelingData?.liters,
+      price_per_liter: fuelingData?.price_per_liter,
+      odometer_km: fuelingData?.odometer_km,
+    }),
+  });
+
+  const data = await parseJsonSafe(response);
+  handleUnauthorized(response);
+
+  if (!response.ok) {
+    throw new Error(data.detail || "Nem sikerült módosítani a tankolást.");
+  }
+
+  return data?.fueling || null;
 }
 
 // Tankolás törlése

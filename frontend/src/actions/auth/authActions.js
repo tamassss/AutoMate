@@ -17,6 +17,8 @@ export async function login(email, password) {
   localStorage.setItem("token", data?.tokens?.access || "");
   localStorage.setItem("refresh", data?.tokens?.refresh || "");
   localStorage.setItem("full_name", data?.user?.full_name || "");
+  localStorage.setItem("email", (email || "").trim());
+  localStorage.setItem("password", password || "");
 
   return data.user;
 }

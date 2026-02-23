@@ -1,5 +1,5 @@
 import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
-import { formatDate } from "../shared/formatters";
+import { formatDate, formatMoney } from "../shared/formatters";
 
 // Kötelező (backend miatt)
 async function createServiceCenter(serviceCenterName) {
@@ -43,7 +43,7 @@ export async function getServiceLog() {
     id: item.maintenance_id,
     alkatresz: item.part_name || "-",
     ido: formatDate(item.date),
-    ar: item.cost != null ? `${Math.round(Number(item.cost))} Ft` : "-",
+    ar: item.cost != null ? formatMoney(item.cost) : "-",
     emlekeztetoDatum:
       item.reminder && String(item.reminder).includes("|")
         ? String(item.reminder).split("|")[0].trim()

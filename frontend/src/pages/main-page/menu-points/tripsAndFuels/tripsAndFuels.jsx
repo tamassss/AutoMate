@@ -5,6 +5,8 @@ import Trips from "./trips/trips";
 import Fuels from "./fuels/fuels";
 import { getRoutes } from "../../../../actions/routes/routeActions";
 import { getFuelings } from "../../../../actions/fuelings/fuelingActions";
+import Menu from "../../dashboard/menu/menu";
+import "../menuLayout.css";
 
 export default function TripsAndFuels() {
     const [showTrips, setShowTrips] = useState(true);
@@ -41,33 +43,64 @@ export default function TripsAndFuels() {
         );
     }
 
+    function handleUpdatedFuel(updatedFuel) {
+        if (!updatedFuel?.id) return;
+
+        setFuelGroups((prev) =>
+            prev.map((group) => ({
+                ...group,
+                items: (group.items || []).map((item) =>
+                    item.id === updatedFuel.id ? { ...item, ...updatedFuel } : item
+                ),
+            }))
+        );
+    }
+
+    function handleDeletedTrip(deletedTripId) {
+        setTrips((prev) => prev.filter((trip) => trip.id !== deletedTripId));
+    }
+
     return (
-        <>
-            <Navbar />
-            <div>
-                <div className="container-fluid p-0 tf-nav-tabs">
-                    <div className="row g-0">
-                        <div
-                            className={`col-6 d-flex justify-content-center align-items-center tf-nav-tab ${showTrips ? "active" : "inactive"}`}
-                            onClick={() => setShowTrips(true)}
-                        >
-                            <p className="fs-5">Utak</p>
-                        </div>
-                        <div
-                            className={`col-6 d-flex justify-content-center align-items-center tf-nav-tab ${showTrips ? "inactive" : "active"}`}
-                            onClick={() => setShowTrips(false)}
-                        >
-                            <p className="fs-5">Tankolások</p>
+        <div className="main-menu-layout">
+            <div className="main-menu-content">
+                <Menu />
+            </div>
+
+            <div className="flex-grow-1">
+                <Navbar />
+                <div>
+                    <div className="container-fluid p-0 tf-nav-tabs">
+                        <div className="row g-0">
+                            <div
+                                className={`col-6 d-flex justify-content-center align-items-center tf-nav-tab ${showTrips ? "active" : "inactive"}`}
+                                onClick={() => setShowTrips(true)}
+                            >
+                                <p className="fs-5">Utak</p>
+                            </div>
+                            <div
+                                className={`col-6 d-flex justify-content-center align-items-center tf-nav-tab ${showTrips ? "inactive" : "active"}`}
+                                onClick={() => setShowTrips(false)}
+                            >
+                                <p className="fs-5">Tankolások</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="container mt-4">
-                    {error && <p className="text-danger">{error}</p>}
-                    {showTrips ? <Trips trips={trips} /> : <Fuels fuelGroups={fuelGroups} onDeletedFuel={handleDeletedFuel} />}
+                    <div className="container mt-4">
+                        {error && <p className="text-danger">{error}</p>}
+                        {showTrips ? (
+                            <Trips trips={trips} onDeletedTrip={handleDeletedTrip} />
+                        ) : (
+                            <Fuels
+                                fuelGroups={fuelGroups}
+                                onDeletedFuel={handleDeletedFuel}
+                                onUpdatedFuel={handleUpdatedFuel}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 

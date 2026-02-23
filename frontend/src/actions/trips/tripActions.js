@@ -100,13 +100,16 @@ async function createFueling(carId, gasStationId, fueling) {
 
   const payload = {
     car_id: Number(carId),
-    gas_station_id: Number(gasStationId),
     date: fueling?.date || new Date().toISOString(),
     liters: Number(fueling?.liters),
     price_per_liter: Number(fueling?.pricePerLiter),
     supplier: fueling?.supplier || null,
     odometer_km: Number(odometer),
   };
+
+  if (hasValue(gasStationId)) {
+    payload.gas_station_id = Number(gasStationId);
+  }
 
   if (fuelTypeId) {
     payload.fuel_type_id = fuelTypeId;
@@ -148,17 +151,24 @@ export async function saveTripWithFuelings(tripData) {
   return { ok: true };
 }
 
-// Tankolás + benzinkút mentése
+// Egy tankolás mentése
 export async function saveFuelingWithGasStation(fuelData) {
   const carId = localStorage.getItem("selected_car_id");
   if (!carId) throw new Error("Nincs kiválasztott autó.");
 
-  const gasStationId = await createGasStation(fuelData || {});
-  await createFueling(carId, gasStationId, fuelData || {});
+  await createFueling(carId, null, fuelData || {});
 
   return { ok: true };
 }
 
+// Új benzinkút mentése (kapcsolódó tankolás adattal)
+export async function saveNewGasStationWithFueling(gasStationData) {
+  const carId = localStorage.getItem("selected_car_id");
+  if (!carId) throw new Error("Nincs kiválasztott autó.");
 
+  const gasStationId = await createGasStation(gasStationData || {});
+  await createFueling(carId, gasStationId, gasStationData || {});
 
+  return { ok: true };
+}
 

@@ -33,20 +33,34 @@ def get_week_fueling_chart(user: User, car: Car) -> Dict[str, Any]:
         Fueling.objects.filter(user=user, car=car, date__gte=week_start, date__lt=week_end)
         .annotate(iso_wd=ExtractIsoWeekDay("date"))
         .values("iso_wd")
-        .annotate(total=Sum(MONEY_EXPR))
+        .annotate(spent_total=Sum(MONEY_EXPR), liters_total=Sum("liters"))
     )
-    by_day = {row["iso_wd"]: float(row["total"] or 0) for row in base}
+
+    by_day = {
+        row["iso_wd"]: {
+            "spent": float(row.get("spent_total") or 0),
+            "liters": float(row.get("liters_total") or 0),
+        }
+        for row in base
+    }
 
     points = []
     for wd in range(1, 8):
-        points.append({"label": hu_weekday_label(wd), "value": by_day.get(wd, 0.0)})
+        day_data = by_day.get(wd, {"spent": 0.0, "liters": 0.0})
+        points.append(
+            {
+                "label": hu_weekday_label(wd),
+                "value": day_data["spent"],
+                "spent": day_data["spent"],
+                "liters": day_data["liters"],
+            }
+        )
 
     return {
         "period": {"type": "this_week", "start": week_start, "end": week_end},
         "metric": "spent",
         "points": points,
     }
-
 #
 def get_monthly_budget(user: User, car: Car) -> Dict[str, Any]:
     today = timezone.localdate()

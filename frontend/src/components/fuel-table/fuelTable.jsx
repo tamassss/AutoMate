@@ -1,13 +1,15 @@
 import "./fuelTable.css"
 import Card from "../card/card"
-import Button from "../button/button"
 import editIcon from "../../assets/icons/edit.png"
 import deleteIcon from "../../assets/icons/delete.png"
 import { useState } from "react"
 import DeleteFuel from "../../modals/deleteFuel/deleteFuel"
+import EditFuel from "../../modals/editFuel/editFuel"
+import { formatGroupedNumber } from "../../actions/shared/formatters"
 
-export default function FuelTable({month, data, onDeletedFuel}){
+export default function FuelTable({month, data, onDeletedFuel, onUpdatedFuel}){
     const [selectedFuel, setSelectedFuel] = useState(null)
+    const [editedFuel, setEditedFuel] = useState(null)
 
     return(
         <div className="mb-5">
@@ -28,11 +30,11 @@ export default function FuelTable({month, data, onDeletedFuel}){
                         {data.map(fuel => (
                             <tr key={fuel.id}>
                                 <td>{fuel.datum}</td>
-                                <td>{fuel.mennyiseg} l</td>
-                                <td>{fuel.literft} Ft/l</td>
-                                <td>{fuel.kmallas === "-" ? "-" : `${fuel.kmallas} km`}</td>
+                                <td>{`${formatGroupedNumber(fuel.mennyiseg, { decimals: 2, trimTrailingZeros: true })} l`}</td>
+                                <td>{`${formatGroupedNumber(fuel.literft)} Ft/l`}</td>
+                                <td>{fuel.kmallas === "-" ? "-" : `${formatGroupedNumber(fuel.kmallas)} km`}</td>
                                 <td className="td-btns">
-                                    <button>
+                                    <button onClick={() => setEditedFuel(fuel)}>
                                         <img src={editIcon} className="td-btn"/>
                                     </button>
                                     <button onClick={() => setSelectedFuel(fuel)}>
@@ -53,6 +55,17 @@ export default function FuelTable({month, data, onDeletedFuel}){
                     onDeleted={(deletedFuelId) => {
                         onDeletedFuel?.(deletedFuelId)
                         setSelectedFuel(null)
+                    }}
+                />
+            )}
+
+            {editedFuel && (
+                <EditFuel
+                    onClose={() => setEditedFuel(null)}
+                    selectedFuel={editedFuel}
+                    onSave={(updatedFuel) => {
+                        onUpdatedFuel?.(updatedFuel)
+                        setEditedFuel(null)
                     }}
                 />
             )}

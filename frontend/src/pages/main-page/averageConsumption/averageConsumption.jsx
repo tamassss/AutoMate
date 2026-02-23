@@ -5,6 +5,7 @@ import "./averageConsumption.css";
 import LabeledInput from "../../../components/labeledInput/labeledInput";
 import Button from "../../../components/button/button";
 import { editCar } from "../../../actions/cars/carsActions";
+import { clampNumberInput } from "../../../actions/shared/inputValidation";
 
 export default function AverageConsumption() {
     const selectedCarId = localStorage.getItem("selected_car_id") || "default";
@@ -133,8 +134,10 @@ export default function AverageConsumption() {
                                             label={"Kezdő kilométeróra-állás"}
                                             type={"number"}
                                             value={startKm}
+                                            min={0}
+                                            max={999999}
                                             onChange={(e) => {
-                                                setStartKm(e.target.value);
+                                                setStartKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
                                                 if (fieldErrors.startKm) setFieldErrors((prev) => ({ ...prev, startKm: "" }));
                                             }}
                                             error={fieldErrors.startKm}
@@ -160,8 +163,10 @@ export default function AverageConsumption() {
                                                 label={"Végső kilométeróra-állás"}
                                                 type={"number"}
                                                 value={endKm}
+                                                min={0}
+                                                max={999999}
                                                 onChange={(e) => {
-                                                    setEndKm(e.target.value);
+                                                    setEndKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
                                                     if (fieldErrors.endKm) setFieldErrors((prev) => ({ ...prev, endKm: "" }));
                                                 }}
                                                 error={fieldErrors.endKm}

@@ -3,6 +3,8 @@ import "./gasStations.css"
 import GasStationCard from "../../../../components/gas-station-card/gasStationCard"
 import { useEffect, useState } from "react"
 import { getGasStations } from "../../../../actions/gasStations/gasStationActions"
+import Menu from "../../dashboard/menu/menu";
+import "../menuLayout.css";
 
 export default function GasStations(){
     const [stations, setStations] = useState([]);
@@ -44,31 +46,39 @@ export default function GasStations(){
     }
 
     return(
-        <>
-            <Navbar />
+        <div className="main-menu-layout">
+            <div className="main-menu-content">
+                <Menu />
+            </div>
 
-            <div className="container mt-4">
-                {error && <p className="text-danger">{error}</p>}
-                {stations.length === 0 && !error && (
-                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
-                        <p className="fs-4">Még nincsenek rögzített benzinkút adatok.</p>
-                    </div>
-                )}
-                <div className="row g-4 justify-content-center">
-                    {stations.map(station => (
-                        <div key={station.id} className="col-11 col-md-6 col-lg-4 d-flex justify-content-center">
-                            <GasStationCard
-                                station={station}
-                                onDeleted={handleDeletedGasStation}
-                                onUpdated={handleUpdatedGasStation}
-                            />
+            <div className="flex-grow-1">
+                <Navbar />
+
+                <div className="container py-5">
+                    <h1 className="text-center text-primary mb-5 fw-bold">Benzinkutak</h1>
+                    {error && <p className="text-danger">{error}</p>}
+                    {stations.length === 0 && !error && (
+                        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
+                            <p className="fs-4">Még nincsenek rögzített benzinkút adatok.</p>
                         </div>
-                    ))}
+                    )}
+                    <div className="row g-4 justify-content-center">
+                        {stations.map(station => (
+                            <div key={station.id} className="col-11 col-md-6 col-lg-4 d-flex justify-content-center">
+                                <GasStationCard
+                                    station={station}
+                                    onDeleted={handleDeletedGasStation}
+                                    onUpdated={handleUpdatedGasStation}
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
-        </>
+        </div>
     )
 }
+
 
 
 

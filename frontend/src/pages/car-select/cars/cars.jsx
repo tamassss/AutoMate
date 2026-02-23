@@ -51,6 +51,8 @@ export default function Cars(){
                     <Button
                         text={"Módosítás"}
                         onClick={() => setShowEditCar(true)}
+                        disabled={!selectedCar}
+                        className={!selectedCar ? "unavailable" : ""}
                     />
                 </div>
 

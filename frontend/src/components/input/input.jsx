@@ -1,6 +1,6 @@
 import "./input.css"
 
-export default function Input({ id, value, onChange, placeholder, type, inputRef, error}){
+export default function Input({ id, value, onChange, placeholder, type, inputRef, error, pattern, title, maxLength, min, max, step }){
     return(
         <>
             {error && <span className="error-message">{error}</span>}
@@ -12,6 +12,12 @@ export default function Input({ id, value, onChange, placeholder, type, inputRef
                 onChange={onChange}
                 placeholder={placeholder}
                 ref={inputRef}
+                pattern={pattern}
+                title={title}
+                maxLength={maxLength}
+                min={min}
+                max={max}
+                step={step}
             />
         </>
     )

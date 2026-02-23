@@ -1,4 +1,5 @@
 import "./budgetLimit.css"
+import { formatGroupedNumber } from "../../../../actions/shared/formatters";
 
 export default function BudgetLimit({spent = 0, limit = 0}) {
     const percentage = limit ? Math.min(Math.round((spent / limit) * 100), 100) : 0;
@@ -18,7 +19,9 @@ export default function BudgetLimit({spent = 0, limit = 0}) {
             </div>
 
             <div className="d-flex flex-column">
-                <p className={`stats-ft ${isOverLimit ? "stats-ft-over" : ""}`}>{spent}/{limit}</p>
+                <p className={`stats-ft ${isOverLimit ? "stats-ft-over" : ""}`}>
+                    {`${formatGroupedNumber(spent)} / ${formatGroupedNumber(limit)}`}
+                </p>
                 <p  className="stats-percentage">{percentage}%</p>
             </div>
         </div>

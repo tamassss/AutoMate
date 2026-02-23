@@ -7,3 +7,8 @@
 7. python manage.py migrate
 8. docker-compose up --build
 9. python manage.py runserver
+
+
+START DOCKER
+venv\Scripts\activate
+python manage.py runserver

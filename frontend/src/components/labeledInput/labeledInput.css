@@ -1,3 +1,13 @@
+.labeled-input {
+    width: 100%;
+    text-align: left;
+}
+
+.labeled-input p {
+    margin: 0 0 6px 0;
+    text-align: left;
+}
+
 @media (max-width:768px){
     .labeled-input p{
         font-size: 15px;

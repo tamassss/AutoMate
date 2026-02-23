@@ -48,6 +48,22 @@
     align-items: center;
 }
 
+.settings-div {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.settings-icon {
+    height: 35px;
+    width: 35px;
+    display: block;
+}
+
 .help-link img {
     height: 35px;
     width: 35px;

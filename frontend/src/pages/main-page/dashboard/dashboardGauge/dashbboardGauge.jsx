@@ -4,6 +4,7 @@ import { useState } from "react";
 import EditLimit from "../../../../modals/editLimit/editLimit";
 import { Link } from "react-router-dom";
 import BudgetLimit from "../budgetLimit/budgetLimit";
+import { formatGroupedNumber } from "../../../../actions/shared/formatters";
 
 export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit }) {
     const [showLimit, setShowLimit] = useState(false);
@@ -43,7 +44,7 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                     <table className="dg-table justify-content-center align-items-center w-100">
                         <thead>
                             <tr className="table-title-tr">
-                                <th colSpan={2}>
+                                <th colSpan={2} style={{backgroundColor:"#1515158e"}}>
                                     <p className="field">
                                         Átlagos fogyasztás
                                     </p>
@@ -52,16 +53,16 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                         </thead>
                         <tbody>
                             <tr>
-                                <th className="odd field cons-th">
+                                <th className="even field cons-th">
                                     <p>
                                         {hasAverageConsumption
-                                            ? `${selectedCar.average_consumption} l/100km`
+                                            ? `${formatGroupedNumber(selectedCar.average_consumption, { decimals: 2, trimTrailingZeros: true })} l/100km`
                                             : (
                                                 "?"
                                             )}
                                     </p>
                                 </th>
-                                <td className="even field test-td">
+                                <td className="odd field test-td">
                                     <Link to={"/muszerfal/atlagfogyasztas"}>
                                         <p className="test-p">Teszt</p>
                                     </Link>
@@ -74,5 +75,4 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
         </div>
     );
 }
-
 

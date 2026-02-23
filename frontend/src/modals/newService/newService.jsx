@@ -3,6 +3,7 @@
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
+import { clampNumberInput, limitTextLength } from "../../actions/shared/inputValidation";
 
 export default function NewService({ onClose, onSave }) {
     const today = new Date().toISOString().split("T")[0];
@@ -22,6 +23,7 @@ export default function NewService({ onClose, onSave }) {
         const tempErrors = {};
         if (!partName.trim()) tempErrors.partName = "Az alkatrész megadása kötelező!";
         if (!date) tempErrors.date = "A csere idejének megadása kötelező!";
+        if (cost && Number(cost) > 999999999) tempErrors.cost = "Az ár maximum 999999999 lehet.";
         if (Object.keys(tempErrors).length > 0) {
             setFieldErrors(tempErrors);
             return;
@@ -54,8 +56,9 @@ export default function NewService({ onClose, onSave }) {
                 label={"Alkatrész"}
                 type={"text"}
                 value={partName}
+                maxLength={50}
                 onChange={(e) => {
-                    setPartName(e.target.value);
+                    setPartName(limitTextLength(e.target.value, 50));
                     if (fieldErrors.partName) setFieldErrors((prev) => ({ ...prev, partName: "" }));
                 }}
                 error={fieldErrors.partName}
@@ -70,9 +73,27 @@ export default function NewService({ onClose, onSave }) {
                 }}
                 error={fieldErrors.date}
             />
-            <LabeledInput label={"Ár"} type={"number"} value={cost} onChange={(e) => setCost(e.target.value)} />
+            <LabeledInput
+                label={"Ár"}
+                type={"number"}
+                min={0}
+                max={999999999}
+                value={cost}
+                onChange={(e) => {
+                    setCost(clampNumberInput(e.target.value, { min: 0, max: 999999999, integer: true }));
+                    if (fieldErrors.cost) setFieldErrors((prev) => ({ ...prev, cost: "" }));
+                }}
+                error={fieldErrors.cost}
+            />
             <LabeledInput label={"Emlékeztető (dátum)"} type={"date"} value={reminderDate} onChange={(e) => setReminderDate(e.target.value)} />
-            <LabeledInput label={"Emlékeztető (km)"} type={"number"} value={reminderKm} onChange={(e) => setReminderKm(e.target.value)} />
+            <LabeledInput
+                label={"Emlékeztető (km)"}
+                type={"number"}
+                min={0}
+                max={999999}
+                value={reminderKm}
+                onChange={(e) => setReminderKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }))}
+            />
             {error && <p className="text-danger">{error}</p>}
         </Modal>
     );

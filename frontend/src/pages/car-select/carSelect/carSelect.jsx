@@ -98,11 +98,21 @@ return(
             </div>
 
             <div className="main-car">
-                <div className="main-image">
+                <div className="main-image" onClick={onSelect}>
                     <img src={placeholder} alt={current.display_name} className="main-car-img"/>
                 </div>
                 <div className="main-info">
                     <h2 className="main-title">{current.display_name}</h2>
+
+                    <div className="license-outer">
+                        <div className="license-inner">
+                            <div className="license-blue"></div>
+                            <div className="license-white">
+                                <p className="license-plate">{current.license_plate}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <Link to="/muszerfal" className="select-link">
                       <Button text={"Kiválasztás"} onClick={onSelect}className="select-btn"/>
                     </Link>

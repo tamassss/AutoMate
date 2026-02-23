@@ -66,16 +66,44 @@ export default function Register() {
 
             <form onSubmit={handleRegister}>
             <div className="px-2">
-                <Input type="text" inputRef={fullNameRef} placeholder="Teljes név" error={fieldErrors.fullName} onChange={() => fieldErrors.fullName && setFieldErrors((prev) => ({ ...prev, fullName: "" }))} />
+                <Input
+                    type="text"
+                    inputRef={fullNameRef}
+                    placeholder="Teljes név"
+                    error={fieldErrors.fullName}
+                    maxLength={30}
+                    onChange={() => fieldErrors.fullName && setFieldErrors((prev) => ({ ...prev, fullName: "" }))}
+                />
             </div>
             <div className="px-2">
-                <Input type="email" inputRef={emailRef} placeholder="E-mail cím" error={fieldErrors.email} onChange={() => fieldErrors.email && setFieldErrors((prev) => ({ ...prev, email: "" }))} />
+                <Input
+                    type="email"
+                    inputRef={emailRef}
+                    placeholder="E-mail cím"
+                    error={fieldErrors.email}
+                    maxLength={50}
+                    onChange={() => fieldErrors.email && setFieldErrors((prev) => ({ ...prev, email: "" }))}
+                />
             </div>
             <div className="px-2">
-                <Input type="password" inputRef={passwordRef} placeholder="Jelszó" error={fieldErrors.password} onChange={() => fieldErrors.password && setFieldErrors((prev) => ({ ...prev, password: "" }))} />
+                <Input
+                    type="password"
+                    inputRef={passwordRef}
+                    placeholder="Jelszó"
+                    error={fieldErrors.password}
+                    maxLength={50}
+                    onChange={() => fieldErrors.password && setFieldErrors((prev) => ({ ...prev, password: "" }))}
+                />
             </div>
             <div className="px-2">
-                <Input type="password" inputRef={passwordAgainRef} placeholder="Jelszó ismét" error={fieldErrors.passwordAgain} onChange={() => fieldErrors.passwordAgain && setFieldErrors((prev) => ({ ...prev, passwordAgain: "" }))} />
+                <Input
+                    type="password"
+                    inputRef={passwordAgainRef}
+                    placeholder="Jelszó ismét"
+                    error={fieldErrors.passwordAgain}
+                    maxLength={50}
+                    onChange={() => fieldErrors.passwordAgain && setFieldErrors((prev) => ({ ...prev, passwordAgain: "" }))}
+                />
             </div>
             
             <div className="custom-btn-div">

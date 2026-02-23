@@ -1,4 +1,4 @@
-// Dátum formázása: YYYY. MM. DD.
+// Datum formazasa: YYYY. MM. DD.
 export function formatDate(isoDate) {
   if (!isoDate) return "-";
 
@@ -12,7 +12,7 @@ export function formatDate(isoDate) {
   return `${year}. ${month}. ${day}.`;
 }
 
-// Hónap kulcs formázása: YYYY-MM -> YYYY. MM.
+// Honap kulcs formazasa: YYYY-MM -> YYYY. MM.
 export function formatMonth(monthKey) {
   if (!monthKey || !monthKey.includes("-")) return monthKey || "-";
 
@@ -20,7 +20,7 @@ export function formatMonth(monthKey) {
   return `${year}. ${month}.`;
 }
 
-// Másodperc formázása: HH:MM:SS
+// Masodperc formazasa: HH:MM:SS
 export function formatHmsFromSeconds(seconds) {
   const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
   const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
@@ -29,12 +29,12 @@ export function formatHmsFromSeconds(seconds) {
   return `${h}:${m}:${s}`;
 }
 
-// Date objektum formázása: HH:MM
+// Date objektum formazasa: HH:MM
 export function formatHHMMFromDate(date) {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-// Dátum rövid lokalizált formában
+// Datum rovid lokalizalt formaban
 export function formatDateLocale(isoDate, locale = "hu-HU") {
   if (!isoDate) return "-";
 
@@ -44,7 +44,7 @@ export function formatDateLocale(isoDate, locale = "hu-HU") {
   return date.toLocaleDateString(locale);
 }
 
-// HH:MM -> össz perc
+// HH:MM -> ossz perc
 export function hhmmToMinutes(hhmm) {
   if (!hhmm || typeof hhmm !== "string" || !hhmm.includes(":")) return null;
 
@@ -52,4 +52,40 @@ export function hhmmToMinutes(hhmm) {
   if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
 
   return hours * 60 + minutes;
+}
+
+// Szam formazasa ezres csoportokra: 1203000 -> 1.203.000
+export function formatGroupedNumber(value, options = {}) {
+  if (value === null || value === undefined || value === "") return "-";
+
+  const num = Number(value);
+  if (Number.isNaN(num)) return "-";
+
+  const { decimals = null, trimTrailingZeros = false } = options;
+  const hasFixedDecimals = Number.isInteger(decimals) && decimals >= 0;
+
+  let raw = hasFixedDecimals ? num.toFixed(decimals) : String(num);
+  if (!hasFixedDecimals && raw.includes("e")) {
+    raw = num.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 20 });
+  }
+
+  const [intPartRaw, fractionRaw] = raw.split(".");
+  const isNegative = intPartRaw.startsWith("-");
+  const intPart = isNegative ? intPartRaw.slice(1) : intPartRaw;
+
+  const groupedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const signedInt = isNegative ? `-${groupedInt}` : groupedInt;
+
+  if (!fractionRaw) return signedInt;
+
+  const fraction = trimTrailingZeros ? fractionRaw.replace(/0+$/, "") : fractionRaw;
+  if (!fraction) return signedInt;
+
+  return `${signedInt},${fraction}`;
+}
+
+// Penz formazasa: 1203000 -> 1.203.000 Ft
+export function formatMoney(value) {
+  if (value === null || value === undefined || value === "") return "-";
+  return `${formatGroupedNumber(Math.round(Number(value) || 0))} Ft`;
 }

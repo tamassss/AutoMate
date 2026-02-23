@@ -2,6 +2,7 @@
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
+import { clampNumberInput } from "../../actions/shared/inputValidation";
 import "./newEvent.css";
 
 export default function NewEvent({ onClose, onSave }) {
@@ -67,7 +68,14 @@ export default function NewEvent({ onClose, onSave }) {
                 }}
                 error={fieldErrors.date}
             />
-            <LabeledInput label={"Km"} type={"number"} value={km} onChange={(e) => setKm(e.target.value)} />
+            <LabeledInput
+                label={"Km"}
+                type={"number"}
+                min={0}
+                max={999999}
+                value={km}
+                onChange={(e) => setKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }))}
+            />
             {error && <p className="text-danger">{error}</p>}
         </Modal>
     );

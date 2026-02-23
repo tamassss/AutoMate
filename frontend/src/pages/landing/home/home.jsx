@@ -17,6 +17,7 @@ import icon4 from "../../../assets/home/4.png";
 import icon6 from "../../../assets/home/6.png";
 import icon7 from "../../../assets/home/7.png";
 import icon8 from "../../../assets/home/8.png";
+import helpIcon from "../../../assets/icons/help.png";
 import Error from "../../../components/error-modal/errorModal";
 
 
@@ -29,6 +30,13 @@ export default function Home(){
         <>
             {isLoggedIn &&
                 <p className="ms-4 mt-4 fs-4">Bejelentkezve: {localStorage.getItem("full_name")}</p>}
+
+            <div className="landing-help-div">
+                <Link to="/tippek" className="landing-help-link">
+                    <img src={helpIcon} alt="Segítség kezdőknek" title="Segítség kezdőknek"/>
+                </Link>
+            </div>
+
             <div className="hero">
                 <br/>
                 <h1 className="custom-title">Auto<span style={{color:"#075DBF"}}>Mate</span></h1>
@@ -95,7 +103,7 @@ export default function Home(){
                 <Feature
                     icon={icon6}
                     title={"Több autó"}
-                    content={"tartsa nyílván az összes autóját, hasonlítsa össze a statisztikáikat"}
+                    content={"tartsa nyilván az összes autóját, hasonlítsa össze a statisztikáikat"}
                 />
 
                 <Feature

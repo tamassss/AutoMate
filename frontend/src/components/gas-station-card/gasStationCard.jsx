@@ -1,17 +1,52 @@
 import Card from "../card/card";
 import Button from "../../components/button/button";
-import molLogo from "../../assets/icons/molLogo.png";
-import fuel95Icon from "../../assets/icons/fuel95.png";
+import fuel95Icon from "../../assets/gas-station/fuels/95.png";
+import fuel100Icon from "../../assets/gas-station/fuels/100.png";
+import fuelDIcon from "../../assets/gas-station/fuels/d.png";
+import fuelDPlusIcon from "../../assets/gas-station/fuels/d-plus.png";
+import molLogo from "../../assets/gas-station/stations/mol.png";
+import shellLogo from "../../assets/gas-station/stations/shell.png";
+import orlenLogo from "../../assets/gas-station/stations/orlen.png";
+import auchanLogo from "../../assets/gas-station/stations/auchan.png";
 
 import "./gasStationCard.css"
 import { useState } from "react";
 import DeleteGasStation from "../../modals/deleteGasStation/deleteGasStation";
 import EditGasStation from "../../modals/editGasStation/editGasStation";
+import { formatGroupedNumber } from "../../actions/shared/formatters";
 
 export default function GasStationCard({ station, onDeleted, onUpdated }) {
     const [showEditGasStation, setShowEditGasStation] = useState(false);
     const[showDeleteGasStation, setShowDeleteGasStation] = useState(false);
-    const priceText = station?.literft ? `${station.literft.toFixed(1)} Ft` : "-";
+    const priceText = station?.literft ? `${formatGroupedNumber(station.literft, { decimals: 1, trimTrailingZeros: true })} Ft` : "-";
+
+    const fuelTypeText = String(station?.fuelType || "").toLowerCase();
+    const fuelTypeId = Number(station?.fuelTypeId || 0);
+    const supplierText = String(station?.supplier || "").toLowerCase();
+
+    const fuelIcon =
+        fuelTypeId === 2
+            ? fuel100Icon
+            : fuelTypeId === 4
+            ? fuelDPlusIcon
+            : fuelTypeId === 3
+            ? fuelDIcon
+            : fuelTypeText.includes("100")
+            ? fuel100Icon
+            : fuelTypeText.includes("diesel plus")
+            ? fuelDPlusIcon
+            : fuelTypeText.includes("diesel")
+            ? fuelDIcon
+            : fuel95Icon;
+
+    const stationIcon =
+        supplierText.includes("shell")
+            ? shellLogo
+            : supplierText.includes("orlen")
+            ? orlenLogo
+            : supplierText.includes("auchan")
+            ? auchanLogo
+            : molLogo;
 
     return (
         <Card>
@@ -24,12 +59,12 @@ export default function GasStationCard({ station, onDeleted, onUpdated }) {
 
                 <div className="p-1">
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <img src={molLogo} alt="MOL" className="station-icon"/>
+                        <img src={stationIcon} alt={station?.supplier || "Benzinkút"} className="station-icon"/>
                         <h2 className="price">{priceText}</h2>
                     </div>
 
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <img src={fuel95Icon} alt="95" className="fuel-icon"/>
+                        <img src={fuelIcon} alt={station?.fuelType || "Üzemanyag"} className="fuel-icon"/>
                         <div className="text-start">
                             <h4 className="m-0 station-city">{station.helyseg}</h4>
                             <p className="m-0 text-secondary station-address">{station.cim}</p>

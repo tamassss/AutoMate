@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, permission_classes
+﻿from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
@@ -438,14 +438,14 @@ def api_fueling_create(request):
     user = get_current_user(request)
     d = request.data
 
-    required = ["car_id", "gas_station_id", "date", "liters", "price_per_liter", "odometer_km"]
+    required = ["car_id", "date", "liters", "price_per_liter", "odometer_km"]
     missing = [k for k in required if d.get(k) in (None, "")]
     if missing:
         return _bad(f"Missing fields: {', '.join(missing)}")
 
     try:
         car_id = _to_int(d.get("car_id"), "car_id")
-        gas_station_id = _to_int(d.get("gas_station_id"), "gas_station_id")
+        gas_station_id = _to_int(d.get("gas_station_id"), "gas_station_id") if d.get("gas_station_id") not in (None, "") else None
         fuel_type_id = _to_int(d.get("fuel_type_id"), "fuel_type_id") if d.get("fuel_type_id") not in (None, "") else None
         odometer_km = _to_int(d.get("odometer_km"), "odometer_km")
         dt = _parse_dt(d.get("date"), "date")
@@ -458,7 +458,7 @@ def api_fueling_create(request):
     if not user_has_access_to_car(user, car):
         return Response({"detail": "Forbidden"}, status=403)
 
-    if not GasStation.objects.filter(gas_station_id=gas_station_id).exists():
+    if gas_station_id is not None and not GasStation.objects.filter(gas_station_id=gas_station_id).exists():
         return _bad("Invalid gas_station_id")
     if fuel_type_id is not None and not FuelType.objects.filter(fuel_type_id=fuel_type_id).exists():
         return _bad("Invalid fuel_type_id")
@@ -497,8 +497,14 @@ def api_fueling_update(request, fueling_id: int):
     d = request.data or {}
 
     try:
+        if "liters" in d:
+            fueling.liters = _to_decimal_str(d.get("liters"), "liters") if d.get("liters") not in (None, "") else fueling.liters
+
         if "price_per_liter" in d:
             fueling.price_per_liter = _to_decimal_str(d.get("price_per_liter"), "price_per_liter") if d.get("price_per_liter") not in (None, "") else fueling.price_per_liter
+
+        if "odometer_km" in d:
+            fueling.odometer_km = _to_int(d.get("odometer_km"), "odometer_km") if d.get("odometer_km") not in (None, "") else fueling.odometer_km
 
         if "supplier" in d:
             fueling.supplier = d.get("supplier") or None
@@ -521,7 +527,9 @@ def api_fueling_update(request, fueling_id: int):
             "ok": True,
             "fueling": {
                 "fueling_id": fueling.fueling_id,
+                "liters": float(fueling.liters),
                 "price_per_liter": float(fueling.price_per_liter),
+                "odometer_km": fueling.odometer_km,
                 "supplier": fueling.supplier,
                 "fuel_type_id": fueling.fuel_type_id,
                 "fuel_type": fueling.fuel_type.name if fueling.fuel_type else None,
@@ -890,3 +898,5 @@ def api_route_delete(request, route_id: int):
 
     r.delete()
     return Response(status=204)
+
+

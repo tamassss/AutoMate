@@ -1,7 +1,7 @@
 ﻿import "./fuels.css";
 import FuelTable from "../../../../../components/fuel-table/fuelTable";
 
-export default function Fuels({ fuelGroups, onDeletedFuel }) {
+export default function Fuels({ fuelGroups, onDeletedFuel, onUpdatedFuel }) {
     if (!fuelGroups || fuelGroups.length === 0) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ height: "60vh" }}>
@@ -18,6 +18,7 @@ export default function Fuels({ fuelGroups, onDeletedFuel }) {
                     month={group.month}
                     data={group.items}
                     onDeletedFuel={onDeletedFuel}
+                    onUpdatedFuel={onUpdatedFuel}
                 />
             ))}
         </div>

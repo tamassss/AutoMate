@@ -15,6 +15,23 @@
   flex-direction: column;
 }
 
+.dashboard-layout .flex-grow-1 {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dashboard-layout .flex-grow-1::-webkit-scrollbar {
+  width: 6px;
+  
+}
+
+.dashboard-layout .flex-grow-1::-webkit-scrollbar-thumb {
+  background: #51535B;
+  border-radius: 10px;
+}
+
 .custom-title{
   margin: 14px auto 18px;
   font-size: 2.5rem;
@@ -59,8 +76,26 @@
 }
 
 .card-btn button{
-  width: 80%;  
+  width: 80%;
   padding: 15px;
+}
+
+.dashboard-fuel-actions {
+  gap: 10px;
+}
+
+.dashboard-fuel-actions button {
+  width: 42%;
+}
+
+@media (max-width: 768px) {
+  .dashboard-fuel-actions {
+    flex-direction: column;
+  }
+
+  .dashboard-fuel-actions button {
+    width: 72%;
+  }
 }
 
 
@@ -96,4 +131,12 @@
     flex: 0 0 auto;
     width: 0;
   }
+
+  .dashboard-layout .flex-grow-1 {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
 }
+
+

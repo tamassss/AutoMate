@@ -50,6 +50,30 @@ export async function getGasStations() {
     }));
 }
 
+// Benzinkút létrehozása
+export async function createGasStation(gasStationData) {
+  const response = await fetch(apiUrl("/gas-stations/create/"), {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      name: gasStationData?.name ?? null,
+      city: gasStationData?.city ?? null,
+      postal_code: gasStationData?.postal_code ?? null,
+      street: gasStationData?.street ?? null,
+      house_number: gasStationData?.house_number ?? null,
+    }),
+  });
+
+  const data = await parseJsonSafe(response);
+  handleUnauthorized(response);
+
+  if (!response.ok) {
+    throw new Error(data.detail || "Nem sikerült létrehozni a benzinkutat.");
+  }
+
+  return data?.gas_station_id || null;
+}
+
 // Benzinkút módosítása
 export async function editGasStation(gasStationId, gasStationData) {
   if (!gasStationId) {

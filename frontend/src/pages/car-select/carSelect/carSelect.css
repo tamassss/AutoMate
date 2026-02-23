@@ -127,6 +127,61 @@ body{
     width: 150px;
 }
 
+/* rendszám */
+.license-outer{
+    margin: 14px auto 18px;
+    width: 260px;
+    background: linear-gradient(180deg, #fefefe 0%, #d6d6d6 100%);
+    border: 2px solid #7b7b7b;
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.license-inner{
+    display: flex;
+    align-items: center;
+    min-height: 86px;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+    border: 1px solid #bcbcbc;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.license-blue{
+    flex: 0 0 46px;
+    align-self: stretch;
+    background-color: #0b56b5;
+    background-image: url("../../../assets/icons/license_plate.png");
+    background-size: 90% auto;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.license-white{
+    flex: 1;
+    min-height: 84px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+}
+
+.license-plate{
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    white-space: nowrap;
+    color: #111111;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    font-family: "Arial Black", Arial, sans-serif;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
 @media (max-width: 1024px) {
     .main-title {
         font-size: 1.5rem;
@@ -175,5 +230,26 @@ body{
 
     .main-title{
         font-size: 1rem;
+    }
+
+    .license-outer{
+        width: 220px;
+    }
+
+    .license-inner{
+        min-height: 70px;
+    }
+
+    .license-blue{
+        flex-basis: 40px;
+    }
+
+    .license-white{
+        min-height: 68px;
+        padding: 0 10px;
+    }
+
+    .license-plate{
+        font-size: 1.6rem;
     }
 }

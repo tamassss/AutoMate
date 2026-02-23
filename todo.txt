@@ -1,7 +1,7 @@
 MODAL:
-- benzinkút módosítás
-- benzinkút törlés
-- út módosítás
+- benzinkút módosítás✅
+- benzinkút törlés✅
+- út módosítás❌ - nincs értelme
 - út törlés
 - tankolás módosítás
 - tankolás törlés
