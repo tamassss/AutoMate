@@ -9,12 +9,19 @@ def list_gas_station_cards(user: User, car: Car, limit: int = 50) -> List[Dict[s
     qs = (
         Fueling.objects.filter(user=user, car=car, gas_station__isnull=False)
         .select_related("gas_station", "fuel_type")
-        .order_by("-date")[:limit]
+        .order_by("-date")
     )
 
     cards = []
+    seen_station_ids = set()
     for f in qs:
         gs = f.gas_station
+        if not gs:
+            continue
+        if gs.gas_station_id in seen_station_ids:
+            continue
+        seen_station_ids.add(gs.gas_station_id)
+
         cards.append({
             "fueling_id": f.fueling_id,
             "date": f.date,
@@ -31,4 +38,7 @@ def list_gas_station_cards(user: User, car: Car, limit: int = 50) -> List[Dict[s
                 "house_number": gs.house_number,
             } if gs else None,
         })
+
+        if len(cards) >= limit:
+            break
     return cards

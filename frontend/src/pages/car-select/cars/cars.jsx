@@ -22,12 +22,10 @@ export default function Cars(){
 
     function handleCarSaved(){
         setRefreshOnChange((r) => r+1)
-        setShowAddCar(false);
     }
 
     function handleCarEdited(){
         setRefreshOnChange((r) => r + 1);
-        setShowEditCar(false);
     }
 
     return(

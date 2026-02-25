@@ -30,3 +30,9 @@
     color: rgba(255, 255, 255, 0.55);
     margin-top: 2px;
 }
+
+.service-log-top-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}

@@ -39,7 +39,8 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
         }
     }
 
-    function handleStartTrip() {
+    function handleStartTrip(e) {
+        e.preventDefault();
         const tempErrors = {};
         if (!from.trim()) tempErrors.from = "A kiindulási hely megadása kötelező!";
         if (!to.trim()) tempErrors.to = "A célállomás megadása kötelező!";
@@ -79,10 +80,11 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
             title={"Új út"}
             onClose={onClose}
             columns={1}
+            onSubmit={handleStartTrip}
             footer={
                 <Button
                     text={"Út indítása"}
-                    onClick={handleStartTrip}
+                    type={"submit"}
                     disabled={!result}
                     className={!result ? "unavailable" : ""}
                 />
@@ -112,7 +114,7 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
             />
 
             <div style={{ marginTop: "10px" }}>
-                <Button text={loading ? "Számítás..." : "Számítás"} onClick={handleEstimate} />
+                <Button text={loading ? "Számítás..." : "Számítás"} type={"button"} onClick={handleEstimate} />
             </div>
 
             {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
@@ -122,7 +124,7 @@ export default function NewTrip({ onClose, avgConsumption, onStart }) {
                     <table className="fuel-table">
                         <tbody>
                             <tr>
-                                <td className="odd text-center field" colSpan={2}>
+                                <td className="odd text-center field estimate-title" colSpan={2}>
                                     Becsült adatok
                                 </td>
                             </tr>

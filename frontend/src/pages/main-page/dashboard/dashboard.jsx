@@ -13,6 +13,8 @@ import Trip from "./trip/trip";
 import Fuel from "./fuel/fuel";
 import TripInfo from "./tripInfo/tripInfo";
 import FuelInfo from "./fuelInfo/fuelInfo";
+import SuccessModal from "../../../components/success-modal/successModal";
+import { hhmmToMinutes } from "../../../actions/shared/formatters";
 
 import NewTrip from "../../../modals/newTrip/newTrip";
 import NewFuel from "../../../modals/newFuel/newFuel";
@@ -24,6 +26,7 @@ export default function Dashboard() {
   const [showNewFuel, setShowNewFuel] = useState(false);
   const [showNewGasStation, setShowNewGasStation] = useState(false);
   const [showNewTrip, setShowNewTrip] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [dashboardData, setDashboardData] = useState(null);
   const [activeTrip, setActiveTrip] = useState(() => {
     const raw = localStorage.getItem("active_trip_state");
@@ -35,6 +38,7 @@ export default function Dashboard() {
       return null;
     }
   });
+  const [isSavingTrip, setIsSavingTrip] = useState(false);
 
   function setAndPersistActiveTrip(updater) {
     setActiveTrip((prev) => {
@@ -88,22 +92,46 @@ export default function Dashboard() {
 
   function handleCancelTripFinish() {
     setAndPersistActiveTrip(null);
+    setSuccessMessage("Út törölve");
   }
 
   async function handleSaveTripFinish() {
-    if (!activeTrip) return;
+    if (!activeTrip || isSavingTrip) return;
+
+    const tripToSave = activeTrip;
+    setIsSavingTrip(true);
+    localStorage.removeItem("active_trip_state");
+    setActiveTrip(null);
 
     try {
-      await saveTripWithFuelings(activeTrip);
-      setAndPersistActiveTrip(null);
+      const expectedMinutes = hhmmToMinutes(tripToSave?.expectedArrival);
+      const actualMinutes = hhmmToMinutes(tripToSave?.runtime?.actualArrival);
+      const arrivalDeltaMin =
+        expectedMinutes == null || actualMinutes == null
+          ? null
+          : expectedMinutes - actualMinutes;
+
+      await saveTripWithFuelings({
+        ...tripToSave,
+        fuelings: [],
+        arrivalDeltaMin,
+      });
       await loadDashboardData();
+      setSuccessMessage("Út sikeresen elmentve");
     } catch (err) {
+      setAndPersistActiveTrip(tripToSave);
       alert(err.message || "Nem sikerült menteni az utat.");
+    } finally {
+      setIsSavingTrip(false);
     }
   }
 
   async function handleSaveFuel(fuelData) {
-    if (activeTrip) {
+    if (!isSavingTrip && activeTrip && !activeTrip?.runtime?.showFinishResult) {
+      const tripCarId = activeTrip?.carId || null;
+      await saveFuelingWithGasStation(fuelData, tripCarId);
+      await loadDashboardData();
+
       setAndPersistActiveTrip((prev) => {
         if (!prev) return prev;
         return {
@@ -145,8 +173,11 @@ export default function Dashboard() {
   }
 
   function handleStartTrip(newTrip) {
+    const selectedCarId = localStorage.getItem("selected_car_id");
     const startedTrip = {
       ...newTrip,
+      carId: selectedCarId || null,
+      carDisplayName: dashboardData?.selected_car?.display_name || null,
       runtime: {
         isRunning: true,
         elapsedBeforeRunSec: 0,
@@ -168,6 +199,10 @@ export default function Dashboard() {
   }, []);
 
   const tripToShow = activeTrip;
+  const activeTripCarId = Number(tripToShow?.carId || 0);
+  const selectedCarId = Number(dashboardData?.selected_car?.car_id || 0);
+  const isTripFromAnotherCar =
+    !!tripToShow && activeTripCarId > 0 && selectedCarId > 0 && activeTripCarId !== selectedCarId;
 
   return (
     <div className="dashboard-layout">
@@ -182,18 +217,26 @@ export default function Dashboard() {
         </div>
 
         <div className="container-fluid">
-          <div className="row g-3">
+          <div className="row g-3 dashboard-main-row">
             <div className="col-xl-4 col-12">
               <div className="fixed-height-card mb-3">
                 <Card>
                   <div className="card-content-wrap justify-content-center">
                     {tripToShow ? (
-                      <Trip
-                        tripData={tripToShow}
-                        onCancelFinish={handleCancelTripFinish}
-                        onSaveFinish={handleSaveTripFinish}
-                        onRuntimeChange={handleTripRuntimeChange}
-                      />
+                      <>
+                        {isTripFromAnotherCar && (
+                          <p className="text-warning text-center mb-2">
+                            Út ezzel az autóval:{" "}
+                            <strong>{tripToShow?.carDisplayName || `ID: ${tripToShow?.carId}`}</strong>
+                          </p>
+                        )}
+                        <Trip
+                          tripData={tripToShow}
+                          onCancelFinish={handleCancelTripFinish}
+                          onSaveFinish={handleSaveTripFinish}
+                          onRuntimeChange={handleTripRuntimeChange}
+                        />
+                      </>
                     ) : (
                       <TripInfo />
                     )}
@@ -256,6 +299,13 @@ export default function Dashboard() {
             onClose={() => setShowNewTrip(false)}
             avgConsumption={dashboardData?.selected_car?.average_consumption}
             onStart={handleStartTrip}
+          />
+        )}
+
+        {successMessage && (
+          <SuccessModal
+            description={successMessage}
+            onClose={() => setSuccessMessage("")}
           />
         )}
       </div>

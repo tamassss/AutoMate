@@ -54,6 +54,11 @@ def _parse_dt(val, field="date"):
     return dt
 
 
+def _is_admin_user(user):
+    role = str(getattr(user, "role", "") or "").strip().lower()
+    return role == "admin"
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_cars(request):
@@ -202,6 +207,149 @@ def api_login(request):
             "tokens": {"refresh": str(refresh), "access": str(refresh.access_token)},
         }
     )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def api_profile_update(request):
+    user = get_current_user(request)
+    d = request.data or {}
+
+    full_name = d.get("full_name")
+    email = d.get("email")
+    password = d.get("password")
+
+    if full_name is None and email is None and password is None:
+        return _bad("No fields to update")
+
+    if full_name is not None:
+        full_name = str(full_name).strip()
+        if not full_name:
+            return _bad("full_name cannot be empty")
+        user.full_name = full_name
+
+    if email is not None:
+        email = str(email).strip().lower()
+        if not email:
+            return _bad("email cannot be empty")
+        if User.objects.filter(email=email).exclude(user_id=user.user_id).exists():
+            return _bad("Email already in use")
+        user.email = email
+
+    if password is not None:
+        password = str(password)
+        if not password:
+            return _bad("password cannot be empty")
+        user.set_password(password)
+
+    user.save()
+    return Response(
+        {
+            "ok": True,
+            "user": {
+                "user_id": user.user_id,
+                "full_name": user.full_name or "",
+                "email": user.email,
+                "role": user.role,
+            },
+        }
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_admin_users(request):
+    current_user = get_current_user(request)
+    if not _is_admin_user(current_user):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    email_query = (request.query_params.get("email") or "").strip().lower()
+    qs = User.objects.all().order_by("user_id")
+    if email_query:
+        qs = qs.filter(email__icontains=email_query)
+
+    users = [
+        {
+            "user_id": u.user_id,
+            "full_name": u.full_name or "",
+            "email": u.email,
+            "password": "",
+            "role": u.role,
+        }
+        for u in qs
+    ]
+    return Response({"users": users})
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def api_admin_user_update(request, user_id: int):
+    current_user = get_current_user(request)
+    if not _is_admin_user(current_user):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    target_user = User.objects.filter(user_id=user_id).first()
+    if not target_user:
+        return Response({"detail": "Not found"}, status=404)
+
+    d = request.data or {}
+
+    if "full_name" in d:
+        full_name = str(d.get("full_name") or "").strip()
+        if not full_name:
+            return _bad("full_name cannot be empty")
+        target_user.full_name = full_name
+
+    if "email" in d:
+        email = str(d.get("email") or "").strip().lower()
+        if not email:
+            return _bad("email cannot be empty")
+        if User.objects.filter(email=email).exclude(user_id=target_user.user_id).exists():
+            return _bad("Email already in use")
+        target_user.email = email
+
+    if "password" in d:
+        password = str(d.get("password") or "")
+        if password:
+            target_user.set_password(password)
+
+    if "role" in d:
+        role = str(d.get("role") or "").strip().lower()
+        if role not in {"admin", "user", "moderator"}:
+            return _bad("Invalid role")
+        target_user.role = role
+        target_user.is_staff = role == "admin"
+
+    target_user.save()
+    return Response(
+        {
+            "ok": True,
+            "user": {
+                "user_id": target_user.user_id,
+                "full_name": target_user.full_name or "",
+                "email": target_user.email,
+                "password": "",
+                "role": target_user.role,
+            },
+        }
+    )
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def api_admin_user_delete(request, user_id: int):
+    current_user = get_current_user(request)
+    if not _is_admin_user(current_user):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    target_user = User.objects.filter(user_id=user_id).first()
+    if not target_user:
+        return Response({"detail": "Not found"}, status=404)
+    if target_user.user_id == current_user.user_id:
+        return _bad("Cannot delete your own account")
+
+    target_user.delete()
+    return Response({"ok": True})
 
 
 @api_view(["GET"])

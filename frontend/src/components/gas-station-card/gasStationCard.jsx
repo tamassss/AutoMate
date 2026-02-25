@@ -1,5 +1,11 @@
+import { useState } from "react";
+
 import Card from "../card/card";
 import Button from "../../components/button/button";
+import DeleteGasStation from "../../modals/deleteGasStation/deleteGasStation";
+import EditGasStation from "../../modals/editGasStation/editGasStation";
+import { formatGroupedNumber } from "../../actions/shared/formatters";
+
 import fuel95Icon from "../../assets/gas-station/fuels/95.png";
 import fuel100Icon from "../../assets/gas-station/fuels/100.png";
 import fuelDIcon from "../../assets/gas-station/fuels/d.png";
@@ -9,102 +15,112 @@ import shellLogo from "../../assets/gas-station/stations/shell.png";
 import orlenLogo from "../../assets/gas-station/stations/orlen.png";
 import auchanLogo from "../../assets/gas-station/stations/auchan.png";
 
-import "./gasStationCard.css"
-import { useState } from "react";
-import DeleteGasStation from "../../modals/deleteGasStation/deleteGasStation";
-import EditGasStation from "../../modals/editGasStation/editGasStation";
-import { formatGroupedNumber } from "../../actions/shared/formatters";
+import "./gasStationCard.css";
 
-export default function GasStationCard({ station, onDeleted, onUpdated }) {
-    const [showEditGasStation, setShowEditGasStation] = useState(false);
-    const[showDeleteGasStation, setShowDeleteGasStation] = useState(false);
-    const priceText = station?.literft ? `${formatGroupedNumber(station.literft, { decimals: 1, trimTrailingZeros: true })} Ft` : "-";
+export default function GasStationCard({
+  station,
+  onDeleted,
+  onUpdated,
+  showDefaultActions = true,
+  extraButtonText = "",
+  onExtraButtonClick,
+  extraInfo = "",
+}) {
+  const [showEditGasStation, setShowEditGasStation] = useState(false);
+  const [showDeleteGasStation, setShowDeleteGasStation] = useState(false);
+  const priceText = station?.literft
+    ? `${formatGroupedNumber(station.literft, { decimals: 1, trimTrailingZeros: true })} Ft`
+    : "-";
 
-    const fuelTypeText = String(station?.fuelType || "").toLowerCase();
-    const fuelTypeId = Number(station?.fuelTypeId || 0);
-    const supplierText = String(station?.supplier || "").toLowerCase();
+  const fuelTypeText = String(station?.fuelType || "").toLowerCase();
+  const fuelTypeId = Number(station?.fuelTypeId || 0);
+  const supplierText = String(station?.supplier || "").toLowerCase();
 
-    const fuelIcon =
-        fuelTypeId === 2
-            ? fuel100Icon
-            : fuelTypeId === 4
-            ? fuelDPlusIcon
-            : fuelTypeId === 3
-            ? fuelDIcon
-            : fuelTypeText.includes("100")
-            ? fuel100Icon
-            : fuelTypeText.includes("diesel plus")
-            ? fuelDPlusIcon
-            : fuelTypeText.includes("diesel")
-            ? fuelDIcon
-            : fuel95Icon;
+  const fuelIcon =
+    fuelTypeId === 2
+      ? fuel100Icon
+      : fuelTypeId === 4
+      ? fuelDPlusIcon
+      : fuelTypeId === 3
+      ? fuelDIcon
+      : fuelTypeText.includes("100")
+      ? fuel100Icon
+      : fuelTypeText.includes("diesel plus")
+      ? fuelDPlusIcon
+      : fuelTypeText.includes("diesel")
+      ? fuelDIcon
+      : fuel95Icon;
 
-    const stationIcon =
-        supplierText.includes("shell")
-            ? shellLogo
-            : supplierText.includes("orlen")
-            ? orlenLogo
-            : supplierText.includes("auchan")
-            ? auchanLogo
-            : molLogo;
+  const stationIcon = supplierText.includes("shell")
+    ? shellLogo
+    : supplierText.includes("orlen")
+    ? orlenLogo
+    : supplierText.includes("auchan")
+    ? auchanLogo
+    : molLogo;
 
-    return (
-        <Card>
-            <div style={{ color: "white" }}>
-                <div className="date-header text-center p-3" >
-                    <p className="date-text" style={{color:"#4CAF50"}}>
-                        {station.datum}
-                    </p>
-                </div>
+  return (
+    <Card>
+      <div style={{ color: "white" }}>
+        <div className="date-header text-center p-3">
+          <p className="date-text" style={{ color: "#4CAF50" }}>
+            {station?.datum || "-"}
+          </p>
+        </div>
 
-                <div className="p-1">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <img src={stationIcon} alt={station?.supplier || "Benzinkút"} className="station-icon"/>
-                        <h2 className="price">{priceText}</h2>
-                    </div>
+        <div className="p-1">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <img src={stationIcon} alt={station?.supplier || "Benzinkút"} className="station-icon" />
+            <h2 className="price">{priceText}</h2>
+          </div>
 
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                        <img src={fuelIcon} alt={station?.fuelType || "Üzemanyag"} className="fuel-icon"/>
-                        <div className="text-start">
-                            <h4 className="m-0 station-city">{station.helyseg}</h4>
-                            <p className="m-0 text-secondary station-address">{station.cim}</p>
-                        </div>
-                    </div>
-                    <div className="d-flex gap-2 ">
-                        <div className="fuel-button">
-                            <Button 
-                                text="Módosítás"
-                                onClick={() => setShowEditGasStation(true)}
-                            />
-                        </div>
-                        <div className="fuel-button">
-                            <Button 
-                                text="Törlés"
-                                onClick={() => setShowDeleteGasStation(true)}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {showDeleteGasStation && (
-                    <DeleteGasStation
-                        onClose={() => setShowDeleteGasStation(false)}
-                        onDeleted={onDeleted}
-                        gasStationId={station?.gasStationId}
-                        helyseg={station?.helyseg || "-"}
-                        cim={station?.cim || "-"}
-                    />
-                )}
-
-                {showEditGasStation && (
-                    <EditGasStation
-                        onClose={() => setShowEditGasStation(false)}
-                        selectedStation={station}
-                        onSave={(updatedStation) => onUpdated?.(updatedStation)}
-                    />
-                )}
-
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <img src={fuelIcon} alt={station?.fuelType || "Üzemanyag"} className="fuel-icon" />
+            <div className="text-start">
+              <h4 className="m-0 station-city">{station?.helyseg || "-"}</h4>
+              <p className="m-0 text-secondary station-address">{station?.cim || "-"}</p>
             </div>
-        </Card>
-    );
+          </div>
+
+          {extraInfo ? <p className="mb-3 small text-info">{extraInfo}</p> : null}
+
+          <div className="d-flex gap-2">
+            {showDefaultActions ? (
+              <>
+                <div className="fuel-button">
+                  <Button text="Módosítás" onClick={() => setShowEditGasStation(true)} />
+                </div>
+                <div className="fuel-button">
+                  <Button text="Törlés" onClick={() => setShowDeleteGasStation(true)} />
+                </div>
+              </>
+            ) : null}
+            {extraButtonText ? (
+              <div className="fuel-button">
+                <Button text={extraButtonText} onClick={onExtraButtonClick} />
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {showDefaultActions && showDeleteGasStation ? (
+          <DeleteGasStation
+            onClose={() => setShowDeleteGasStation(false)}
+            onDeleted={onDeleted}
+            gasStationId={station?.gasStationId}
+            helyseg={station?.helyseg || "-"}
+            cim={station?.cim || "-"}
+          />
+        ) : null}
+
+        {showDefaultActions && showEditGasStation ? (
+          <EditGasStation
+            onClose={() => setShowEditGasStation(false)}
+            selectedStation={station}
+            onSave={(updatedStation) => onUpdated?.(updatedStation)}
+          />
+        ) : null}
+      </div>
+    </Card>
+  );
 }

@@ -21,6 +21,7 @@ export async function createCar(carData) {
     license_plate: carData.license_plate,
     brand: carData.brand,
     model: carData.model,
+    car_image: carData.car_image || null,
   };
 
   if (hasValue(carData.odometer_km)) {
@@ -54,6 +55,7 @@ export async function editCar(carId, carData) {
   if (carData.license_plate !== undefined) payload.license_plate = carData.license_plate;
   if (carData.brand !== undefined) payload.brand = carData.brand;
   if (carData.model !== undefined) payload.model = carData.model;
+  if (carData.car_image !== undefined) payload.car_image = carData.car_image;
 
   if (hasValue(carData.odometer_km)) {
     payload.odometer_km = Number(carData.odometer_km);

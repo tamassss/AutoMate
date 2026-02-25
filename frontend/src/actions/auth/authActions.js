@@ -1,4 +1,4 @@
-﻿import { apiUrl, parseJsonSafe } from "../shared/http";
+import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 
 // Bejelentkezés
 export async function login(email, password) {
@@ -11,6 +11,9 @@ export async function login(email, password) {
   const data = await parseJsonSafe(response);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error("Hibás bejelentkezési adatok.");
+    }
     throw new Error(data.detail || "Hiba a bejelentkezésnél.");
   }
 
@@ -19,6 +22,8 @@ export async function login(email, password) {
   localStorage.setItem("full_name", data?.user?.full_name || "");
   localStorage.setItem("email", (email || "").trim());
   localStorage.setItem("password", password || "");
+  localStorage.setItem("role", data?.user?.role || "user");
+  localStorage.setItem("user_id", String(data?.user?.user_id || ""));
 
   return data.user;
 }
@@ -38,7 +43,11 @@ export async function register(email, password, fullName) {
   const data = await parseJsonSafe(response);
 
   if (!response.ok) {
-    throw new Error(data.detail || "Hiba a regisztrációnál.");
+    const emailError = Array.isArray(data?.email) ? data.email[0] : data?.email;
+    const detail = data?.detail;
+    const nonFieldError = Array.isArray(data?.non_field_errors) ? data.non_field_errors[0] : data?.non_field_errors;
+
+    throw new Error(emailError || detail || nonFieldError || "Hiba a regisztrációnál.");
   }
 
   return data;
@@ -47,4 +56,31 @@ export async function register(email, password, fullName) {
 // Kijelentkezés
 export function logout() {
   localStorage.clear();
+}
+
+// Beállítások mentése
+export async function updateProfileSettings({ fullName, email, password }) {
+  const response = await fetch(apiUrl("/auth/profile/"), {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      full_name: fullName,
+      email,
+      password,
+    }),
+  });
+
+  const data = await parseJsonSafe(response);
+  handleUnauthorized(response);
+
+  if (!response.ok) {
+    throw new Error(data.detail || "Hiba a beállítások mentése közben.");
+  }
+
+  localStorage.setItem("full_name", data?.user?.full_name || fullName || "");
+  localStorage.setItem("email", data?.user?.email || email || "");
+  localStorage.setItem("password", password || "");
+  localStorage.setItem("role", data?.user?.role || localStorage.getItem("role") || "user");
+
+  return data?.user || null;
 }

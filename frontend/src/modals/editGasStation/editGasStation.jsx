@@ -1,8 +1,9 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
 import ErrorModal from "../../components/error-modal/errorModal";
+import SuccessModal from "../../components/success-modal/successModal";
 import { editFuelingById, editGasStation } from "../../actions/gasStations/gasStationActions";
 import { clampNumberInput, limitTextLength } from "../../actions/shared/inputValidation";
 import "./editGasStation.css";
@@ -21,9 +22,11 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
   const [address, setAddress] = useState("");
   const [supplier, setSupplier] = useState("");
   const [fuelTypeId, setFuelTypeId] = useState("1");
-  const [error, setError] = useState("");
+  const [localError, setLocalError] = useState("");
+  const [serverError, setServerError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (!selectedStation) return;
@@ -34,12 +37,15 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
     setFuelTypeId(selectedStation.fuelTypeId ? String(selectedStation.fuelTypeId) : "1");
   }, [selectedStation]);
 
-  async function handleSave() {
+  async function handleSave(e) {
+    e.preventDefault();
     if (!selectedStation?.gasStationId || !selectedStation?.fuelingId) {
-      setError("Hiányzik az azonosító.");
+      setLocalError("Hiányzik az azonosító.");
       return;
     }
 
+    setLocalError("");
+    setServerError("");
     setFieldErrors({});
 
     const tempErrors = {};
@@ -61,7 +67,6 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
       return;
     }
 
-    setError("");
     setIsSaving(true);
     try {
       await editGasStation(selectedStation.gasStationId, {
@@ -93,9 +98,9 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
         fuelTypeId: updatedFueling?.fuel_type_id ?? Number(fuelTypeId),
         fuelType: updatedFueling?.fuel_type || selectedFuelType?.label || "-",
       });
-      onClose?.();
+      setShowSuccess(true);
     } catch (err) {
-      setError(err.message || "Nem sikerült módosítani a benzinkutat.");
+      setServerError(err.message || "Nem sikerült módosítani a benzinkutat.");
     } finally {
       setIsSaving(false);
     }
@@ -107,7 +112,8 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
         title={"Benzinkút módosítása"}
         columns={1}
         onClose={onClose}
-        footer={<Button text={isSaving ? "Mentés..." : "Módosítás"} onClick={handleSave} />}
+        onSubmit={handleSave}
+        footer={<Button text={isSaving ? "Mentés..." : "Módosítás"} type={"submit"} />}
       >
         <LabeledInput
           label={"Ft/liter"}
@@ -141,15 +147,15 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
           }}
           error={fieldErrors.address}
         />
-        <div className="full-width text-start">
-          <label style={{ display: "block", marginBottom: "6px" }}>Forgalmazó</label>
+        <div className="full-width text-start modal-select-group">
+          <label className="modal-select-label">Forgalmazó</label>
           <select
             value={supplier}
             onChange={(e) => {
               setSupplier(e.target.value);
               if (fieldErrors.supplier) setFieldErrors((prev) => ({ ...prev, supplier: "" }));
             }}
-            style={{ width: "100%", padding: "12px", borderRadius: "8px" }}
+            className="modal-select"
           >
             {SUPPLIER_OPTIONS.map((opt) => (
               <option key={opt} value={opt}>
@@ -159,15 +165,15 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
           </select>
           {fieldErrors.supplier && <span className="error-message">{fieldErrors.supplier}</span>}
         </div>
-        <div className="full-width text-start">
-          <label style={{ display: "block", marginBottom: "6px" }}>Üzemanyag típusa</label>
+        <div className="full-width text-start modal-select-group">
+          <label className="modal-select-label">Üzemanyag típusa</label>
           <select
             value={fuelTypeId}
             onChange={(e) => {
               setFuelTypeId(e.target.value);
               if (fieldErrors.fuelTypeId) setFieldErrors((prev) => ({ ...prev, fuelTypeId: "" }));
             }}
-            style={{ width: "100%", padding: "12px", borderRadius: "8px" }}
+            className="modal-select"
           >
             {FUEL_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -177,8 +183,18 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
           </select>
           {fieldErrors.fuelTypeId && <span className="error-message">{fieldErrors.fuelTypeId}</span>}
         </div>
+        {localError && <p className="text-danger m-0">{localError}</p>}
       </Modal>
-      {error && <ErrorModal title={"Hiba!"} description={error} onClose={() => setError("")} />}
+      {serverError && <ErrorModal title={"Hiba!"} description={serverError} onClose={() => setServerError("")} />}
+      {showSuccess && (
+        <SuccessModal
+          description="Benzinkút sikeresen módosítva"
+          onClose={() => {
+            setShowSuccess(false);
+            onClose?.();
+          }}
+        />
+      )}
     </>
   );
 }

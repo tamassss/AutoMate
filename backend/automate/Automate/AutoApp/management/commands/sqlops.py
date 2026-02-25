@@ -45,7 +45,7 @@ def update_user(felhasznalo_id, email=None, jelszo_hash=None, nev=None, szerep=N
     if szerep is not None: allowed['szerep'] = szerep
 
     if not allowed:
-        raise ValueError("No fields provided to update")
+        raise ValueError("Nincs megadva módosítandó mező")
 
     set_parts = []
     params = []
@@ -103,7 +103,7 @@ class Command(BaseCommand):
     help = "Run raw SQL operations against the 'automate' MySQL DB. Actions: select_users, insert_user, update_user, delete_user, select_autos, insert_tankolas, run_select"
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        parser.add_argument("--action", required=True, help="Action to perform (see help)")
+        parser.add_argument("--action", required=True, help="Végrehajtandó művelet (lásd help)")
         # common user args
         parser.add_argument("--email", help="email for insert/update user")
         parser.add_argument("--password_hash", help="jelszo_hash for insert/update user")
@@ -133,21 +133,21 @@ class Command(BaseCommand):
                 email = options.get("email")
                 jelszo_hash = options.get("password_hash")
                 if not email or not jelszo_hash:
-                    raise CommandError("insert_user requires --email and --password_hash")
+                    raise CommandError("Az insert_user művelethez szükséges: --email és --password_hash")
                 fel_id = insert_user(email, jelszo_hash, nev=options.get("nev"), szerep=options.get("szerep") or "user")
                 self.stdout.write(f"Inserted felhasznalo_id={fel_id}")
 
             elif action == "update_user":
                 fid = options.get("id")
                 if not fid:
-                    raise CommandError("update_user requires --id")
+                    raise CommandError("Az update_user művelethez szükséges: --id")
                 changed = update_user(fid, email=options.get("email"), jelszo_hash=options.get("password_hash"), nev=options.get("nev"), szerep=options.get("szerep"))
                 self.stdout.write(f"Updated rows: {changed}")
 
             elif action == "delete_user":
                 fid = options.get("id")
                 if not fid:
-                    raise CommandError("delete_user requires --id")
+                    raise CommandError("A delete_user művelethez szükséges: --id")
                 deleted = delete_user(fid)
                 self.stdout.write(f"Deleted rows: {deleted}")
 
@@ -158,21 +158,21 @@ class Command(BaseCommand):
             elif action == "insert_tankolas":
                 for_field_ok = all([options.get("felhasznalo_id"), options.get("auto_id"), options.get("benzinkut_id"), options.get("datum"), options.get("liter"), options.get("ar_per_liter")])
                 if not for_field_ok:
-                    raise CommandError("insert_tankolas requires --felhasznalo_id --auto_id --benzinkut_id --datum --liter --ar_per_liter")
+                    raise CommandError("Az insert_tankolas művelethez szükséges: --felhasznalo_id --auto_id --benzinkut_id --datum --liter --ar_per_liter")
                 # parse datum
                 try:
                     datum = datetime.datetime.fromisoformat(options.get("datum"))
                 except Exception as e:
-                    raise CommandError(f"Invalid datum: {e}")
+                    raise CommandError(f"Érvénytelen datum: {e}")
                 tid = insert_tankolas(options.get("felhasznalo_id"), options.get("auto_id"), options.get("benzinkut_id"), datum, options.get("liter"), options.get("ar_per_liter"))
                 self.stdout.write(f"Inserted tankolas_id={tid}")
 
             elif action == "run_select":
                 sql = options.get("sql")
                 if not sql:
-                    raise CommandError("run_select requires --sql (read-only SELECT)")
+                    raise CommandError("A run_select művelethez szükséges: --sql (csak olvasható SELECT)")
                 if not sql.strip().lower().startswith("select"):
-                    raise CommandError("Only SELECT read-only queries permitted for run_select")
+                    raise CommandError("A run_select műveletben csak SELECT olvasási lekérdezés engedélyezett")
                 params = []
                 if options.get("params"):
                     params = [p.strip() for p in options.get("params").split(",")]
@@ -180,7 +180,8 @@ class Command(BaseCommand):
                 self.stdout.write(str(rows))
 
             else:
-                raise CommandError(f"Unknown action: {action}")
+                raise CommandError(f"Ismeretlen művelet: {action}")
 
         except Exception as e:
             raise CommandError(str(e))
+

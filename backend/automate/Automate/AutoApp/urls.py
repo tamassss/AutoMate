@@ -1,6 +1,10 @@
 from django.urls import path
 
 from AutoApp.views import (
+    api_profile_update,
+    api_admin_users,
+    api_admin_user_update,
+    api_admin_user_delete,
     api_cars,
     api_dashboard,
     api_routes,
@@ -44,6 +48,10 @@ urlpatterns = [
     path("auth/register/", RegisterView.as_view(), name="register"),
 
     path("auth/login/", api_login, name="login"),
+    path("auth/profile/", api_profile_update, name="profile_update"),
+    path("admin/users/", api_admin_users, name="api_admin_users"),
+    path("admin/users/<int:user_id>/", api_admin_user_update, name="api_admin_user_update"),
+    path("admin/users/<int:user_id>/delete/", api_admin_user_delete, name="api_admin_user_delete"),
 
     path("cars/", api_cars, name="api_cars"),
     path("dashboard/", api_dashboard, name="api_dashboard"),

@@ -7,7 +7,6 @@ import { login } from "../../../actions/auth/authActions";
 import Card from "../../../components/card/card";
 import Input from "../../../components/input/input";
 import Button from "../../../components/button/button";
-import ErrorModal from "../../../components/error-modal/errorModal";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -36,23 +35,19 @@ export default function Login() {
     }
 
     try {
-      await login(em, pw);
-      navigate("/autok");
+      const user = await login(em, pw);
+      const targetPath = user?.role === "admin" ? "/admin" : "/autok";
+
+      navigate(targetPath, {
+        state: { successMessage: "Sikeres bejelentkezés" },
+      });
     } catch (err) {
-      setErrorMessage(err.message || "Ismeretlen hiba!");
+      setErrorMessage(err?.message || "Ismeretlen hiba!");
     }
   }
 
   return (
     <Card>
-      {errorMessage && (
-        <ErrorModal
-          onClose={() => setErrorMessage(null)}
-          title={"Bejelentkezési hiba"}
-          description={errorMessage}
-        />
-      )}
-
       <h3 className="mt-2">Bejelentkezés</h3>
       {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
 
@@ -86,4 +81,3 @@ export default function Login() {
     </Card>
   );
 }
-

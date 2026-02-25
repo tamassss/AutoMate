@@ -1,6 +1,6 @@
 .parking-container{
-    min-width: 100vw;
-    max-width: 100vw;
+    min-width: 100%;
+    max-width: 100%;
 }
 
 .parking-nav{
@@ -15,7 +15,7 @@
     cursor: pointer;
 }
 
-.row > * {
+.parking-container .row > * {
     padding-right: 0;
     padding-left: 0;
 }
@@ -37,4 +37,10 @@
 
 .parking-div{
     margin-top: 60px;
+}
+
+.parking-title {
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #7ec8ff;
 }

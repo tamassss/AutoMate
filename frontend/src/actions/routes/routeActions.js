@@ -1,5 +1,5 @@
 import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
-import { formatDate } from "../shared/formatters";
+import { formatDate, formatMonth } from "../shared/formatters";
 
 // Utak lekérése
 export async function getRoutes() {
@@ -20,13 +20,14 @@ export async function getRoutes() {
   const items = data.routes ?? [];
 
   return items.map((route) => ({
+    month: route?.date ? formatMonth(String(route.date).slice(0, 7)) : "-",
     id: route.route_usage_id,
     honnan: route.from_city || "-",
     hova: route.to_city || "-",
     datum: formatDate(route.date),
     kezdes: route.departure_time_hhmm || "-",
     vege: route.arrival_time_hhmm || "-",
-    javitas: 0,
+    javitas: Number(route.arrival_delta_min || 0),
     tavolsag: Number(route.distance_km || 0),
     tankolas_szam: Number(route.fuelings_count || 0),
     koltseg: Math.round(Number(route.fuelings_spent || 0)),

@@ -12,11 +12,24 @@ from AutoApp.models import (
 User = get_user_model()
 # --------- Auth ----------
 class RegisterSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        error_messages={
+            "required": "Az email megadása kötelező.",
+            "blank": "Az email megadása kötelező.",
+            "invalid": "Érvénytelen email cím.",
+        }
+    )
     password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
         fields = ("email", "password", "full_name")
+
+    def validate_email(self, value):
+        normalized = (value or "").strip().lower()
+        if User.objects.filter(email__iexact=normalized).exists():
+            raise serializers.ValidationError("Ez az e-mail cím már használatban van.")
+        return normalized
 
     def create(self, validated_data):
         user = User.objects.create_user(

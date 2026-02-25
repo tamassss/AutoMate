@@ -1,8 +1,6 @@
 ﻿import "./App.css";
 
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-
-import Admin from "./admin/admin";
+import { Routes, Route, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import Home from "./pages/landing/home/home";
 import Tips from "./pages/landing/tips/tips";
@@ -20,7 +18,9 @@ import TripsAndFuels from "./pages/main-page/menu-points/tripsAndFuels/tripsAndF
 import Login from "./pages/landing/login/login";
 import GasStations from "./pages/main-page/menu-points/gasStations/gasStations";
 import Community from "./pages/main-page/menu-points/community/community";
+import AdminPage from "./pages/roles/admin/adminPage";
 import LoadingOverlay from "./components/loading-overlay/loadingOverlay";
+import SuccessModal from "./components/success-modal/successModal";
 
 function isTokenValid(token) {
   if (!token) return false;
@@ -36,17 +36,51 @@ function isTokenValid(token) {
   }
 }
 
+function ProtectedRoute() {
+  const token = localStorage.getItem("token");
+
+  if (!isTokenValid(token)) {
+    localStorage.clear();
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function AdminRoute() {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (!isTokenValid(token)) {
+    localStorage.clear();
+    return <Navigate to="/" replace />;
+  }
+
+  if (role !== "admin") {
+    return <Navigate to="/autok" replace />;
+  }
+
+  return <Outlet />;
+}
+
 function App() {
-  const ProtectedRoute = () => {
-    const token = localStorage.getItem("token");
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    if (!isTokenValid(token)) {
-      localStorage.clear();
-      return <Navigate to="/" replace />;
-    }
+  const routeState = location.state || {};
+  const successMessage = routeState.successMessage;
 
-    return <Outlet />;
-  };
+  function closeSuccessModal() {
+    if (!successMessage) return;
+
+    const nextState = { ...routeState };
+    delete nextState.successMessage;
+
+    navigate(`${location.pathname}${location.search}${location.hash}`, {
+      replace: true,
+      state: Object.keys(nextState).length ? nextState : null,
+    });
+  }
 
   return (
     <>
@@ -69,10 +103,15 @@ function App() {
           <Route path="/muszerfal/kozosseg" element={<Community />} />
         </Route>
 
-        <Route path="/admin" element={<Admin />} />
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminPage />} />
+        </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {successMessage && <SuccessModal description={successMessage} onClose={closeSuccessModal} />}
+
       <LoadingOverlay />
     </>
   );

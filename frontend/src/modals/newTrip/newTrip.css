@@ -3,6 +3,10 @@
     width: 100%;
 }
 
+.estimate-title {
+    color: #7ec8ff;
+}
+
 .new-trip-result-table {
     width: 100%;
     border-collapse: collapse;

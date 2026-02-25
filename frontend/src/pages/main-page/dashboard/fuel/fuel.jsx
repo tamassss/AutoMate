@@ -77,7 +77,7 @@ export default function Fuel({ fuelingChart, latestFueling }) {
       <table className="fuel-table">
         <tbody>
           <tr>
-            <td className="odd text-center field" colSpan={2}>
+            <td className="odd text-center field last-fuel-title" colSpan={2}>
               Legutóbbi tankolás{" "}
               <span className="last-fuel-date">{formatDateLocale(latestFueling?.date)}</span>
             </td>

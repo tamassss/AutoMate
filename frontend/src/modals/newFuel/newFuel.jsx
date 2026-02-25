@@ -2,8 +2,8 @@
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
-import HrOptional from "../../components/hr-optional/hrOptional";
 import { clampNumberInput } from "../../actions/shared/inputValidation";
+import SuccessModal from "../../components/success-modal/successModal";
 import "./newFuel.css";
 
 export default function NewFuel({ onClose, onSave }) {
@@ -20,8 +20,10 @@ export default function NewFuel({ onClose, onSave }) {
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
     const [isSaving, setIsSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
-    async function handleSave() {
+    async function handleSave(e) {
+        e.preventDefault();
         setError("");
         setFieldErrors({});
 
@@ -57,8 +59,7 @@ export default function NewFuel({ onClose, onSave }) {
                 odometerKm: odometerKm ? Number(odometerKm) : null,
                 date: new Date().toISOString(),
             });
-
-            onClose();
+            setShowSuccess(true);
         } catch (err) {
             setError(err.message || "Nem sikerült menteni a tankolást.");
         } finally {
@@ -67,55 +68,64 @@ export default function NewFuel({ onClose, onSave }) {
     }
 
     return (
-        <Modal
-            title={"Új tankolás"}
-            onClose={onClose}
-            columns={1}
-            footer={<Button text={isSaving ? "Ment..." : "Hozzáadás"} onClick={handleSave} />}
-        >
-            <LabeledInput
-                label={"Mennyiség (liter)"}
-                type={"number"}
-                value={liters}
-                min={1}
-                max={100}
-                onChange={(e) => {
-                    setLiters(clampNumberInput(e.target.value, { min: 1, max: 100, decimals: 2 }));
-                    if (fieldErrors.liters) setFieldErrors((prev) => ({ ...prev, liters: "" }));
-                }}
-                error={fieldErrors.liters}
-            />
-            <LabeledInput
-                label={"Ft/liter"}
-                type={"number"}
-                value={pricePerLiter}
-                min={1}
-                max={1000}
-                onChange={(e) => {
-                    setPricePerLiter(clampNumberInput(e.target.value, { min: 1, max: 1000, decimals: 2 }));
-                    if (fieldErrors.pricePerLiter) setFieldErrors((prev) => ({ ...prev, pricePerLiter: "" }));
-                }}
-                error={fieldErrors.pricePerLiter}
-            />
-            <LabeledInput
-                label={"Km óra állás (opcionális)"}
-                type={"number"}
-                value={odometerKm}
-                min={0}
-                max={999999}
-                onChange={(e) => {
-                    setOdometerKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
-                    if (fieldErrors.odometerKm) setFieldErrors((prev) => ({ ...prev, odometerKm: "" }));
-                }}
-                error={fieldErrors.odometerKm}
-            />
+        <>
+            <Modal
+                title={"Új tankolás"}
+                onClose={onClose}
+                columns={1}
+                onSubmit={handleSave}
+                footer={<Button text={isSaving ? "Ment..." : "Hozzáadás"} type={"submit"} />}
+            >
+                <LabeledInput
+                    label={"Mennyiség (liter)"}
+                    type={"number"}
+                    value={liters}
+                    min={1}
+                    max={100}
+                    onChange={(e) => {
+                        setLiters(clampNumberInput(e.target.value, { min: 1, max: 100, decimals: 2 }));
+                        if (fieldErrors.liters) setFieldErrors((prev) => ({ ...prev, liters: "" }));
+                    }}
+                    error={fieldErrors.liters}
+                />
+                <LabeledInput
+                    label={"Ft/liter"}
+                    type={"number"}
+                    value={pricePerLiter}
+                    min={1}
+                    max={1000}
+                    onChange={(e) => {
+                        setPricePerLiter(clampNumberInput(e.target.value, { min: 1, max: 1000, decimals: 2 }));
+                        if (fieldErrors.pricePerLiter) setFieldErrors((prev) => ({ ...prev, pricePerLiter: "" }));
+                    }}
+                    error={fieldErrors.pricePerLiter}
+                />
+                <LabeledInput
+                    label={"Km óra állás (opcionális)"}
+                    type={"number"}
+                    value={odometerKm}
+                    min={0}
+                    max={999999}
+                    onChange={(e) => {
+                        setOdometerKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
+                        if (fieldErrors.odometerKm) setFieldErrors((prev) => ({ ...prev, odometerKm: "" }));
+                    }}
+                    error={fieldErrors.odometerKm}
+                />
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
-        </Modal>
+                {error && <p style={{ color: "red" }}>{error}</p>}
+            </Modal>
+
+            {showSuccess && (
+                <SuccessModal
+                    description="Tankolás sikeresen elmentve"
+                    onClose={() => {
+                        setShowSuccess(false);
+                        onClose?.();
+                    }}
+                />
+            )}
+        </>
     );
 }
-
-
-
-
 

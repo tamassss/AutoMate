@@ -1,83 +1,86 @@
-import { useState } from "react"
-import { useNavigate, Link, useLocation } from "react-router-dom"
+﻿import { useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
-import helpIcon from "../../assets/icons/help.png"
-import backIcon from "../../assets/icons/back.png"
-import exitIcon from "../../assets/icons//exit.png"
-import settingsIcon from "../../assets/icons/settings.png"
+import helpIcon from "../../assets/icons/help.png";
+import backIcon from "../../assets/icons/back.png";
+import exitIcon from "../../assets/icons//exit.png";
+import settingsIcon from "../../assets/icons/settings.png";
 
-import SuccessModal from "../success-modal/successModal"
-import Settings from "../../modals/settings/settings"
+import Settings from "../../modals/settings/settings";
 
-import "./navbar.css"
+import "./navbar.css";
 
-export default function Navbar(){
-    const navigate = useNavigate();
-    const location = useLocation();
-    const [showLogoutSuccess, setShowLogoutSuccess] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
-    const isCarsPage = location.pathname === "/autok";
+export default function Navbar({ forceHomeLink = false }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [showSettings, setShowSettings] = useState(false);
+  const [token] = useState(localStorage.getItem("token"));
+  const isCarsPage = location.pathname === "/autok";
+  const isDashboardRoute = location.pathname.startsWith("/muszerfal");
 
-    function goToHomeBySelectedCar() {
-        const selectedCarId = localStorage.getItem("selected_car_id");
-        if (selectedCarId && selectedCarId !== "default") {
-            navigate("/muszerfal");
-            return;
-        }
-
-        navigate("/");
+  function goToHomeBySelectedCar() {
+    if (forceHomeLink) {
+      navigate("/");
+      return;
     }
 
-    
-    function logout(){
-        localStorage.clear()
-        setShowLogoutSuccess(true)
+    const selectedCarId = localStorage.getItem("selected_car_id");
+    if (selectedCarId && selectedCarId !== "default") {
+      navigate("/muszerfal");
+      return;
     }
 
-    return(
-        <>
-            <nav className="custom-navbar">
-                {isCarsPage && (
-                    <div className="settings-div" onClick={() => setShowSettings(true)}>
-                        <img className="settings-icon" src={settingsIcon} alt="Beállítások" />
-                    </div>
-                )}
+    navigate("/");
+  }
 
-                <div className={"nav-icons-div"} onClick={() => navigate(-1)}>
-                    <img className={"nav-icons"} src={backIcon} alt={"Vissza"} />
-                </div>
+  function logout() {
+    localStorage.clear();
+    navigate("/", {
+      state: { successMessage: "Sikeresen kijelentkeztél!" },
+    });
+  }
 
-                <div className="nav-title-div">
-                    <p className="brand" onClick={goToHomeBySelectedCar}>
-                        Auto<span className="mate-span">Mate</span>
-                    </p>
-                </div>
+  function handleBackClick() {
+    if (isDashboardRoute) {
+      navigate("/autok");
+      return;
+    }
+    navigate(-1);
+  }
 
-                <div className={"nav-icons-div"} onClick={logout}>
-                    <img className={"nav-icons"} src={exitIcon} alt={"Kilépés"}/>
-                </div>
+  return (
+    <>
+      <nav className="custom-navbar">
+        {isCarsPage && (
+          <div className="settings-div" onClick={() => setShowSettings(true)}>
+            <img className="settings-icon" src={settingsIcon} alt="Beállítások" />
+          </div>
+        )}
 
-                <div className="help-div">
-                    <Link to="/tippek" className="help-link">
-                        <img src={helpIcon} alt="Segítség kezdőknek" title="Segítség kezdőknek"/>
-                    </Link>
-                </div>
-            </nav>
+        <div className={"nav-icons-div"} onClick={handleBackClick}>
+          <img className={"nav-icons"} src={backIcon} alt={"Vissza"} />
+        </div>
 
-            {showLogoutSuccess && (
-                <SuccessModal
-                    onClose={() => {
-                        setShowLogoutSuccess(false)
-                        navigate("/")
-                    }}
-                    title={"Siker!"}
-                    description={"Sikeresen kijelentkeztél!"}
-                />
-            )}
+        <div className="nav-title-div">
+          <p className="brand" onClick={goToHomeBySelectedCar}>
+            Auto<span className="mate-span">Mate</span>
+          </p>
+        </div>
 
-            {showSettings && (
-                <Settings onClose={() => setShowSettings(false)} />
-            )}
-        </>
-    )
+        {token && (
+          <div className={"nav-icons-div"} onClick={logout}>
+            <img className={"nav-icons"} src={exitIcon} alt={"Kilépés"} />
+          </div>
+        )}
+
+        <div className="help-div">
+          <Link to="/tippek" className="help-link">
+            <img src={helpIcon} alt="Segítség kezdőknek" title="Segítség kezdőknek" />
+          </Link>
+        </div>
+      </nav>
+
+      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+    </>
+  );
 }

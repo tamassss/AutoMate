@@ -3,10 +3,10 @@ import { getCars, returnSelectedCard } from "../../../actions/cars/carsActions";
 import { Link, useNavigate } from "react-router-dom";
 
 import Button from "../../../components/button/button";
-import placeholder from "../../../assets/icons/car.png"
 import plusIcon from "../../../assets/icons/plus.png"
 import leftArrow from "../../../assets/icons/left-arrow.png"
 import rightArrow from "../../../assets/icons/right-arrow.png"
+import { getCarImageSrc } from "../../../assets/car-images/carImageOptions";
 
 import AddCar from "../../../modals/addCar/addCar";
 
@@ -14,6 +14,7 @@ import "./carSelect.css"
 
 export default function CarSelect({refreshKey, onCarChange}){
     const [cars, setCars] = useState([]);
+    const [slideDirection, setSlideDirection] = useState("next");
 
     useEffect(() => {
         getCars().then(setCars).catch(() => setCars([]))
@@ -66,10 +67,12 @@ export default function CarSelect({refreshKey, onCarChange}){
     const right = cars[(activeIndex + 1) % cars.length];
 
     function nextCar() {
+        setSlideDirection("next");
         setActiveIndex((prev) => (prev + 1) % cars.length);
     }
 
     function prevCar() {
+        setSlideDirection("prev");
         setActiveIndex((prev) => (prev - 1 + cars.length) % cars.length
         );
     }
@@ -90,16 +93,19 @@ return(
                 {hasMultiple && (
                     <div className="side-content desktop">
                         <div className="side-image">
-                            <img src={placeholder} alt={left.display_name}/>
+                            <img src={getCarImageSrc(left?.car_image)} alt={left.display_name}/>
                         </div>
                         <p className="side-name">{left.display_name}</p>
                     </div>
                 )}
             </div>
 
-            <div className="main-car">
+            <div
+                key={`${current.car_id}-${activeIndex}`}
+                className={`main-car ${slideDirection === "next" ? "slide-from-right" : "slide-from-left"}`}
+            >
                 <div className="main-image" onClick={onSelect}>
-                    <img src={placeholder} alt={current.display_name} className="main-car-img"/>
+                    <img src={getCarImageSrc(current?.car_image)} alt={current.display_name} className="main-car-img"/>
                 </div>
                 <div className="main-info">
                     <h2 className="main-title">{current.display_name}</h2>
@@ -108,7 +114,11 @@ return(
                         <div className="license-inner">
                             <div className="license-blue"></div>
                             <div className="license-white">
-                                <p className="license-plate">{current.license_plate}</p>
+                                <p
+                                    className={`license-plate ${String(current.license_plate || "").length >= 8 ? "license-plate-small" : ""}`}
+                                >
+                                    {current.license_plate}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -126,7 +136,7 @@ return(
                 {hasMultiple && (
                     <div className="side-content desktop">
                         <div className="side-image">
-                            <img src={placeholder} alt={right.display_name}/>
+                            <img src={getCarImageSrc(right?.car_image)} alt={right.display_name}/>
                         </div>
                         <p className="side-name">{right.display_name}</p>
                     </div>

@@ -4,6 +4,7 @@ import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
 import { clampNumberInput, limitTextLength } from "../../actions/shared/inputValidation";
+import SuccessModal from "../../components/success-modal/successModal";
 
 export default function NewService({ onClose, onSave }) {
     const today = new Date().toISOString().split("T")[0];
@@ -15,8 +16,10 @@ export default function NewService({ onClose, onSave }) {
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
     const [isSaving, setIsSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
-    async function handleSave() {
+    async function handleSave(e) {
+        e.preventDefault();
         setError("");
         setFieldErrors({});
 
@@ -38,7 +41,7 @@ export default function NewService({ onClose, onSave }) {
                 reminderDate,
                 reminderKm,
             });
-            onClose?.();
+            setShowSuccess(true);
         } catch (err) {
             setError(err.message || "Nem sikerült menteni a szervizt.");
         } finally {
@@ -47,10 +50,12 @@ export default function NewService({ onClose, onSave }) {
     }
 
     return (
+        <>
         <Modal
             title={"Új szerviz"}
             onClose={onClose}
-            footer={<Button text={isSaving ? "Ment..." : "Hozzáadás"} onClick={handleSave} />}
+            onSubmit={handleSave}
+            footer={<Button text={isSaving ? "Ment..." : "Hozzáadás"} type={"submit"} />}
         >
             <LabeledInput
                 label={"Alkatrész"}
@@ -96,6 +101,16 @@ export default function NewService({ onClose, onSave }) {
             />
             {error && <p className="text-danger">{error}</p>}
         </Modal>
+        {showSuccess && (
+            <SuccessModal
+                description="Szerviz sikeresen hozzáadva"
+                onClose={() => {
+                    setShowSuccess(false);
+                    onClose?.();
+                }}
+            />
+        )}
+        </>
     );
 }
 

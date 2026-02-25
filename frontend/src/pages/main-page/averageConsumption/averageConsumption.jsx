@@ -4,6 +4,7 @@ import Navbar from "../../../components/navbar/navbar";
 import "./averageConsumption.css";
 import LabeledInput from "../../../components/labeledInput/labeledInput";
 import Button from "../../../components/button/button";
+import SuccessModal from "../../../components/success-modal/successModal";
 import { editCar } from "../../../actions/cars/carsActions";
 import { clampNumberInput } from "../../../actions/shared/inputValidation";
 
@@ -17,7 +18,7 @@ export default function AverageConsumption() {
     const [calculatedAvg, setCalculatedAvg] = useState(null);
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
-    const [success, setSuccess] = useState("");
+    const [showSuccess, setShowSuccess] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -46,10 +47,10 @@ export default function AverageConsumption() {
         );
     }, [startKm, endKm, refueledLiters, calculatedAvg, storageKey]);
 
-    function handleCalculate() {
+    function handleCalculate(e) {
+        e.preventDefault();
         setError("");
         setFieldErrors({});
-        setSuccess("");
 
         const start = Number(startKm);
         const end = Number(endKm);
@@ -103,9 +104,8 @@ export default function AverageConsumption() {
         try {
             setIsSaving(true);
             setError("");
-            setSuccess("");
             await editCar(selectedCarId, { average_consumption: calculatedAvg });
-            setSuccess(`Elmentve: ${calculatedAvg} l/100 km`);
+            setShowSuccess(true);
         } catch (err) {
             setError(err.message || "Nem sikerült elmenteni az átlagfogyasztást.");
         } finally {
@@ -127,68 +127,73 @@ export default function AverageConsumption() {
                     <div className="col-12 col-md-10 col-lg-7">
                         <Card>
                             <div className="p-3 text-start">
-                                <div className="mt-2">
-                                    <p><span className="step-span">1. lépés:</span> Tankold tele az autót, majd írd be a kilométeróra-állást</p>
-                                    <div className="mt-3 col-12 col-sm-6 mx-auto">
-                                        <LabeledInput
-                                            label={"Kezdő kilométeróra-állás"}
-                                            type={"number"}
-                                            value={startKm}
-                                            min={0}
-                                            max={999999}
-                                            onChange={(e) => {
-                                                setStartKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
-                                                if (fieldErrors.startKm) setFieldErrors((prev) => ({ ...prev, startKm: "" }));
-                                            }}
-                                            error={fieldErrors.startKm}
-                                        />
-                                    </div>
-                                </div>
-
-                                <hr />
-
-                                <div>
-                                    <p><span className="step-span">2. lépés:</span> Használd az autót valamennyi távon</p>
-                                    <p className="small opacity-75">(minél hosszabb táv, annál pontosabb eredmény)</p>
-                                </div>
-
-                                <hr />
-
-                                <div>
-                                    <p><span className="step-span">3. lépés:</span> Ismét tankold tele, majd írd be:</p>
-
-                                    <div className="row g-3 mt-2">
-                                        <div className="col-12 col-sm-6">
+                                <form onSubmit={handleCalculate}>
+                                    <div className="mt-2">
+                                        <p><span className="step-span">1. lépés:</span> Tankold tele az autót, majd írd be a kilométeróra-állást</p>
+                                        <div className="mt-3 col-12 col-sm-6 mx-auto">
                                             <LabeledInput
-                                                label={"Végső kilométeróra-állás"}
+                                                label={"Kezdő kilométeróra-állás"}
                                                 type={"number"}
-                                                value={endKm}
+                                                value={startKm}
                                                 min={0}
                                                 max={999999}
                                                 onChange={(e) => {
-                                                    setEndKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
-                                                    if (fieldErrors.endKm) setFieldErrors((prev) => ({ ...prev, endKm: "" }));
+                                                    setStartKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
+                                                    if (fieldErrors.startKm) setFieldErrors((prev) => ({ ...prev, startKm: "" }));
                                                 }}
-                                                error={fieldErrors.endKm}
-                                            />
-                                        </div>
-                                        <div className="col-12 col-sm-6">
-                                            <LabeledInput
-                                                label={"Tankolt mennyiség (liter)"}
-                                                type={"number"}
-                                                value={refueledLiters}
-                                                onChange={(e) => {
-                                                    setRefueledLiters(e.target.value);
-                                                    if (fieldErrors.refueledLiters) setFieldErrors((prev) => ({ ...prev, refueledLiters: "" }));
-                                                }}
-                                                error={fieldErrors.refueledLiters}
+                                                error={fieldErrors.startKm}
                                             />
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="text-center btn-div d-flex flex-column gap-2 mt-4">
-                                    <Button text={"Kalkulálás"} onClick={handleCalculate} />
+                                    <hr />
+
+                                    <div>
+                                        <p><span className="step-span">2. lépés:</span> Használd az autót valamennyi távon</p>
+                                        <p className="small opacity-75">(minél hosszabb táv, annál pontosabb eredmény)</p>
+                                    </div>
+
+                                    <hr />
+
+                                    <div>
+                                        <p><span className="step-span">3. lépés:</span> Ismét tankold tele, majd írd be:</p>
+
+                                        <div className="row g-3 mt-2">
+                                            <div className="col-12 col-sm-6">
+                                                <LabeledInput
+                                                    label={"Végső kilométeróra-állás"}
+                                                    type={"number"}
+                                                    value={endKm}
+                                                    min={0}
+                                                    max={999999}
+                                                    onChange={(e) => {
+                                                        setEndKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
+                                                        if (fieldErrors.endKm) setFieldErrors((prev) => ({ ...prev, endKm: "" }));
+                                                    }}
+                                                    error={fieldErrors.endKm}
+                                                />
+                                            </div>
+                                            <div className="col-12 col-sm-6">
+                                                <LabeledInput
+                                                    label={"Tankolt mennyiség (liter)"}
+                                                    type={"number"}
+                                                    value={refueledLiters}
+                                                    onChange={(e) => {
+                                                        setRefueledLiters(e.target.value);
+                                                        if (fieldErrors.refueledLiters) setFieldErrors((prev) => ({ ...prev, refueledLiters: "" }));
+                                                    }}
+                                                    error={fieldErrors.refueledLiters}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center btn-div d-flex flex-column gap-2 mt-4">
+                                        <Button text={"Kalkulálás"} type={"submit"} />
+                                    </div>
+                                </form>
+
+                                <div className="text-center btn-div d-flex flex-column gap-2">
                                     {calculatedAvg != null && (
                                         <p className="text-center m-0">
                                             Számított átlagfogyasztás: <strong>{calculatedAvg} l/100 km</strong>
@@ -201,13 +206,18 @@ export default function AverageConsumption() {
                                         />
                                     )}
                                     {error && <p className="text-danger text-center m-0">{error}</p>}
-                                    {success && <p className="text-success text-center m-0">{success}</p>}
                                 </div>
                             </div>
                         </Card>
                     </div>
                 </div>
             </div>
+            {showSuccess && (
+                <SuccessModal
+                    description="Átlag fogyasztás sikeresen elmentve"
+                    onClose={() => setShowSuccess(false)}
+                />
+            )}
         </div>
     );
 }

@@ -1,21 +1,36 @@
-import "./dashboardLights.css"
+import { useState } from "react";
+import DashboardLight from "./dashboardLight";
+import { lights } from "./lightsData";
+import "./dashboardLights.css";
+import Navbar from "../../../../components/navbar/navbar";
 
-import { Link } from "react-router-dom"
+export default function DashboardLights() {
+  const [selectedLightIndex, setSelectedLightIndex] = useState(0);
+  const selectedLight = lights[selectedLightIndex];
 
-export default function DashboardLights(){
-    return(
-        <>
-            <div className="container">
-                <h1 className="my-4">Műszerfal jelzések</h1>
-                <div className="row">
-                    <div className="col-4" style={{backgroundColor:"red"}}>
-                        <img/>
-                    </div>
-                    <div className="col-8" style={{backgroundColor:"blue"}}>
+  return (
+    <>
+    <Navbar/>
+    <div className="container dashboard-lights-container">
+      <h1 className="dashboard-lights-title">Műszerfal jelzések</h1>
 
-                    </div>
-                </div>
-            </div>
-        </>
-    )
+      <DashboardLight light={selectedLight} />
+
+      <div className="dashboard-lights-gallery">
+        {lights.map((light, index) => (
+          <button
+            key={light.title}
+            type="button"
+            className={`dashboard-lights-thumb ${selectedLightIndex === index ? "is-active" : ""}`}
+            onClick={() => setSelectedLightIndex(index)}
+            aria-label={light.title}
+            aria-pressed={selectedLightIndex === index}
+          >
+            <img src={light.img} alt={light.title} />
+          </button>
+        ))}
+      </div>
+    </div>
+    </>
+  );
 }

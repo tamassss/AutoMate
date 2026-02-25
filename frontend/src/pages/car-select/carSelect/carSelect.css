@@ -71,6 +71,36 @@ body{
     align-items: center;
 }
 
+.slide-from-right{
+    animation: mainCarSlideFromRight 0.5s ease;
+}
+
+.slide-from-left{
+    animation: mainCarSlideFromLeft 0.5s ease;
+}
+
+@keyframes mainCarSlideFromRight{
+    from{
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to{
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes mainCarSlideFromLeft{
+    from{
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to{
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 .main-image{
     transition: 0.5s;
     position: relative;
@@ -164,22 +194,31 @@ body{
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 14px;
+    padding: 0 10px;
 }
 
 .license-plate{
     margin: 0;
-    width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
     text-align: center;
     white-space: nowrap;
+    overflow: hidden;
     color: #111111;
-    font-size: 2rem;
+    font-size: 2.1rem;
     font-weight: 800;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.12em;
     font-family: "Arial Black", Arial, sans-serif;
     text-transform: uppercase;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.license-plate-small{
+    font-size: 1.75rem;
+    letter-spacing: 0.08em;
 }
 
 @media (max-width: 1024px) {
@@ -246,10 +285,16 @@ body{
 
     .license-white{
         min-height: 68px;
-        padding: 0 10px;
+        padding: 0 8px;
     }
 
     .license-plate{
-        font-size: 1.6rem;
+        font-size: 1.7rem;
+        letter-spacing: 0.1em;
+    }
+
+    .license-plate-small{
+        font-size: 1.45rem;
+        letter-spacing: 0.06em;
     }
 }

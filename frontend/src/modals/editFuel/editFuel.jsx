@@ -3,6 +3,7 @@ import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
 import ErrorModal from "../../components/error-modal/errorModal";
+import SuccessModal from "../../components/success-modal/successModal";
 import { editFuel } from "../../actions/fuelings/fuelingActions";
 import { clampNumberInput } from "../../actions/shared/inputValidation";
 import "./editFuel.css";
@@ -11,9 +12,11 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
   const [liters, setLiters] = useState("");
   const [pricePerLiter, setPricePerLiter] = useState("");
   const [odometerKm, setOdometerKm] = useState("");
-  const [error, setError] = useState("");
+  const [localError, setLocalError] = useState("");
+  const [serverError, setServerError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (!selectedFuel) return;
@@ -22,12 +25,15 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
     setOdometerKm(selectedFuel.kmallas && selectedFuel.kmallas !== "-" ? String(selectedFuel.kmallas) : "");
   }, [selectedFuel]);
 
-  async function handleSave() {
+  async function handleSave(e) {
+    e.preventDefault();
     if (!selectedFuel?.id) {
-      setError("Hiányzik a tankolás azonosítója.");
+      setLocalError("Hiányzik a tankolás azonosítója.");
       return;
     }
 
+    setLocalError("");
+    setServerError("");
     setFieldErrors({});
 
     const tempErrors = {};
@@ -54,7 +60,6 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
       return;
     }
 
-    setError("");
     setIsSaving(true);
     try {
       const updatedFueling = await editFuel(selectedFuel.id, {
@@ -69,10 +74,9 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
         literft: updatedFueling?.price_per_liter ?? parsedPrice,
         kmallas: updatedFueling?.odometer_km ?? parsedOdometer,
       });
-
-      onClose?.();
+      setShowSuccess(true);
     } catch (err) {
-      setError(err.message || "Nem sikerült módosítani a tankolást.");
+      setServerError(err.message || "Nem sikerült módosítani a tankolást.");
     } finally {
       setIsSaving(false);
     }
@@ -84,7 +88,8 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
         title={"Tankolás módosítása"}
         columns={1}
         onClose={onClose}
-        footer={<Button text={isSaving ? "Mentés..." : "Módosítás"} onClick={handleSave} />}
+        onSubmit={handleSave}
+        footer={<Button text={isSaving ? "Mentés..." : "Módosítás"} type={"submit"} />}
       >
         <LabeledInput
           label={"Mennyiség (liter)"}
@@ -122,9 +127,19 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
           }}
           error={fieldErrors.odometerKm}
         />
+        {localError && <p className="text-danger m-0">{localError}</p>}
       </Modal>
 
-      {error && <ErrorModal title={"Hiba!"} description={error} onClose={() => setError("")} />}
+      {serverError && <ErrorModal title={"Hiba!"} description={serverError} onClose={() => setServerError("")} />}
+      {showSuccess && (
+        <SuccessModal
+          description="Tankolás sikeresen módosítva"
+          onClose={() => {
+            setShowSuccess(false);
+            onClose?.();
+          }}
+        />
+      )}
     </>
   );
 }

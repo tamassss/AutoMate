@@ -21,12 +21,12 @@ def list_route_cards(user: User, car: Car, limit: int = 50) -> List[Dict[str, An
     result: List[Dict[str, Any]] = []
 
     for idx, r in enumerate(items):
-        start_dt = r.date
-        end_dt = items[idx - 1].date if idx > 0 else None
+        newer_or_equal_dt = r.date
+        older_dt = items[idx + 1].date if idx + 1 < len(items) else None
 
-        fueling_qs = Fueling.objects.filter(user=user, car=car, date__gte=start_dt)
-        if end_dt is not None:
-            fueling_qs = fueling_qs.filter(date__lt=end_dt)
+        fueling_qs = Fueling.objects.filter(user=user, car=car, date__lte=newer_or_equal_dt)
+        if older_dt is not None:
+            fueling_qs = fueling_qs.filter(date__gt=older_dt)
 
         fueling_count = fueling_qs.count()
         fueling_spent = fueling_qs.aggregate(total=Sum(MONEY_EXPR))["total"] or 0
@@ -40,6 +40,7 @@ def list_route_cards(user: User, car: Car, limit: int = 50) -> List[Dict[str, An
             "departure_time_hhmm": int_to_hhmm(r.departure_time),
             "arrival_time": r.arrival_time,
             "arrival_time_hhmm": int_to_hhmm(r.arrival_time),
+            "arrival_delta_min": getattr(r, "arrival_delta_min", None),
             "distance_km": to_float(r.distance_km) or 0.0,
             "fuelings_count": fueling_count,
             "fuelings_spent": float(fueling_spent),

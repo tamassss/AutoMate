@@ -1,11 +1,15 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { createCar } from "../../actions/cars/carsActions";
 import Button from "../../components/button/button";
 import HrOptional from "../../components/hr-optional/hrOptional";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
 import ErrorModal from "../../components/error-modal/errorModal";
+import SuccessModal from "../../components/success-modal/successModal";
+import CarImageSelectModal from "../carImageSelectModal/carImageSelectModal";
+import { DEFAULT_CAR_IMAGE_ID, DEFAULT_CAR_IMAGE_SRC, getCarImageSrc } from "../../assets/car-images/carImageOptions";
 import { clampNumberInput, limitTextLength } from "../../actions/shared/inputValidation";
+import "../../components/car-image-picker/carImagePicker.css";
 import "./addCar.css";
 
 export default function AddCar({ onClose, onSave }) {
@@ -14,11 +18,19 @@ export default function AddCar({ onClose, onSave }) {
   const [modelId, setModelId] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
   const [averageCons, setAverageCons] = useState("");
+  const [carImage, setCarImage] = useState(DEFAULT_CAR_IMAGE_ID);
+  const [showImageSelect, setShowImageSelect] = useState(false);
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  async function handleCreateCar() {
+  function isDuplicatePlateError(message = "") {
+    return String(message).toLowerCase().includes("rendszám már regisztrálva van");
+  }
+
+  async function handleCreateCar(e) {
+    e.preventDefault();
     setError("");
     setFieldErrors({});
 
@@ -45,11 +57,18 @@ export default function AddCar({ onClose, onSave }) {
         brand: brandId,
         model: modelId,
         average_consumption: averageCons,
+        car_image: carImage,
       });
-
       onSave?.();
+      setShowSuccess(true);
     } catch (err) {
-      setError(err.message || "Nem sikerült létrehozni az autót");
+      const message = err?.message || "Nem sikerült létrehozni az autót";
+      if (isDuplicatePlateError(message)) {
+        setFieldErrors((prev) => ({ ...prev, plate: message }));
+        setError("");
+        return;
+      }
+      setError(message);
     } finally {
       setIsSaving(false);
     }
@@ -61,7 +80,8 @@ export default function AddCar({ onClose, onSave }) {
         title="Autó hozzáadása"
         columns={1}
         onClose={onClose}
-        footer={<Button text={isSaving ? "Mentés..." : "Hozzáadás"} onClick={handleCreateCar} />}
+        onSubmit={handleCreateCar}
+        footer={<Button text={isSaving ? "Mentés..." : "Hozzáadás"} type={"submit"} />}
       >
         <LabeledInput
           label={"Márka"}
@@ -84,7 +104,10 @@ export default function AddCar({ onClose, onSave }) {
         <LabeledInput
           label={"Rendszám"}
           value={licensePlate}
-          onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
+          onChange={(e) => {
+            setLicensePlate(e.target.value.toUpperCase());
+            if (fieldErrors.plate) setFieldErrors((prev) => ({ ...prev, plate: "" }));
+          }}
           error={fieldErrors.plate}
           placeholder={"pl. ABC-123 vagy ABCD-123"}
           pattern={"^[A-Z]{3,4}-[0-9]{3}$"}
@@ -108,9 +131,41 @@ export default function AddCar({ onClose, onSave }) {
           error={fieldErrors.averageCons}
           placeholder={"pl. 6.5"}
         />
+
+        <div className="car-image-picker-wrap">
+          <p className="car-image-picker-label">Autó kép</p>
+          <button
+            type="button"
+            className="car-image-option is-active"
+            onClick={() => setShowImageSelect(true)}
+            title="Autó kép kiválasztása"
+          >
+            <img
+              src={carImage === DEFAULT_CAR_IMAGE_ID ? DEFAULT_CAR_IMAGE_SRC : getCarImageSrc(carImage)}
+              alt="Autó ikon"
+              className="car-image-option-img"
+            />
+          </button>
+        </div>
       </Modal>
 
-      {error && <ErrorModal title={"Hiba!"} description={error} />}
+      {error && <ErrorModal title={"Hiba!"} description={error} onClose={() => setError("")} />}
+      {showSuccess && (
+        <SuccessModal
+          description="Sikeres autó felvétel"
+          onClose={() => {
+            setShowSuccess(false);
+            onClose?.();
+          }}
+        />
+      )}
+      {showImageSelect && (
+        <CarImageSelectModal
+          selectedImageId={carImage}
+          onSelect={setCarImage}
+          onClose={() => setShowImageSelect(false)}
+        />
+      )}
     </>
   );
 }

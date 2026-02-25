@@ -45,7 +45,7 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                         <thead>
                             <tr className="table-title-tr">
                                 <th colSpan={2} style={{backgroundColor:"#1515158e"}}>
-                                    <p className="field">
+                                    <p className="field average-consumption-title">
                                         Átlagos fogyasztás
                                     </p>
                                 </th>
@@ -54,7 +54,7 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                         <tbody>
                             <tr>
                                 <th className="even field cons-th">
-                                    <p>
+                                    <p className="text-center">
                                         {hasAverageConsumption
                                             ? `${formatGroupedNumber(selectedCar.average_consumption, { decimals: 2, trimTrailingZeros: true })} l/100km`
                                             : (
@@ -64,7 +64,7 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                                 </th>
                                 <td className="odd field test-td">
                                     <Link to={"/muszerfal/atlagfogyasztas"}>
-                                        <p className="test-p">Teszt</p>
+                                        <p className="test-p text-center">Teszt</p>
                                     </Link>
                                 </td>
                             </tr>
@@ -75,4 +75,3 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
         </div>
     );
 }
-

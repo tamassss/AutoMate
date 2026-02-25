@@ -2,9 +2,9 @@
 import Input from "../../../components/input/input";
 import Card from "../../../components/card/card";
 import Button from "../../../components/button/button";
-import ErrorModal from "../../../components/error-modal/errorModal";
 import { register } from "../../../actions/auth/authActions";
 import { useNavigate } from "react-router-dom";
+import SuccessModal from "../../../components/success-modal/successModal";
 
 export default function Register() {
     const fullNameRef = useRef();
@@ -14,6 +14,7 @@ export default function Register() {
     
     const [errorMessage, setErrorMessage] = useState(null);
     const [fieldErrors, setFieldErrors] = useState({});
+    const [showSuccess, setShowSuccess] = useState(false);
     const navigate = useNavigate();
 
     async function handleRegister(e) {
@@ -44,23 +45,23 @@ export default function Register() {
 
         try {
             await register(em, pw, fn);
-            alert("Sikeres regisztráció! Most jelentkezz be.");
-            navigate("/");
+            setShowSuccess(true);
         } catch (err) {
-            setErrorMessage(err.message);
+            setErrorMessage(err?.message || "Ismeretlen hiba!");
         }
     }
 
     return (
         <Card>
-            {errorMessage && 
-                <ErrorModal
-                    onClose={() => setErrorMessage(null)}
-                    title={"Regisztrálási hiba"}
-                    description={errorMessage}
+            {showSuccess && (
+                <SuccessModal
+                    description="Sikeres regisztráció"
+                    onClose={() => {
+                        setShowSuccess(false);
+                        navigate("/");
+                    }}
                 />
-            }
-            
+            )}
             <h3 className="mt-2">Regisztráció</h3>
             {errorMessage && <p style={{color: "red"}}>{errorMessage}</p>}
 
@@ -113,5 +114,3 @@ export default function Register() {
         </Card>
     );
 }
-
-

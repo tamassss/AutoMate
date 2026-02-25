@@ -10,11 +10,32 @@ export default function Trips({ trips, onDeletedTrip }){
         );
     }
 
+    const groupedTrips = trips.reduce((groups, trip) => {
+        const month = trip.month || "-";
+        const existingGroup = groups.find((group) => group.month === month);
+
+        if (existingGroup) {
+            existingGroup.items.push(trip);
+        } else {
+            groups.push({ month, items: [trip] });
+        }
+
+        return groups;
+    }, []);
+
     return (
-        <div className="row g-4">
-            {trips.map(trip => (
-                <div key={trip.id} className="col-xl-3 col-lg-4 col-md-6 col-10 d-flex align-items-stretch">
-                    <TripCard trip={trip} onDeletedTrip={onDeletedTrip} />
+        <div>
+            {groupedTrips.map((group) => (
+                <div key={group.month} className="mb-5">
+                    <h3 className="text-left mb-3 trips-month-title">{group.month}</h3>
+
+                    <div className="row g-4">
+                        {group.items.map((trip) => (
+                            <div key={trip.id} className="col-xl-3 col-lg-4 col-md-6 col-10 d-flex align-items-stretch">
+                                <TripCard trip={trip} onDeletedTrip={onDeletedTrip} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             ))}
         </div>

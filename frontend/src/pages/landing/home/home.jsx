@@ -1,12 +1,11 @@
 import { Link, useNavigate } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import "./home.css"
 
 import Login from "../login/login"
 import Register from "../register/register";
 import Footer from "../../../components/footer/footer";
-import Card from "../../../components/card/card";
 import Feature from "../../../components/feature/feature";
 import Button from "../../../components/button/button";
 
@@ -18,58 +17,60 @@ import icon6 from "../../../assets/home/6.png";
 import icon7 from "../../../assets/home/7.png";
 import icon8 from "../../../assets/home/8.png";
 import helpIcon from "../../../assets/icons/help.png";
-import Error from "../../../components/error-modal/errorModal";
 
-
-export default function Home(){
+export default function Home() {
     const navigate = useNavigate()
     const [showLogin, setShowLogin] = useState(true);
-    const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("token"))
+    const isLoggedIn = Boolean(localStorage.getItem("token"));
+    const role = localStorage.getItem("role");
 
-    return(
+    return (
         <>
             {isLoggedIn &&
                 <p className="ms-4 mt-4 fs-4">Bejelentkezve: {localStorage.getItem("full_name")}</p>}
 
             <div className="landing-help-div">
                 <Link to="/tippek" className="landing-help-link">
-                    <img src={helpIcon} alt="Segítség kezdőknek" title="Segítség kezdőknek"/>
+                    <img src={helpIcon} alt="Segítség kezdőknek" title="Segítség kezdőknek" />
                 </Link>
             </div>
 
             <div className="hero">
-                <br/>
-                <h1 className="custom-title">Auto<span style={{color:"#075DBF"}}>Mate</span></h1>
-                <h2 className="custom-h2 fs-4" style={{color:"#BFBFBF", fontWeight:"bold"}}>Az autód digitális naplója</h2>
+                <br />
+                <h1 className="custom-title">Auto<span style={{ color: "#075DBF" }}>Mate</span></h1>
+                <h2 className="custom-h2 fs-4" style={{ color: "#BFBFBF", fontWeight: "bold" }}>Az autód digitális naplója</h2>
             </div>
-            
-            {!isLoggedIn ? 
+
+            {!isLoggedIn ?
                 (<div className="auth-div">
                     <div className="auth-tabs">
-                            <div
-                                className={showLogin ? "auth-tab active" : "auth-tab inactive"}
-                                onClick={() => setShowLogin(true)}>
-                                <p>Bejelentkezés</p>
-                            </div> 
-                            <div
-                                className={showLogin ? "auth-tab inactive" : "auth-tab active"} 
-                                onClick={() => setShowLogin(false)}>
-                                <p>Regisztráció</p>
-                            </div>                     
+                        <div
+                            className={showLogin ? "auth-tab active" : "auth-tab inactive"}
+                            onClick={() => setShowLogin(true)}>
+                            <p>Bejelentkezés</p>
+                        </div>
+                        <div
+                            className={showLogin ? "auth-tab inactive" : "auth-tab active"}
+                            onClick={() => setShowLogin(false)}>
+                            <p>Regisztráció</p>
+                        </div>
                     </div>
-                
+
                     <div>
-                        {showLogin ? <Login/> : <Register/>}
+                        {showLogin ? <Login /> : <Register />}
                     </div>
-                
+
                 </div>)
                 :
-                (<Button text={"Garázs"} onClick={() => navigate("/autok")}/>)
+                (
+                    <div className="home-logged-actions">
+                        <Button text={"Garázs"} onClick={() => navigate("/autok")} />
+                        {role === "admin" && (
+                            <Button text={"Admin felület"} onClick={() => navigate("/admin")} />
+                        )}
+                    </div>
+                )
             }
-                
-                
-            {/* Itt lesznek képek az oldalról */}
-            
 
             <div className="features container">
                 <h3 className="fs-3 mb-4">Teljes körű autómenedzsment</h3>
@@ -117,10 +118,10 @@ export default function Home(){
                     title={"Segítség kezdőknek"}
                     content={"tekintse meg regisztráció nélkül, hogy mit jelentenek a műszerfalon megjelenő égők, hogyan spórolhat üzemanyagot és hogyan kell könnyedén parkolni"}
                 />
-                
+
             </div>
 
-            <Footer/>
+            <Footer />
         </>
     )
 }

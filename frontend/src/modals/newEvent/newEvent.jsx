@@ -3,6 +3,7 @@ import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
 import { clampNumberInput } from "../../actions/shared/inputValidation";
+import SuccessModal from "../../components/success-modal/successModal";
 import "./newEvent.css";
 
 export default function NewEvent({ onClose, onSave }) {
@@ -13,8 +14,10 @@ export default function NewEvent({ onClose, onSave }) {
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
     const [saving, setSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
-    async function handleSave() {
+    async function handleSave(e) {
+        e.preventDefault();
         setError("");
         setFieldErrors({});
 
@@ -32,8 +35,9 @@ export default function NewEvent({ onClose, onSave }) {
             await onSave?.({
                 partName: eventName,
                 date,
-                reminder: km || null,
+                reminder: km ? `${km} km` : null,
             });
+            setShowSuccess(true);
         } catch (err) {
             setError(err.message || "Nem sikerült létrehozni az eseményt.");
         } finally {
@@ -42,11 +46,13 @@ export default function NewEvent({ onClose, onSave }) {
     }
 
     return (
+        <>
         <Modal
             title={"Új esemény"}
             onClose={onClose}
             columns={1}
-            footer={<Button text={saving ? "Ment..." : "Hozzáadás"} onClick={handleSave} />}
+            onSubmit={handleSave}
+            footer={<Button text={saving ? "Ment..." : "Hozzáadás"} type={"submit"} />}
         >
             <LabeledInput
                 label={"Esemény"}
@@ -78,6 +84,16 @@ export default function NewEvent({ onClose, onSave }) {
             />
             {error && <p className="text-danger">{error}</p>}
         </Modal>
+        {showSuccess && (
+            <SuccessModal
+                description="Esemény sikeresen hozzáadva"
+                onClose={() => {
+                    setShowSuccess(false);
+                    onClose?.();
+                }}
+            />
+        )}
+        </>
     );
 }
 

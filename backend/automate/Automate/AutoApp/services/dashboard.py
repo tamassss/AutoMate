@@ -67,8 +67,17 @@ def get_monthly_budget(user: User, car: Car) -> Dict[str, Any]:
     start = start_of_month(today)
     end = start_of_next_month(today)
 
-    spent = Fueling.objects.filter(user=user, car=car, date__gte=start, date__lt=end).aggregate(total=Sum(MONEY_EXPR))["total"] or 0
-    spent = float(spent)
+    fueling_spent = (
+        Fueling.objects
+        .filter(user=user, car=car, date__gte=start, date__lt=end)
+        .aggregate(total=Sum(MONEY_EXPR))["total"] or 0
+    )
+    maintenance_spent = (
+        Maintenance.objects
+        .filter(user=user, car=car, date__gte=start, date__lt=end)
+        .aggregate(total=Sum("cost"))["total"] or 0
+    )
+    spent = float(fueling_spent) + float(maintenance_spent)
 
     limit_val = DEFAULT_MONTHLY_LIMIT
     percent = int(round((spent / limit_val) * 100)) if limit_val else 0
@@ -81,8 +90,14 @@ def get_monthly_budget(user: User, car: Car) -> Dict[str, Any]:
     }
 
 #
-def get_sidebar_events(user: User, car: Car, limit: int = 6) -> Dict[str, Any]:
-    qs = Maintenance.objects.filter(user=user, car=car).order_by("-date")[:limit]
+def get_sidebar_events(user: User, car: Car, limit: Optional[int] = None) -> Dict[str, Any]:
+    qs = (
+        Maintenance.objects
+        .filter(user=user, car=car, service_center__name="AutoMate")
+        .order_by("-date")
+    )
+    if limit is not None:
+        qs = qs[:limit]
     return {
         "items": [
             {

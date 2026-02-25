@@ -180,7 +180,7 @@ export default function DataVisual() {
   return (
     <Card>
       <div className="p-3 w-100">
-        <h5 className="text-primary mb-4 fs-4 text-center">Adatábrázolás</h5>
+        <h5 className="text-primary mb-4 fs-4 text-center">Utak <span style={{color:"white"}}>|</span> Tankolások <span style={{color:"white"}}>|</span> Költségek</h5>
 
         {loading && <p className="text-center text-light">Betöltés...</p>}
         {error && <p className="text-center text-danger">{error}</p>}

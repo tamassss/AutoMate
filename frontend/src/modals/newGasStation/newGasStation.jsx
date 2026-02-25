@@ -1,9 +1,11 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
 import { saveNewGasStationWithFueling } from "../../actions/trips/tripActions";
 import { clampNumberInput, limitTextLength } from "../../actions/shared/inputValidation";
+import SuccessModal from "../../components/success-modal/successModal";
+import "./newGasStation.css";
 
 export default function NewGasStation({ onClose, onSave }) {
   const FUEL_OPTIONS = [
@@ -22,8 +24,10 @@ export default function NewGasStation({ onClose, onSave }) {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  async function handleSave() {
+  async function handleSave(e) {
+    e.preventDefault();
     setError("");
     setFieldErrors({});
 
@@ -39,8 +43,8 @@ export default function NewGasStation({ onClose, onSave }) {
     }
 
     const price = Number(pricePerLiter);
-    if (Number.isNaN(price) || price < 1 || price > 100) {
-      setFieldErrors({ pricePerLiter: "A Ft/liter érték 1 és 100 között lehet." });
+    if (Number.isNaN(price) || price < 1 || price > 1000) {
+      setFieldErrors({ pricePerLiter: "A Ft/liter érték 1 és 1000 között lehet." });
       return;
     }
 
@@ -59,7 +63,7 @@ export default function NewGasStation({ onClose, onSave }) {
       });
 
       await onSave?.();
-      onClose?.();
+      setShowSuccess(true);
     } catch (err) {
       setError(err.message || "Nem sikerült menteni a benzinkutat.");
     } finally {
@@ -68,98 +72,102 @@ export default function NewGasStation({ onClose, onSave }) {
   }
 
   return (
-    <Modal
-      title={"Új benzinkút"}
-      onClose={onClose}
-      columns={1}
-      footer={<Button text={isSaving ? "Mentés..." : "Hozzáadás"} onClick={handleSave} />}
-    >
-      <LabeledInput
-        label={"Ft/liter"}
-        type={"number"}
-        required={true}
-        value={pricePerLiter}
-        min={1}
-        max={100}
-        onChange={(e) => {
-          setPricePerLiter(clampNumberInput(e.target.value, { min: 1, max: 100, decimals: 2 }));
-          if (fieldErrors.pricePerLiter) setFieldErrors((prev) => ({ ...prev, pricePerLiter: "" }));
-        }}
-        error={fieldErrors.pricePerLiter}
-      />
-      <div className="full-width text-start">
-        <label style={{ display: "block", marginBottom: "6px" }}>Üzemanyag típusa</label>
-        <select
-          value={fuelTypeId}
+    <>
+      <Modal
+        title={"Új benzinkút"}
+        onClose={onClose}
+        columns={1}
+        onSubmit={handleSave}
+        footer={<Button text={isSaving ? "Mentés..." : "Hozzáadás"} type={"submit"} />}
+      >
+        <LabeledInput
+          label={"Ft/liter"}
+          type={"number"}
+          required={true}
+          value={pricePerLiter}
+          min={1}
+          max={1000}
           onChange={(e) => {
-            setFuelTypeId(e.target.value);
-            if (fieldErrors.fuelTypeId) setFieldErrors((prev) => ({ ...prev, fuelTypeId: "" }));
+            setPricePerLiter(clampNumberInput(e.target.value, { min: 1, max: 1000, decimals: 2 }));
+            if (fieldErrors.pricePerLiter) setFieldErrors((prev) => ({ ...prev, pricePerLiter: "" }));
           }}
-          required
-          style={{ width: "100%", padding: "12px", borderRadius: "8px" }}
-        >
-          <option value="">Válassz üzemanyag típust</option>
-          {FUEL_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        {fieldErrors.fuelTypeId && (
-          <span style={{ color: "#ff4d4f", fontSize: "0.85rem", display: "block", marginTop: "6px" }}>
-            {fieldErrors.fuelTypeId}
-          </span>
-        )}
-      </div>
-      <div className="full-width text-start">
-        <label style={{ display: "block", marginBottom: "6px" }}>Forgalmazó</label>
-        <select
-          value={supplier}
+          error={fieldErrors.pricePerLiter}
+        />
+        <div className="full-width text-start modal-select-group">
+          <label className="modal-select-label">Üzemanyag típusa</label>
+          <select
+            value={fuelTypeId}
+            onChange={(e) => {
+              setFuelTypeId(e.target.value);
+              if (fieldErrors.fuelTypeId) setFieldErrors((prev) => ({ ...prev, fuelTypeId: "" }));
+            }}
+            required
+            className="modal-select"
+          >
+            <option value="">Válassz üzemanyag típust</option>
+            {FUEL_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {fieldErrors.fuelTypeId && <span className="error-message">{fieldErrors.fuelTypeId}</span>}
+        </div>
+        <div className="full-width text-start modal-select-group">
+          <label className="modal-select-label">Forgalmazó</label>
+          <select
+            value={supplier}
+            onChange={(e) => {
+              setSupplier(e.target.value);
+              if (fieldErrors.supplier) setFieldErrors((prev) => ({ ...prev, supplier: "" }));
+            }}
+            required
+            className="modal-select"
+          >
+            <option value="">Válassz forgalmazót</option>
+            {SUPPLIER_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+          {fieldErrors.supplier && <span className="error-message">{fieldErrors.supplier}</span>}
+        </div>
+        <LabeledInput
+          label={"Helység"}
+          type={"text"}
+          required={true}
+          value={city}
+          maxLength={20}
           onChange={(e) => {
-            setSupplier(e.target.value);
-            if (fieldErrors.supplier) setFieldErrors((prev) => ({ ...prev, supplier: "" }));
+            setCity(limitTextLength(e.target.value, 20));
+            if (fieldErrors.city) setFieldErrors((prev) => ({ ...prev, city: "" }));
           }}
-          required
-          style={{ width: "100%", padding: "12px", borderRadius: "8px" }}
-        >
-          <option value="">Válassz forgalmazót</option>
-          {SUPPLIER_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-        {fieldErrors.supplier && (
-          <span style={{ color: "#ff4d4f", fontSize: "0.85rem", display: "block", marginTop: "6px" }}>
-            {fieldErrors.supplier}
-          </span>
-        )}
-      </div>
-      <LabeledInput
-        label={"Helység"}
-        type={"text"}
-        required={true}
-        value={city}
-        maxLength={20}
-        onChange={(e) => {
-          setCity(limitTextLength(e.target.value, 20));
-          if (fieldErrors.city) setFieldErrors((prev) => ({ ...prev, city: "" }));
-        }}
-        error={fieldErrors.city}
-      />
-      <LabeledInput
-        label={"Cím"}
-        type={"text"}
-        required={true}
-        value={address}
-        maxLength={20}
-        onChange={(e) => {
-          setAddress(limitTextLength(e.target.value, 20));
-          if (fieldErrors.address) setFieldErrors((prev) => ({ ...prev, address: "" }));
-        }}
-        error={fieldErrors.address}
-      />
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </Modal>
+          error={fieldErrors.city}
+        />
+        <LabeledInput
+          label={"Cím"}
+          type={"text"}
+          required={true}
+          value={address}
+          maxLength={20}
+          onChange={(e) => {
+            setAddress(limitTextLength(e.target.value, 20));
+            if (fieldErrors.address) setFieldErrors((prev) => ({ ...prev, address: "" }));
+          }}
+          error={fieldErrors.address}
+        />
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      </Modal>
+      {showSuccess && (
+        <SuccessModal
+          description="Benzinkút sikeresen elmentve"
+          onClose={() => {
+            setShowSuccess(false);
+            onClose?.();
+          }}
+        />
+      )}
+    </>
   );
 }

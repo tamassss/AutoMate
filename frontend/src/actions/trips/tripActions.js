@@ -52,6 +52,7 @@ async function createRouteUsage(carId, routeId, tripData) {
       date: new Date().toISOString(),
       departure_time: hhmmToMinutes(tripData?.startTime),
       arrival_time: hhmmToMinutes(tripData?.expectedArrival),
+      arrival_delta_min: tripData?.arrivalDeltaMin ?? null,
       distance_km: tripData?.distanceKm ?? null,
       title: tripData?.title || null,
     }),
@@ -133,7 +134,7 @@ async function createFueling(carId, gasStationId, fueling) {
 
 // Út mentése tankolásokkal
 export async function saveTripWithFuelings(tripData) {
-  const carId = localStorage.getItem("selected_car_id");
+  const carId = tripData?.carId || localStorage.getItem("selected_car_id");
   if (!carId) throw new Error("Nincs kiválasztott autó.");
 
   const fromAddressId = await createAddress(tripData?.from || "Ismeretlen");
@@ -152,8 +153,8 @@ export async function saveTripWithFuelings(tripData) {
 }
 
 // Egy tankolás mentése
-export async function saveFuelingWithGasStation(fuelData) {
-  const carId = localStorage.getItem("selected_car_id");
+export async function saveFuelingWithGasStation(fuelData, carIdOverride = null) {
+  const carId = carIdOverride || localStorage.getItem("selected_car_id");
   if (!carId) throw new Error("Nincs kiválasztott autó.");
 
   await createFueling(carId, null, fuelData || {});
@@ -171,4 +172,3 @@ export async function saveNewGasStationWithFueling(gasStationData) {
 
   return { ok: true };
 }
-

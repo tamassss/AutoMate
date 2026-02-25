@@ -45,6 +45,10 @@
     display: inline-block;
 }
 
+.last-fuel-title {
+    color: #7ec8ff;
+}
+
 @media(max-width:768px){
     .fuel-title-main{
         font-size: 20px;

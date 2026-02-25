@@ -15,11 +15,17 @@
 }
 
 .error-message {
+    display: block;
+    width: 100%;
+    max-width: 100%;
     color: #ff4d4d;
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 4px;
     margin-left: 2px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 
     animation: fadeIn 0.2s ease-in;
 }
