@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import tripsAndFuelsIcon from "../../../../assets/menu-points/trips-fuels.png";
 import gasStationsIcon from "../../../../assets/menu-points/gas-stations.png";
@@ -9,18 +9,11 @@ import communityIcon from "../../../../assets/menu-points/community.png";
 
 import EventItem from "../../../../components/event-item/eventItem";
 import NewEvent from "../../../../modals/newEvent/newEvent";
+import EventsModal from "../../../../modals/eventsModal/eventsModal";
 import Button from "../../../../components/button/button";
 import { getDashboard } from "../../../../actions/dashboard/dashboardActions";
 import { createEvent } from "../../../../actions/serviceLog/serviceLogActions";
-import { getCars } from "../../../../actions/cars/carsActions";
-import { getGeneralStats } from "../../../../actions/stats/statsActions";
-import {
-  getCurrentUserMeta,
-  isCommunityEnabledForCar,
-  removeCommunityProfile,
-  setCommunityEnabledForCar,
-  upsertCommunityProfile,
-} from "../../../../actions/community/communityLocalActions";
+import { getCurrentUserMeta, isCommunityEnabledForCar, setCommunityEnabledForCar } from "../../../../actions/community/communityLocalActions";
 
 import "./menu.css";
 
@@ -28,83 +21,64 @@ export default function Menu({ events = [], onEventCreated }) {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [showNewEvent, setShowNewEvent] = useState(false);
+  const [showEventsModal, setShowEventsModal] = useState(false);
   const [loadedEvents, setLoadedEvents] = useState([]);
   const [communityEnabled, setCommunityEnabled] = useState(false);
   const [savingCommunity, setSavingCommunity] = useState(false);
-  const [refreshTick, setRefreshTick] = useState(0);
 
-  const closeMenu = () => setIsOpen(false);
-  const menuEvents = events.length > 0 ? events : loadedEvents;
   const selectedCarId = Number(localStorage.getItem("selected_car_id") || 0);
-  const { userId, fullName } = getCurrentUserMeta();
+  const { userId } = getCurrentUserMeta();
   const isCommunityRoute = location.pathname === "/muszerfal/kozosseg";
 
-  async function loadEvents() {
+  const closeMenu = () => setIsOpen(false);
+
+  // Események betöltése
+  const loadEvents = useCallback(async () => {
     try {
       const data = await getDashboard();
       setLoadedEvents(data?.events?.items || []);
     } catch {
       setLoadedEvents([]);
     }
-  }
+  }, []);
 
+  // Betöltés oldalváltáskor
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadEvents();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
+    loadEvents();
+  }, [location.pathname, loadEvents]);
 
+  // Közösségi rész állapot
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!userId || !selectedCarId) {
-        setCommunityEnabled(false);
-        return;
-      }
-      setCommunityEnabled(isCommunityEnabledForCar(userId, selectedCarId));
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [userId, selectedCarId, location.pathname, refreshTick]);
+    if (!userId || !selectedCarId) {
+      setCommunityEnabled(false);
+      return;
+    }
 
-  async function handleCommunityToggle(event) {
+    isCommunityEnabledForCar(userId, selectedCarId)
+      .then(setCommunityEnabled)
+      .catch(() => setCommunityEnabled(false));
+  }, [userId, selectedCarId, location.pathname]);
+
+  const handleCommunityToggle = async (event) => {
     event.stopPropagation();
     if (isCommunityRoute || savingCommunity || !selectedCarId || !userId) return;
 
     const enabled = !!event.target.checked;
     setSavingCommunity(true);
-    setCommunityEnabledForCar(userId, selectedCarId, enabled);
-    setRefreshTick((value) => value + 1);
-
-    if (!enabled) {
-      removeCommunityProfile(userId, selectedCarId);
-      setSavingCommunity(false);
-      return;
-    }
-
     try {
-      const [cars, general] = await Promise.all([getCars(), getGeneralStats()]);
-      const car = cars.find((item) => Number(item.car_id) === selectedCarId);
-      const distance = Number(general?.distance_km_total || 0);
-      const liters = Number(general?.fuelings?.liters || 0);
-      const spent = Number(general?.fuelings?.spent || 0);
-      const pricePerKm = distance > 0 ? Number((spent / distance).toFixed(1)) : 0;
-
-      upsertCommunityProfile({
-        userId,
-        fullName,
-        carId: selectedCarId,
-        carName: car?.display_name || general?.car?.display_name || "-",
-        licensePlate: car?.license_plate || general?.car?.license_plate || "-",
-        carImage: car?.car_image || null,
-        stats: { distance, liters, spent, pricePerKm },
-      });
-    } catch {
-      // Keep persisted toggle state even if stat refresh fails.
+      const nextEnabled = await setCommunityEnabledForCar(userId, selectedCarId, enabled);
+      setCommunityEnabled(nextEnabled);
     } finally {
       setSavingCommunity(false);
-      setRefreshTick((value) => value + 1);
     }
-  }
+  };
+
+  const openEventsModal = () => {
+    setShowEventsModal(true);
+    closeMenu();
+  };
+
+  const menuEvents = events.length > 0 ? events : loadedEvents;
 
   return (
     <>
@@ -139,14 +113,13 @@ export default function Menu({ events = [], onEventCreated }) {
           </NavLink>
 
           <NavLink
-            className={({ isActive }) => `menu-item ${isActive ? "menu-item-active" : ""}`}
+            className={({ isActive }) =>
+              `menu-item ${isActive ? "menu-item-active" : ""} ${!communityEnabled ? "menu-item-unavailable" : ""}`
+            }
             to={communityEnabled ? "/muszerfal/kozosseg" : "#"}
             onClick={(e) => {
-              if (!communityEnabled) {
-                e.preventDefault();
-                return;
-              }
-              closeMenu();
+              if (!communityEnabled) e.preventDefault();
+              else closeMenu();
             }}
           >
             <img className="menu-icon" src={communityIcon} alt="K" />
@@ -164,15 +137,20 @@ export default function Menu({ events = [], onEventCreated }) {
         </div>
 
         <div className="menu-events d-flex flex-column">
-          <div>
+          <div className="menu-events-open-target" onClick={openEventsModal}>
             <h3>Események</h3>
             <hr className="my-2 mx-3" />
           </div>
 
-          <div className="menu-events-content overflow-auto">
+          <div className="menu-events-content overflow-auto menu-events-open-target" onClick={openEventsModal}>
             {menuEvents.length > 0 ? (
               menuEvents.map((event) => (
-                <EventItem key={event.maintenance_id} title={event.part_name || "Esemény"} reminder={event.reminder} />
+                <EventItem
+                  key={event.maintenance_id}
+                  title={event.part_name || "Esemény"}
+                  reminder={event.reminder}
+                  date={event.date}
+                />
               ))
             ) : (
               <div className="menu-events-empty">
@@ -193,16 +171,20 @@ export default function Menu({ events = [], onEventCreated }) {
         <NewEvent
           onClose={() => setShowNewEvent(false)}
           onSave={async (payload) => {
-            if (onEventCreated) {
-              await onEventCreated(payload);
-            } else {
-              await createEvent(payload);
-            }
+            if (onEventCreated) await onEventCreated(payload);
+            else await createEvent(payload);
             await loadEvents();
             setShowNewEvent(false);
           }}
         />
       )}
+
+      {showEventsModal && (
+        <EventsModal
+          onClose={() => setShowEventsModal(false)}
+          onChanged={loadEvents}
+        />
+      )}
     </>
   );
-}
+} 

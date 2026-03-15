@@ -40,6 +40,15 @@
 .menu-item-active {
   background: #13161b;
 }
+
+.menu-item-unavailable,
+.menu-item-unavailable:hover,
+.menu-item-unavailable:active {
+  background: #7c7c7c;
+  color: #dcdcdc;
+  border: 2px solid #6a6a6a;
+  box-shadow: inset 0 0 10px 1px rgba(0, 0, 0, 0.35);
+}
 .menu-icon {
   width: 50px;
   height: 50px;
@@ -86,6 +95,10 @@
 .menu-events h3 {
   margin-top: 8px;
   font-size: 16px;
+}
+
+.menu-events-open-target {
+  cursor: pointer;
 }
 
 .menu-events-content::-webkit-scrollbar {

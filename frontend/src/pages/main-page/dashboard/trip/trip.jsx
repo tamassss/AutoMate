@@ -3,6 +3,7 @@ import Button from "../../../../components/button/button";
 import { formatGroupedNumber, formatHmsFromSeconds, formatMoney, hhmmToMinutes } from "../../../../actions/shared/formatters";
 import "./trip.css";
 
+// eltelt idő segédfüggvény
 function getElapsed(runtime) {
   const before = Number(runtime?.elapsedBeforeRunSec || 0);
   if (!runtime?.isRunning || !runtime?.lastStartedAtMs) return before;
@@ -11,6 +12,7 @@ function getElapsed(runtime) {
   return before + live;
 }
 
+// javítás/rontás kiszámolás
 function getArrivalDelta(expected, actual) {
   if (!expected || !actual || expected === "-" || actual === "-") return null;
 
@@ -33,8 +35,10 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
       }
     );
   });
+
   const [, setTick] = useState(0);
 
+  // stopper mp
   useEffect(() => {
     if (!runtime?.isRunning || runtime?.showFinishResult) return;
 
@@ -47,14 +51,12 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
   }, [runtime, onRuntimeChange]);
 
   useEffect(() => {
-    if (!tripData?.runtime) return;
-
-    const timer = setTimeout(() => setRuntime(tripData.runtime), 0);
-    return () => clearTimeout(timer);
+    if (tripData?.runtime) {
+      setRuntime(tripData.runtime);
+    }
   }, [tripData?.runtime]);
 
   const elapsedSeconds = getElapsed(runtime);
-
   const distanceKm = Number(tripData?.distanceKm || 0);
   const avgConsumption = Number(tripData?.avgConsumption || 0);
   const calculatedLiters = avgConsumption > 0 ? (distanceKm * avgConsumption) / 100 : 0;
@@ -63,6 +65,7 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
   const fueledLiters = fuelings.reduce((sum, f) => sum + Number(f.liters || 0), 0);
   const fueledSpent = fuelings.reduce((sum, f) => sum + Number(f.spent || 0), 0);
 
+  // Összesített adatok a mentéshez
   const finalData = useMemo(() => {
     return {
       elapsed: formatHmsFromSeconds(elapsedSeconds),
@@ -76,6 +79,7 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
     };
   }, [elapsedSeconds, distanceKm, calculatedLiters, fueledLiters, fueledSpent, fuelings.length, runtime]);
 
+  //Szünet
   function handlePause() {
     if (runtime.isRunning) {
       setRuntime((prev) => ({
@@ -93,6 +97,7 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
     }
   }
 
+  //Vége
   function handleFinish() {
     const now = new Date();
     const hh = String(now.getHours()).padStart(2, "0");
@@ -108,18 +113,9 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
     }));
   }
 
-  function handleDelete() {
-    onCancelFinish?.();
-  }
-
-  function handleSaveFinish() {
-    onSaveFinish?.(finalData);
-  }
-
-  const actualArrival = runtime?.actualArrival;
-  const showFinishResult = !!runtime?.showFinishResult;
-
-  const arrivalDelta = getArrivalDelta(tripData?.expectedArrival, actualArrival);
+  const arrivalDelta = getArrivalDelta(tripData?.expectedArrival, runtime?.actualArrival);
+  
+  // javítás/rontás
   const arrivalDeltaText =
     arrivalDelta === null ? "" : arrivalDelta >= 0 ? ` (+${arrivalDelta} perc)` : ` (-${Math.abs(arrivalDelta)} perc)`;
 
@@ -143,7 +139,9 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
             <td className="even field">Várható érkezés</td>
             <td className="even field">
               {tripData?.expectedArrival || "-"}
-              {showFinishResult && arrivalDelta !== null && <span style={arrivalDeltaStyle}>{arrivalDeltaText}</span>}
+              {runtime?.showFinishResult && arrivalDelta !== null && (
+                <span style={arrivalDeltaStyle}>{arrivalDeltaText}</span>
+              )}
             </td>
           </tr>
           <tr>
@@ -164,7 +162,9 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
           </tr>
           <tr>
             <td className="even field">Tankolt mennyiség</td>
-            <td className="even field">{`${formatGroupedNumber(fueledLiters, { decimals: 2, trimTrailingZeros: true })} l`}</td>
+            <td className="even field">
+              {`${formatGroupedNumber(fueledLiters, { decimals: 2, trimTrailingZeros: true })} l`}
+            </td>
           </tr>
           <tr>
             <td className="odd field">Elköltött pénz</td>
@@ -175,15 +175,23 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
 
       <div className="trip-timer mt-1">{formatHmsFromSeconds(elapsedSeconds)}</div>
 
-      {!showFinishResult ? (
+      {!runtime?.showFinishResult ? (
         <div className="trip-controls">
-          <Button className="btn-pause" text={runtime?.isRunning ? "Szünet" : "Folytatás"} onClick={handlePause} />
-          <Button className="btn-finish" text={"Út vége"} onClick={handleFinish} />
+          <Button 
+            className="btn-pause" 
+            text={runtime?.isRunning ? "Szünet" : "Folytatás"} 
+            onClick={handlePause} 
+          />
+          <Button 
+            className="btn-finish" 
+            text="Út vége" 
+            onClick={handleFinish} 
+          />
         </div>
       ) : (
         <div className="trip-controls">
-          <Button text={"Törlés"} onClick={handleDelete} />
-          <Button text={"Mentés"} onClick={handleSaveFinish} />
+          <Button text="Törlés" onClick={onCancelFinish} />
+          <Button text="Mentés" onClick={() => onSaveFinish?.(finalData)} />
         </div>
       )}
     </div>

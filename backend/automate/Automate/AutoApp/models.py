@@ -28,7 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(max_length=255, null=True, blank=True)
     role = models.CharField(
         max_length=10,
-        choices=[("admin", "admin"), ("user", "user")],
+        choices=[("admin", "admin"), ("user", "user"), ("moderator", "moderator")],
         default="user",
     )
     is_active = models.BooleanField(default=True)
@@ -86,6 +86,7 @@ class Car(models.Model):
     license_plate = models.CharField(max_length=20, unique=True)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     model = models.ForeignKey(CarModel, on_delete=models.CASCADE)
+    car_image = models.CharField(max_length=255, null=True, blank=True)
     fuel_type = models.ForeignKey(FuelType, on_delete=models.CASCADE, null=True, blank=True)
     tank_capacity = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     average_consumption = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -227,3 +228,48 @@ class Maintenance(models.Model):
 
     class Meta:
         db_table = "maintenance"
+
+
+# ---------------------------
+# Community car setting
+# ---------------------------
+class CommunityCarSetting(models.Model):
+    setting_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    car = models.ForeignKey(Car, on_delete=models.CASCADE)
+    enabled = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "community_car_setting"
+        unique_together = ("user", "car")
+
+
+# ---------------------------
+# Community gas station share request
+# ---------------------------
+class CommunityGasStationShare(models.Model):
+    share_request_id = models.AutoField(primary_key=True)
+    requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="community_share_requests")
+    car = models.ForeignKey(Car, on_delete=models.CASCADE)
+    gas_station = models.ForeignKey(GasStation, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=10,
+        choices=[("pending", "pending"), ("approved", "approved"), ("rejected", "rejected")],
+        default="pending",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="community_reviewed_requests",
+    )
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "community_gas_station_share"
+        unique_together = ("requester", "car", "gas_station")

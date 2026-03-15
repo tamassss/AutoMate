@@ -1,0 +1,15 @@
+.community-compare-wrap {
+  width: 100%;
+}
+
+.community-compare-charts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.community-compare-chart-item {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 10px;
+}

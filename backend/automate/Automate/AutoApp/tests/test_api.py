@@ -27,6 +27,7 @@ class BaseAPITestCase(TestCase):
             license_plate="ABC-123",
             brand=cls.brand,
             model=cls.model,
+            car_image="car_2",
             fuel_type=cls.fuel_type,
             tank_capacity=55.00,
             horsepower=190,
@@ -101,6 +102,8 @@ class TestCarsEndpoint(BaseAPITestCase):
         cars = resp.json()["cars"]
         self.assertTrue(any(c["license_plate"] == "ABC-123" for c in cars))
         self.assertFalse(any(c["license_plate"] == "XYZ-999" for c in cars))
+        selected = next(c for c in cars if c["license_plate"] == "ABC-123")
+        self.assertEqual(selected.get("car_image"), "car_2")
 
 
 class TestDashboardEndpoint(BaseAPITestCase):

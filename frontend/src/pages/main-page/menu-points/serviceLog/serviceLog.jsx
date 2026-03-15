@@ -53,7 +53,15 @@ export default function ServiceLog() {
 
           <div className="service-log-top-actions">
             <Button text={"Új szerviz"} onClick={() => setShowNewService(true)} />
-            <Button text={"Szervizek kezelése"} onClick={() => setShowManageServices(true)} />
+            <Button
+              text={"Szervizek kezelése"}
+              onClick={() => {
+                if (!hasServices) return;
+                setShowManageServices(true);
+              }}
+              disabled={!hasServices}
+              className={!hasServices ? "unavailable" : ""}
+            />
           </div>
 
           {showNewService && (

@@ -17,6 +17,7 @@ export default function DashboardLights() {
       <DashboardLight light={selectedLight} />
 
       <div className="dashboard-lights-gallery">
+        
         {lights.map((light, index) => (
           <button
             key={light.title}

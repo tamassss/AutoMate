@@ -73,6 +73,7 @@ class CarSerializer(serializers.ModelSerializer):
             "license_plate",
             "brand",
             "model",
+            "car_image",
             "fuel_type",
             "tank_capacity",
             "average_consumption",

@@ -1,150 +1,156 @@
 import { useEffect, useState } from "react";
-import { getCars, returnSelectedCard } from "../../../actions/cars/carsActions";
 import { Link, useNavigate } from "react-router-dom";
+import { getCars, returnSelectedCard } from "../../../actions/cars/carsActions";
 
 import Button from "../../../components/button/button";
-import plusIcon from "../../../assets/icons/plus.png"
-import leftArrow from "../../../assets/icons/left-arrow.png"
-import rightArrow from "../../../assets/icons/right-arrow.png"
+import AddCar from "../../../modals/addCar/addCar";
 import { getCarImageSrc } from "../../../assets/car-images/carImageOptions";
 
-import AddCar from "../../../modals/addCar/addCar";
+import plusIcon from "../../../assets/icons/plus.png";
+import leftArrow from "../../../assets/icons/left-arrow.png";
+import rightArrow from "../../../assets/icons/right-arrow.png";
 
-import "./carSelect.css"
+import "./carSelect.css";
 
-export default function CarSelect({refreshKey, onCarChange}){
+export default function CarSelect({ refreshKey, onCarChange }) {
     const [cars, setCars] = useState([]);
-    const [slideDirection, setSlideDirection] = useState("next");
-
-    useEffect(() => {
-        getCars().then(setCars).catch(() => setCars([]))
-    }, [refreshKey])
-
-    const navigate = useNavigate();
     const [activeIndex, setActiveIndex] = useState(0);
     const [showAddCar, setShowAddCar] = useState(false);
+    const [slideDirection, setSlideDirection] = useState("next");
+    const navigate = useNavigate();
 
-    const hasMultiple = cars.length > 1;
+    // Autók betöltése
+    const fetchCars = () => {
+        getCars()
+            .then(data => setCars(data))
+            .catch(() => setCars([]));
+    };
 
     useEffect(() => {
+        fetchCars();
+    }, [refreshKey]);
+
+    // Kiválasztott autó átadása
+    useEffect(() => {
         if (cars.length > 0) {
-            const safeIndex = Math.min(activeIndex, cars.length - 1);
-            onCarChange?.(cars[safeIndex]);
+            onCarChange?.(cars[activeIndex]);
         } else {
             onCarChange?.(null);
         }
     }, [cars, activeIndex, onCarChange]);
 
-
-    if(cars.length === 0)
+    // Nincs autó
+    if (cars.length === 0) {
         return (
-            <>
-                <div className="d-flex justify-content-center w-100 my-5">
-                    <div className="main-image" onClick={() => setShowAddCar(true)}>
-                        <img 
-                            src={plusIcon} 
-                            alt="Új autó" 
-                            className="main-car-img" 
-                            style={{width:"30%"}}
-                        />
-                    </div>
+            <div className="d-flex justify-content-center w-100 my-5">
+                <div className="main-image" onClick={() => setShowAddCar(true)}>
+                    <img src={plusIcon} alt="Új" className="main-car-img" style={{ width: "30%" }} />
                 </div>
-
                 {showAddCar && (
-                    <AddCar
-                      onClose={() => setShowAddCar(false)}
-                      onSave={() => {
-                        getCars().then(setCars).catch(() => setCars([]));
-                        setShowAddCar(false);
-                      }}
+                    <AddCar 
+                        onClose={() => setShowAddCar(false)} 
+                        onSave={() => { fetchCars(); setShowAddCar(false); }} 
                     />
                 )}
-            </>
-        )
-
-    const current = cars[activeIndex]
-    const left =  cars[(activeIndex - 1 + cars.length) % cars.length];
-    const right = cars[(activeIndex + 1) % cars.length];
-
-    function nextCar() {
-        setSlideDirection("next");
-        setActiveIndex((prev) => (prev + 1) % cars.length);
-    }
-
-    function prevCar() {
-        setSlideDirection("prev");
-        setActiveIndex((prev) => (prev - 1 + cars.length) % cars.length
+            </div>
         );
     }
 
-    function onSelect(){
-        returnSelectedCard(current.car_id)
-        navigate("/muszerfal")
-    }
+    // Következő autó
+    const nextCar = () => {
+        setSlideDirection("next");
+        if (activeIndex === cars.length - 1) {
+            setActiveIndex(0);
+        } else {
+            setActiveIndex(activeIndex + 1);
+        }
+    };
 
-return(
-    <div className="car-select">
-        <div className="car-layout">
-        
-            <div className="side left" onClick={prevCar}>
-                <div className="mobile-arrow">
-                    <img src={leftArrow} alt="Előző" className="left-arrow"/>
-                </div>
-                {hasMultiple && (
-                    <div className="side-content desktop">
-                        <div className="side-image">
-                            <img src={getCarImageSrc(left?.car_image)} alt={left.display_name}/>
-                        </div>
-                        <p className="side-name">{left.display_name}</p>
+    // Előző autó
+    const prevCar = () => {
+        setSlideDirection("prev");
+        if (activeIndex === 0) {
+            setActiveIndex(cars.length - 1);
+        } else {
+            setActiveIndex(activeIndex - 1);
+        }
+    };
+
+    // Kiválasztás
+    const handleSelect = () => {
+        const currentCar = cars[activeIndex];
+        returnSelectedCard(currentCar.car_id);
+        navigate("/muszerfal");
+    };
+
+    // Segédváltozók
+    const leftIndex = activeIndex === 0 ? cars.length - 1 : activeIndex - 1;
+    const rightIndex = activeIndex === cars.length - 1 ? 0 : activeIndex + 1;
+    
+    const current = cars[activeIndex];
+    const leftCar = cars[leftIndex];
+    const rightCar = cars[rightIndex];
+
+    return (
+        <div className="car-select">
+            <div className="car-layout">
+                
+                {/* Bal */}
+                <div className="side left" onClick={prevCar}>
+                    <div className="mobile-arrow">
+                        <img src={leftArrow} alt="Bal" />
                     </div>
-                )}
-            </div>
-
-            <div
-                key={`${current.car_id}-${activeIndex}`}
-                className={`main-car ${slideDirection === "next" ? "slide-from-right" : "slide-from-left"}`}
-            >
-                <div className="main-image" onClick={onSelect}>
-                    <img src={getCarImageSrc(current?.car_image)} alt={current.display_name} className="main-car-img"/>
+                    {cars.length > 1 && (
+                        <div className="side-content desktop">
+                            <div className="side-image">
+                                <img src={getCarImageSrc(leftCar.car_image)} alt="bal-auto" />
+                            </div>
+                            <p className="side-name">{leftCar.display_name}</p>
+                        </div>
+                    )}
                 </div>
-                <div className="main-info">
-                    <h2 className="main-title">{current.display_name}</h2>
 
-                    <div className="license-outer">
-                        <div className="license-inner">
-                            <div className="license-blue"></div>
-                            <div className="license-white">
-                                <p
-                                    className={`license-plate ${String(current.license_plate || "").length >= 8 ? "license-plate-small" : ""}`}
-                                >
-                                    {current.license_plate}
-                                </p>
+                {/* Középső */}
+                <div
+                    key={activeIndex}
+                    className={`main-car ${slideDirection === "next" ? "slide-from-right" : "slide-from-left"}`}
+                >
+                    <div className="main-image" onClick={handleSelect}>
+                        <img src={getCarImageSrc(current.car_image)} alt="fő-auto" className="main-car-img" />
+                    </div>
+                    
+                    <div className="main-info">
+                        <h2 className="main-title">{current.display_name}</h2>
+                        
+                        <div className="license-outer">
+                            <div className="license-inner">
+                                <div className="license-blue" />
+                                <div className="license-white">
+                                    <p className="license-plate">{current.license_plate}</p>
+                                </div>
                             </div>
                         </div>
+
+                        <Button text="Kiválasztás" onClick={handleSelect} className="select-btn" />
                     </div>
-
-                    <Link to="/muszerfal" className="select-link">
-                      <Button text={"Kiválasztás"} onClick={onSelect}className="select-btn"/>
-                    </Link>
                 </div>
-            </div>
 
-            <div className="side right" onClick={nextCar}>
-                <div className="mobile-arrow">
-                    <img src={rightArrow} alt="Következő" className="right-arrow"/>
-                </div>
-                {hasMultiple && (
-                    <div className="side-content desktop">
-                        <div className="side-image">
-                            <img src={getCarImageSrc(right?.car_image)} alt={right.display_name}/>
+                {/* Jobb */}
+                <div className="side right" onClick={nextCar}>
+                    <div className="mobile-arrow">
+                        <img src={rightArrow} alt="Jobb" />
+                    </div>
+                    {cars.length > 1 && (
+                        <div className="side-content desktop">
+                            <div className="side-image">
+                                <img src={getCarImageSrc(rightCar.car_image)} alt="jobb-auto" />
+                            </div>
+                            <p className="side-name">{rightCar.display_name}</p>
                         </div>
-                        <p className="side-name">{right.display_name}</p>
-                    </div>
-                )}
+                    )}
+                </div>
+
             </div>
-
         </div>
-
-    </div>
-    )
+    );
 }

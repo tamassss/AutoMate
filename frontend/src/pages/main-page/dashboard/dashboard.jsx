@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useState, useCallback } from "react";
 import { getDashboard } from "../../../actions/dashboard/dashboardActions";
 import { getStoredBudgetLimit, setStoredBudgetLimit } from "../../../actions/dashboard/budgetActions";
 import { saveFuelingWithGasStation, saveTripWithFuelings } from "../../../actions/trips/tripActions";
@@ -28,32 +28,51 @@ export default function Dashboard() {
   const [showNewTrip, setShowNewTrip] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [dashboardData, setDashboardData] = useState(null);
+  const [isSavingTrip, setIsSavingTrip] = useState(false);
+
+  // Aktív út betöltése (ls)
   const [activeTrip, setActiveTrip] = useState(() => {
     const raw = localStorage.getItem("active_trip_state");
     if (!raw) return null;
-
     try {
       return JSON.parse(raw);
     } catch {
       return null;
     }
   });
-  const [isSavingTrip, setIsSavingTrip] = useState(false);
 
-  function setAndPersistActiveTrip(updater) {
+  // út megmaradjon frissítéskor
+  const syncActiveTrip = useCallback((updater) => {
     setActiveTrip((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
-
       if (!next) {
         localStorage.removeItem("active_trip_state");
         return null;
       }
-
       localStorage.setItem("active_trip_state", JSON.stringify(next));
       return next;
     });
-  }
+  }, []);
 
+  // Adatok betöltése backendből
+  const loadDashboardData = useCallback(async () => {
+    try {
+      const data = await getDashboard();
+      setDashboardData(data);
+
+      if (data?.selected_car?.odometer_km != null) {
+        localStorage.setItem("selected_car_odometer_km", String(data.selected_car.odometer_km));
+      }
+    } catch (err) {
+      console.error("Hiba a dashboard adatok betöltésekor:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  // Budget számítás
   const backendSpent = Number(dashboardData?.monthly_budget?.spent || 0);
   const backendLimit = Number(dashboardData?.monthly_budget?.limit || 0);
   const customLimit = getStoredBudgetLimit();
@@ -66,113 +85,75 @@ export default function Dashboard() {
     percent_used: percentUsed,
   };
 
-  function handleTripRuntimeChange(runtime) {
-    setAndPersistActiveTrip((prev) => {
-      if (!prev) return prev;
 
-      const prevRuntime = prev.runtime || {};
-      const nextRuntime = runtime || {};
-      if (JSON.stringify(prevRuntime) === JSON.stringify(nextRuntime)) return prev;
-
-      return {
-        ...prev,
-        runtime: nextRuntime,
-      };
+  const handleTripRuntimeChange = (runtime) => {
+    syncActiveTrip((prev) => {
+      if (!prev || JSON.stringify(prev.runtime) === JSON.stringify(runtime)) return prev;
+      return { ...prev, runtime };
     });
-  }
+  };
 
-  async function loadDashboardData() {
-    const data = await getDashboard();
-    setDashboardData(data);
-
-    if (data?.selected_car?.odometer_km !== undefined && data?.selected_car?.odometer_km !== null) {
-      localStorage.setItem("selected_car_odometer_km", String(data.selected_car.odometer_km));
-    }
-  }
-
-  function handleCancelTripFinish() {
-    setAndPersistActiveTrip(null);
+  //út törlés
+  const handleCancelTripFinish = () => {
+    syncActiveTrip(null);
     setSuccessMessage("Út törölve");
-  }
+  };
 
-  async function handleSaveTripFinish() {
+  //út mentés
+  const handleSaveTripFinish = async () => {
     if (!activeTrip || isSavingTrip) return;
 
     const tripToSave = activeTrip;
     setIsSavingTrip(true);
-    localStorage.removeItem("active_trip_state");
-    setActiveTrip(null);
-
+    
     try {
       const expectedMinutes = hhmmToMinutes(tripToSave?.expectedArrival);
       const actualMinutes = hhmmToMinutes(tripToSave?.runtime?.actualArrival);
-      const arrivalDeltaMin =
-        expectedMinutes == null || actualMinutes == null
-          ? null
-          : expectedMinutes - actualMinutes;
+      const arrivalDeltaMin = (expectedMinutes == null || actualMinutes == null) 
+        ? null 
+        : expectedMinutes - actualMinutes;
 
       await saveTripWithFuelings({
         ...tripToSave,
         fuelings: [],
         arrivalDeltaMin,
       });
+      
+      syncActiveTrip(null);
       await loadDashboardData();
       setSuccessMessage("Út sikeresen elmentve");
     } catch (err) {
-      setAndPersistActiveTrip(tripToSave);
       alert(err.message || "Nem sikerült menteni az utat.");
     } finally {
       setIsSavingTrip(false);
     }
-  }
+  };
 
-  async function handleSaveFuel(fuelData) {
-    if (!isSavingTrip && activeTrip && !activeTrip?.runtime?.showFinishResult) {
-      const tripCarId = activeTrip?.carId || null;
-      await saveFuelingWithGasStation(fuelData, tripCarId);
-      await loadDashboardData();
-
-      setAndPersistActiveTrip((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          fuelings: [...(prev.fuelings || []), fuelData],
-        };
-      });
-      return;
-    }
-
-    await saveFuelingWithGasStation(fuelData);
-    await loadDashboardData();
-  }
-
-  async function handleEventCreated(formData) {
-    await createEvent(formData);
-    await loadDashboardData();
-  }
-
-  function handleSaveBudgetLimit(newLimit) {
-    const savedLimit = setStoredBudgetLimit(newLimit);
-
-    setDashboardData((prev) => {
-      if (!prev) return prev;
-
-      const spent = Number(prev?.monthly_budget?.spent || 0);
-      const newPercent = savedLimit > 0 ? Math.min(Math.round((spent / savedLimit) * 100), 100) : 0;
-
-      return {
+  // új tankolás
+  const handleSaveFuel = async (fuelData) => {
+    // úthoz kapcsolás
+    const tripCarId = activeTrip?.carId || null;
+    await saveFuelingWithGasStation(fuelData, tripCarId);
+    
+    if (activeTrip && !activeTrip?.runtime?.showFinishResult) {
+      syncActiveTrip((prev) => ({
         ...prev,
-        monthly_budget: {
-          ...(prev.monthly_budget || {}),
-          spent,
-          limit: savedLimit,
-          percent_used: newPercent,
-        },
-      };
-    });
-  }
+        fuelings: [...(prev?.fuelings || []), fuelData],
+      }));
+    }
+    
+    await loadDashboardData();
+    setShowNewFuel(false);
+  };
 
-  function handleStartTrip(newTrip) {
+  //új limit
+  const handleSaveBudgetLimit = (newLimit) => {
+    const savedLimit = setStoredBudgetLimit(newLimit);
+    loadDashboardData();
+  };
+
+  //új út
+  const handleStartTrip = (newTrip) => {
     const selectedCarId = localStorage.getItem("selected_car_id");
     const startedTrip = {
       ...newTrip,
@@ -185,39 +166,41 @@ export default function Dashboard() {
         showFinishResult: false,
         actualArrival: null,
       },
+      fuelings: [],
     };
-
-    setAndPersistActiveTrip(startedTrip);
-  }
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadDashboardData().catch(() => {});
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, []);
+    syncActiveTrip(startedTrip);
+    setShowNewTrip(false);
+  };
 
   const tripToShow = activeTrip;
   const activeTripCarId = Number(tripToShow?.carId || 0);
   const selectedCarId = Number(dashboardData?.selected_car?.car_id || 0);
-  const isTripFromAnotherCar =
-    !!tripToShow && activeTripCarId > 0 && selectedCarId > 0 && activeTripCarId !== selectedCarId;
+  const isTripFromAnotherCar = !!tripToShow && activeTripCarId > 0 && selectedCarId > 0 && activeTripCarId !== selectedCarId;
 
   return (
     <div className="dashboard-layout">
       <div className="menu-content">
-        <Menu events={dashboardData?.events?.items || []} onEventCreated={handleEventCreated} />
+        <Menu 
+          events={dashboardData?.events?.items || []} 
+          onEventCreated={async (formData) => {
+            await createEvent(formData);
+            await loadDashboardData();
+          }} 
+        />
       </div>
 
       <div className="flex-grow-1">
         <Navbar />
         <div className="dashboard-header">
-          <h1 className="custom-title">{dashboardData?.selected_car?.display_name || "Nincs autó kiválasztva"}</h1>
+          <h1 className="custom-title">
+            {dashboardData?.selected_car?.display_name || "Nincs autó kiválasztva"}
+          </h1>
         </div>
 
+        {/* TARTALOM */}
         <div className="container-fluid">
           <div className="row g-3 dashboard-main-row">
+            {/* ÚT */}
             <div className="col-xl-4 col-12">
               <div className="fixed-height-card mb-3">
                 <Card>
@@ -226,8 +209,7 @@ export default function Dashboard() {
                       <>
                         {isTripFromAnotherCar && (
                           <p className="text-warning text-center mb-2">
-                            Út ezzel az autóval:{" "}
-                            <strong>{tripToShow?.carDisplayName || `ID: ${tripToShow?.carId}`}</strong>
+                            Út ezzel az autóval: <strong>{tripToShow?.carDisplayName}</strong>
                           </p>
                         )}
                         <Trip
@@ -241,16 +223,16 @@ export default function Dashboard() {
                       <TripInfo />
                     )}
                   </div>
-
                   {!tripToShow && (
                     <div className="card-btn">
-                      <Button text={"Új út"} onClick={() => setShowNewTrip(true)} />
+                      <Button text="Új út" onClick={() => setShowNewTrip(true)} />
                     </div>
                   )}
                 </Card>
               </div>
             </div>
 
+            {/* BUDGET GAUGE KÁRTYA */}
             <div className="col-xl-4 col-12">
               <div className="fixed-height-card mb-3">
                 <Card>
@@ -265,20 +247,23 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* TANKOLÁS */}
             <div className="col-xl-4 col-12">
               <div className="fixed-height-card mb-3">
                 <Card>
                   <div className="card-content-wrap justify-content-center">
                     {dashboardData?.latest_fueling ? (
-                      <Fuel fuelingChart={dashboardData?.fueling_chart} latestFueling={dashboardData?.latest_fueling} />
+                      <Fuel 
+                        fuelingChart={dashboardData?.fueling_chart} 
+                        latestFueling={dashboardData?.latest_fueling} 
+                      />
                     ) : (
                       <FuelInfo />
                     )}
                   </div>
-
                   <div className="card-btn dashboard-fuel-actions">
-                    <Button text={"Új tankolás"} onClick={() => setShowNewFuel(true)} />
-                    <Button text={"Új benzinkút"} onClick={() => setShowNewGasStation(true)} />
+                    <Button text="Új tankolás" onClick={() => setShowNewFuel(true)} />
+                    <Button text="Új benzinkút" onClick={() => setShowNewGasStation(true)} />
                   </div>
                 </Card>
               </div>
@@ -286,14 +271,11 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* MODAL */}
         {showNewFuel && <NewFuel onClose={() => setShowNewFuel(false)} onSave={handleSaveFuel} />}
         {showNewGasStation && (
-          <NewGasStation
-            onClose={() => setShowNewGasStation(false)}
-            onSave={loadDashboardData}
-          />
+          <NewGasStation onClose={() => setShowNewGasStation(false)} onSave={loadDashboardData} />
         )}
-
         {showNewTrip && (
           <NewTrip
             onClose={() => setShowNewTrip(false)}
@@ -301,12 +283,8 @@ export default function Dashboard() {
             onStart={handleStartTrip}
           />
         )}
-
         {successMessage && (
-          <SuccessModal
-            description={successMessage}
-            onClose={() => setSuccessMessage("")}
-          />
+          <SuccessModal description={successMessage} onClose={() => setSuccessMessage("")} />
         )}
       </div>
     </div>

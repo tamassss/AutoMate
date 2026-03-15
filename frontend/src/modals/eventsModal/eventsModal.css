@@ -3,6 +3,15 @@
   overflow: auto;
 }
 
+.events-modal-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.events-modal-wrap::-webkit-scrollbar-thumb {
+  background: #51535B;
+  border-radius: 10px;
+}
+
 .events-modal-list {
   display: flex;
   flex-direction: column;

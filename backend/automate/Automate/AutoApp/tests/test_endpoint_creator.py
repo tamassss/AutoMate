@@ -106,6 +106,29 @@ class TestCarCreateAndPatch(BaseCreateAPITestCase):
         resp = self.client.post("/api/cars/create/", {"license_plate": "MISS-1"}, format="json")
         self.assertEqual(resp.status_code, 400)
 
+    def test_car_create_saves_car_image(self):
+        payload = {
+            "license_plate": "IMG-333",
+            "brand": "BMW",
+            "model": "320d",
+            "car_image": "car_4",
+        }
+        resp = self.client.post("/api/cars/create/", payload, format="json")
+        self.assertEqual(resp.status_code, 201)
+        car_id = resp.json()["car_id"]
+        created = Car.objects.get(car_id=car_id)
+        self.assertEqual(created.car_image, "car_4")
+
+    def test_car_patch_updates_car_image(self):
+        resp = self.client.patch(
+            f"/api/cars/{self.car.car_id}/",
+            {"car_image": "car_5"},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.car.refresh_from_db()
+        self.assertEqual(self.car.car_image, "car_5")
+
 
 class TestGasStationAndFuelingCreate(BaseCreateAPITestCase):
     def test_gas_station_create_success(self):

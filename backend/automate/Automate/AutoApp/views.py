@@ -4,10 +4,12 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.utils.dateparse import parse_datetime
+from django.utils import timezone
 from django.db import transaction, IntegrityError
 from django.db.models import Q
 
 from decimal import Decimal
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -20,6 +22,11 @@ from AutoApp.services.fuelings import list_fuelings_grouped_by_month
 from AutoApp.services.stats import get_general_statistics, get_summary_statistics
 from AutoApp.services.service_logs import list_service_log
 from AutoApp.services.gas_stations import list_gas_station_cards
+from AutoApp.services.external.route_estimate import (
+    AddressNotFoundError,
+    RouteEstimateError,
+    estimate_route,
+)
 
 from AutoApp.models import (
     CarUser,
@@ -27,6 +34,7 @@ from AutoApp.models import (
     GasStation, Fueling,
     ServiceCenter, Maintenance,
     Address, Route, RouteUsage,
+    CommunityCarSetting, CommunityGasStationShare,
 )
 
 User = get_user_model()
@@ -57,6 +65,74 @@ def _parse_dt(val, field="date"):
 def _is_admin_user(user):
     role = str(getattr(user, "role", "") or "").strip().lower()
     return role == "admin"
+
+
+def _is_moderator_or_admin(user):
+    role = str(getattr(user, "role", "") or "").strip().lower()
+    return role in {"admin", "moderator"}
+
+
+def _build_monthly_stats(user, car):
+    distance_by_month = [0.0] * 12
+    liters_by_month = [0.0] * 12
+    spent_by_month = [0.0] * 12
+
+    route_rows = RouteUsage.objects.filter(user=user, car=car).only("date", "distance_km")
+    for row in route_rows:
+        if not row.date:
+            continue
+        idx = row.date.month - 1
+        distance_by_month[idx] += float(row.distance_km or 0)
+
+    fueling_rows = Fueling.objects.filter(user=user, car=car).only("date", "liters", "price_per_liter")
+    for row in fueling_rows:
+        if not row.date:
+            continue
+        idx = row.date.month - 1
+        liters = float(row.liters or 0)
+        price_per_liter = float(row.price_per_liter or 0)
+        liters_by_month[idx] += liters
+        spent_by_month[idx] += liters * price_per_liter
+
+    price_per_km_by_month = []
+    for i in range(12):
+        km = distance_by_month[i]
+        price_per_km_by_month.append(round((spent_by_month[i] / km), 1) if km > 0 else 0.0)
+
+    return {
+        "distance": [round(v, 1) for v in distance_by_month],
+        "liters": [round(v, 1) for v in liters_by_month],
+        "price_per_km": price_per_km_by_month,
+    }
+
+
+def _build_shared_station_card(share_row, date_value):
+    latest_fueling = (
+        Fueling.objects.filter(user=share_row.requester, car=share_row.car, gas_station=share_row.gas_station)
+        .select_related("fuel_type")
+        .order_by("-date", "-fueling_id")
+        .first()
+    )
+
+    return {
+        "gasStationId": share_row.gas_station.gas_station_id,
+        "helyseg": share_row.gas_station.city or "-",
+        "cim": " ".join([x for x in [share_row.gas_station.street, share_row.gas_station.house_number] if x]) or (share_row.gas_station.name or "-"),
+        "stationName": share_row.gas_station.name or "",
+        "stationCity": share_row.gas_station.city or "",
+        "stationPostalCode": share_row.gas_station.postal_code or "",
+        "stationStreet": share_row.gas_station.street or "",
+        "stationHouseNumber": share_row.gas_station.house_number or "",
+        "datum": str(date_value.date()),
+        "literft": float(latest_fueling.price_per_liter) if latest_fueling and latest_fueling.price_per_liter is not None else 0,
+        "supplier": (
+            latest_fueling.supplier
+            if latest_fueling and latest_fueling.supplier
+            else (share_row.gas_station.name or "")
+        ),
+        "fuelType": latest_fueling.fuel_type.name if latest_fueling and latest_fueling.fuel_type else "",
+        "fuelTypeId": latest_fueling.fuel_type_id if latest_fueling else None,
+    }
 
 
 @api_view(["GET"])
@@ -92,6 +168,29 @@ def api_routes(request):
     limit = request.query_params.get("limit")
     limit = int(limit) if limit else 50
     return Response({"routes": list_route_cards(user, car, limit=limit)})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_route_estimate(request):
+    d = request.data or {}
+    from_text = str(d.get("from_text") or "").strip()
+    to_text = str(d.get("to_text") or "").strip()
+    avg_consumption = d.get("avg_consumption")
+
+    if not from_text or not to_text:
+        return _bad("from_text and to_text are required")
+
+    try:
+        data = estimate_route(from_text, to_text, avg_consumption)
+    except AddressNotFoundError as e:
+        return _bad(str(e))
+    except RouteEstimateError as e:
+        return _bad(str(e), code=status.HTTP_503_SERVICE_UNAVAILABLE)
+    except ValueError:
+        return _bad("avg_consumption must be a number")
+
+    return Response(data)
 
 
 @api_view(["GET"])
@@ -145,6 +244,346 @@ def api_gas_stations(request):
     limit = request.query_params.get("limit")
     limit = int(limit) if limit else 50
     return Response({"gas_station_cards": list_gas_station_cards(user, car, limit=limit)})
+
+
+@api_view(["GET", "PUT"])
+@permission_classes([IsAuthenticated])
+def api_community_settings(request):
+    user = get_current_user(request)
+
+    car_id = request.query_params.get("car_id") if request.method == "GET" else request.data.get("car_id")
+    if car_id in (None, ""):
+        return _bad("car_id is required")
+    try:
+        car_id = int(car_id)
+    except (TypeError, ValueError):
+        return _bad("car_id must be an integer")
+
+    car = get_car_or_default(user, car_id)
+    if not user_has_access_to_car(user, car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    setting, _ = CommunityCarSetting.objects.get_or_create(user=user, car=car, defaults={"enabled": False})
+
+    if request.method == "PUT":
+        enabled = bool(request.data.get("enabled", False))
+        setting.enabled = enabled
+        setting.save(update_fields=["enabled", "updated_at"])
+        if not enabled:
+            CommunityGasStationShare.objects.filter(requester=user, car=car).delete()
+
+    return Response(
+        {
+            "car_id": car.car_id,
+            "enabled": bool(setting.enabled),
+            "updated_at": setting.updated_at,
+        }
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_community_profiles(request):
+    user = get_current_user(request)
+    car_id = request.query_params.get("car_id")
+    if car_id in (None, ""):
+        return _bad("car_id is required")
+    try:
+        car_id = int(car_id)
+    except (TypeError, ValueError):
+        return _bad("car_id must be an integer")
+
+    car = get_car_or_default(user, car_id)
+    if not user_has_access_to_car(user, car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    my_setting = CommunityCarSetting.objects.filter(user=user, car=car).first()
+    my_enabled = bool(my_setting.enabled) if my_setting else False
+    my_profile = None
+    if my_enabled:
+        my_stats = get_general_statistics(user, car)
+        my_distance = float(my_stats.get("distance_km_total") or 0)
+        my_liters = float((my_stats.get("fuelings") or {}).get("liters") or 0)
+        my_spent = float((my_stats.get("fuelings") or {}).get("spent") or 0)
+        my_profile = {
+            "user_id": user.user_id,
+            "full_name": user.full_name or "Felhasználó",
+            "car_id": car.car_id,
+            "car_name": f"{car.brand.name} {car.model.name}",
+            "license_plate": car.license_plate,
+            "car_image": car.car_image,
+            "stats": {
+                "distance": my_distance,
+                "liters": my_liters,
+                "spent": my_spent,
+                "price_per_km": round((my_spent / my_distance), 1) if my_distance > 0 else 0,
+            },
+        }
+
+    profile_rows = (
+        CommunityCarSetting.objects.filter(enabled=True)
+        .exclude(user=user, car=car)
+        .select_related("user", "car__brand", "car__model")
+        .order_by("updated_at")
+    )
+    profiles = []
+    for row in profile_rows:
+        stats = get_general_statistics(row.user, row.car)
+        distance = float(stats.get("distance_km_total") or 0)
+        liters = float((stats.get("fuelings") or {}).get("liters") or 0)
+        spent = float((stats.get("fuelings") or {}).get("spent") or 0)
+        profiles.append(
+            {
+                "user_id": row.user.user_id,
+                "full_name": row.user.full_name or "Felhasználó",
+                "car_id": row.car.car_id,
+                "car_name": f"{row.car.brand.name} {row.car.model.name}",
+                "license_plate": row.car.license_plate,
+                "car_image": row.car.car_image,
+                "stats": {
+                    "distance": distance,
+                    "liters": liters,
+                    "spent": spent,
+                    "price_per_km": round((spent / distance), 1) if distance > 0 else 0,
+                },
+            }
+        )
+
+    return Response(
+        {
+            "enabled": my_enabled,
+            "my_profile": my_profile,
+            "profiles": profiles,
+        }
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_community_compare_monthly(request):
+    user = get_current_user(request)
+
+    try:
+        my_car_id = int(request.query_params.get("car_id"))
+        other_user_id = int(request.query_params.get("other_user_id"))
+        other_car_id = int(request.query_params.get("other_car_id"))
+    except (TypeError, ValueError):
+        return _bad("car_id, other_user_id and other_car_id are required integers")
+
+    my_car = get_car_or_default(user, my_car_id)
+    if not user_has_access_to_car(user, my_car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    my_enabled = CommunityCarSetting.objects.filter(user=user, car=my_car, enabled=True).exists()
+    if not my_enabled:
+        return _bad("Community is not enabled for your selected car")
+
+    other_user = User.objects.filter(user_id=other_user_id).first()
+    other_car = Car.objects.filter(car_id=other_car_id).select_related("brand", "model").first()
+    if not other_user or not other_car:
+        return Response({"detail": "Not found"}, status=404)
+
+    other_has_access = CarUser.objects.filter(user=other_user, car=other_car).exists()
+    other_enabled = CommunityCarSetting.objects.filter(user=other_user, car=other_car, enabled=True).exists()
+    if not other_has_access or not other_enabled:
+        return Response({"detail": "Forbidden"}, status=403)
+
+    my_series = _build_monthly_stats(user, my_car)
+    other_series = _build_monthly_stats(other_user, other_car)
+
+    return Response(
+        {
+            "months": [str(i) for i in range(1, 13)],
+            "meta": {
+                "me_name": user.full_name or "Én",
+                "other_name": other_user.full_name or "Másik",
+            },
+            "series": {
+                "distance": {"me": my_series["distance"], "other": other_series["distance"]},
+                "liters": {"me": my_series["liters"], "other": other_series["liters"]},
+                "price_per_km": {"me": my_series["price_per_km"], "other": other_series["price_per_km"]},
+            },
+        }
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_community_my_share_statuses(request):
+    user = get_current_user(request)
+    car_id = request.query_params.get("car_id")
+    if car_id in (None, ""):
+        return _bad("car_id is required")
+    try:
+        car_id = int(car_id)
+    except (TypeError, ValueError):
+        return _bad("car_id must be an integer")
+
+    car = get_car_or_default(user, car_id)
+    if not user_has_access_to_car(user, car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    rows = CommunityGasStationShare.objects.filter(requester=user, car=car)
+    statuses = [
+        {
+            "request_id": row.share_request_id,
+            "gas_station_id": row.gas_station_id,
+            "status": row.status,
+        }
+        for row in rows
+    ]
+    return Response({"statuses": statuses})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_community_share_request_create(request):
+    user = get_current_user(request)
+    d = request.data or {}
+    if d.get("car_id") in (None, "") or d.get("gas_station_id") in (None, ""):
+        return _bad("car_id and gas_station_id are required")
+    try:
+        car_id = int(d.get("car_id"))
+        gas_station_id = int(d.get("gas_station_id"))
+    except (TypeError, ValueError):
+        return _bad("car_id and gas_station_id must be integers")
+
+    car = get_car_or_default(user, car_id)
+    if not user_has_access_to_car(user, car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    if not CommunityCarSetting.objects.filter(user=user, car=car, enabled=True).exists():
+        return _bad("Community is not enabled for this car")
+
+    gas_station = GasStation.objects.filter(gas_station_id=gas_station_id).first()
+    if not gas_station:
+        return Response({"detail": "Not found"}, status=404)
+
+    share, _ = CommunityGasStationShare.objects.get_or_create(
+        requester=user,
+        car=car,
+        gas_station=gas_station,
+        defaults={"status": "pending"},
+    )
+    if share.status != "pending":
+        share.status = "pending"
+        share.reviewed_at = None
+        share.reviewed_by = None
+        share.expires_at = None
+        share.save(update_fields=["status", "reviewed_at", "reviewed_by", "expires_at"])
+
+    return Response({"request_id": share.share_request_id, "status": share.status}, status=201)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_community_share_request_revoke(request):
+    user = get_current_user(request)
+    d = request.data or {}
+    if d.get("car_id") in (None, "") or d.get("gas_station_id") in (None, ""):
+        return _bad("car_id and gas_station_id are required")
+    try:
+        car_id = int(d.get("car_id"))
+        gas_station_id = int(d.get("gas_station_id"))
+    except (TypeError, ValueError):
+        return _bad("car_id and gas_station_id must be integers")
+
+    car = get_car_or_default(user, car_id)
+    if not user_has_access_to_car(user, car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    CommunityGasStationShare.objects.filter(requester=user, car=car, gas_station_id=gas_station_id).delete()
+    return Response({"ok": True})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_community_share_requests_pending(request):
+    user = get_current_user(request)
+    if not _is_moderator_or_admin(user):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    rows = (
+        CommunityGasStationShare.objects.filter(status="pending")
+        .select_related("requester", "car__brand", "car__model", "gas_station")
+        .order_by("-created_at")
+    )
+
+    items = []
+    for row in rows:
+        items.append({
+            "request_id": row.share_request_id,
+            "user_id": row.requester.user_id,
+            "full_name": row.requester.full_name or "Felhasználó",
+            "car_id": row.car_id,
+            "car_name": f"{row.car.brand.name} {row.car.model.name}",
+            "gas_station_id": row.gas_station_id,
+            "created_at": row.created_at,
+            "station": _build_shared_station_card(row, row.created_at),
+        })
+    return Response({"pending": items})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_community_share_request_review(request, request_id: int):
+    reviewer = get_current_user(request)
+    if not _is_moderator_or_admin(reviewer):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    share = CommunityGasStationShare.objects.filter(share_request_id=request_id).first()
+    if not share:
+        return Response({"detail": "Not found"}, status=404)
+
+    decision = str((request.data or {}).get("decision") or "").strip().lower()
+    if decision not in {"accept", "reject"}:
+        return _bad("decision must be one of: accept, reject")
+
+    now = timezone.now()
+    share.status = "approved" if decision == "accept" else "rejected"
+    share.reviewed_at = now
+    share.reviewed_by = reviewer
+    share.expires_at = now + timedelta(days=30) if decision == "accept" else None
+    share.save(update_fields=["status", "reviewed_at", "reviewed_by", "expires_at"])
+
+    return Response({"ok": True, "status": share.status})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_community_shared_stations(request):
+    now = timezone.now()
+    rows = (
+        CommunityGasStationShare.objects.filter(status="approved")
+        .filter(Q(expires_at__isnull=True) | Q(expires_at__gt=now))
+        .select_related("requester", "car__brand", "car__model", "gas_station")
+        .order_by("-reviewed_at", "-created_at")
+    )
+
+    items = []
+    for row in rows:
+        items.append({
+            "request_id": row.share_request_id,
+            "full_name": row.requester.full_name or "Felhasználó",
+            "car_name": f"{row.car.brand.name} {row.car.model.name}",
+            "approved_at": row.reviewed_at,
+            "station": _build_shared_station_card(row, (row.reviewed_at or row.created_at)),
+        })
+    return Response({"shared_stations": items})
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def api_community_share_request_delete(request, request_id: int):
+    user = get_current_user(request)
+    if not _is_moderator_or_admin(user):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    share = CommunityGasStationShare.objects.filter(share_request_id=request_id).first()
+    if not share:
+        return Response({"detail": "Not found"}, status=404)
+    share.delete()
+    return Response(status=204)
 
 
 # --------------------------
@@ -418,6 +857,7 @@ def api_car_create(request):
     try:
         brand_name = str(d.get("brand")).strip()
         model_name = str(d.get("model")).strip()
+        car_image = str(d.get("car_image")).strip() if d.get("car_image") not in (None, "") else None
         odometer_km = _to_int(d.get("odometer_km"), "odometer_km") if d.get("odometer_km") not in (None, "") else None
         average_consumption = _to_decimal_str(d.get("average_consumption"), "average_consumption") if d.get("average_consumption") not in (None, "") else None
     except ValueError as e:
@@ -435,6 +875,7 @@ def api_car_create(request):
                 license_plate=d["license_plate"],
                 brand=brand,
                 model=model,
+                car_image=car_image,
                 odometer_km=odometer_km,
                 average_consumption=average_consumption,
             )
@@ -484,6 +925,9 @@ def api_car_update(request, car_id: int):
 
         if "odometer_km" in d:
             car.odometer_km = _to_int(d["odometer_km"], "odometer_km") if d["odometer_km"] not in (None, "") else None
+
+        if "car_image" in d:
+            car.car_image = str(d.get("car_image")).strip() if d.get("car_image") not in (None, "") else None
     except ValueError as e:
         return _bad(str(e))
 

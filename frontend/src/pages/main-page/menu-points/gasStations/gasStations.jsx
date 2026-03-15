@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import Navbar from "../../../../components/navbar/navbar";
 import GasStationCard from "../../../../components/gas-station-card/gasStationCard";
 import Menu from "../../dashboard/menu/menu";
 import { getGasStations } from "../../../../actions/gasStations/gasStationActions";
-import { getCars } from "../../../../actions/cars/carsActions";
 import {
   createShareRequest,
   getCurrentUserMeta,
-  getShareStatus,
+  getShareStatusesByCar,
   isCommunityEnabledForCar,
   revokeShareRequest,
 } from "../../../../actions/community/communityLocalActions";
@@ -18,29 +17,34 @@ import "../menuLayout.css";
 
 export default function GasStations() {
   const [stations, setStations] = useState([]);
-  const [cars, setCars] = useState([]);
   const [error, setError] = useState("");
+  const [communityEnabled, setCommunityEnabled] = useState(false);
+  const [shareStatuses, setShareStatuses] = useState({});
 
-  const { userId, fullName } = getCurrentUserMeta();
+  const { userId } = getCurrentUserMeta();
   const selectedCarId = Number(localStorage.getItem("selected_car_id") || 0);
-  const selectedCar = useMemo(
-    () => cars.find((car) => Number(car.car_id) === selectedCarId),
-    [cars, selectedCarId]
-  );
-  const communityEnabled = isCommunityEnabledForCar(userId, selectedCarId);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [stationsData, carsData] = await Promise.all([getGasStations(), getCars()]);
+        const [stationsData, enabled] = await Promise.all([
+          getGasStations(),
+          isCommunityEnabledForCar(userId, selectedCarId),
+        ]);
         setStations(stationsData);
-        setCars(carsData);
+        setCommunityEnabled(enabled);
+        if (enabled && selectedCarId) {
+          const statuses = await getShareStatusesByCar(selectedCarId);
+          setShareStatuses(statuses);
+        } else {
+          setShareStatuses({});
+        }
       } catch (err) {
-        setError(err.message || "Nem sikerült betölteni a benzinkutakat.");
+        setError(err.message || "Nem siker�lt bet�lteni a benzinkutakat.");
       }
     }
     loadData();
-  }, []);
+  }, [selectedCarId, userId]);
 
   function handleDeletedGasStation(deletedGasStationId) {
     setStations((prev) => prev.filter((s) => s.gasStationId !== deletedGasStationId));
@@ -69,41 +73,36 @@ export default function GasStations() {
     );
   }
 
-  function handleShareToggle(station) {
+  async function handleShareToggle(station) {
     if (!communityEnabled || !selectedCarId || !userId) return;
-    const currentStatus = getShareStatus({
-      userId,
-      carId: selectedCarId,
-      gasStationId: station.gasStationId,
-    });
+    const stationId = Number(station.gasStationId);
+    const currentStatus = shareStatuses[stationId] || "none";
 
     if (currentStatus === "pending" || currentStatus === "approved") {
-      revokeShareRequest({
-        userId,
+      await revokeShareRequest({
         carId: selectedCarId,
-        gasStationId: station.gasStationId,
+        gasStationId: stationId,
+      });
+      setShareStatuses((prev) => {
+        const next = { ...prev };
+        delete next[stationId];
+        return next;
       });
       return;
     }
 
-    createShareRequest({
-      userId,
-      fullName,
+    await createShareRequest({
       carId: selectedCarId,
-      carName: selectedCar?.display_name || "-",
       gasStation: station,
     });
+    setShareStatuses((prev) => ({ ...prev, [stationId]: "pending" }));
   }
 
   function buttonTextFor(station) {
-    const status = getShareStatus({
-      userId,
-      carId: selectedCarId,
-      gasStationId: station.gasStationId,
-    });
-    if (status === "pending") return "Visszavonás (függőben)";
-    if (status === "approved") return "Megosztás visszavonása";
-    return "Megosztás";
+    const status = shareStatuses[Number(station.gasStationId)] || "none";
+    if (status === "pending") return "Visszavon�s (f�gg�ben)";
+    if (status === "approved") return "Megoszt�s visszavon�sa";
+    return "Megoszt�s";
   }
 
   return (
@@ -131,7 +130,13 @@ export default function GasStations() {
                   onDeleted={handleDeletedGasStation}
                   onUpdated={handleUpdatedGasStation}
                   extraButtonText={communityEnabled ? buttonTextFor(station) : ""}
-                  onExtraButtonClick={() => handleShareToggle(station)}
+                  onExtraButtonClick={async () => {
+                    try {
+                      await handleShareToggle(station);
+                    } catch (err) {
+                      setError(err.message || "Nem sikerült kezelni a megosztást.");
+                    }
+                  }}
                 />
               </div>
             ))}
