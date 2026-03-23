@@ -9,14 +9,13 @@ export default function DeleteTrip({ onClose, onDeleted, routeUsageId, fromCity,
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [deletedId, setDeletedId] = useState(null);
 
   async function handleDelete() {
     setError("");
     setIsDeleting(true);
     try {
       await deleteTrip(routeUsageId);
-      setDeletedId(routeUsageId);
+      if (routeUsageId !== null && routeUsageId !== undefined) onDeleted?.(routeUsageId);
       setShowSuccess(true);
     } catch (err) {
       setError(err.message || "Nem sikerült törölni az utat.");
@@ -29,7 +28,7 @@ export default function DeleteTrip({ onClose, onDeleted, routeUsageId, fromCity,
     <>
       <Modal columns={1} onClose={onClose} title={"Biztosan törlöd?"}>
         <p className="full-width">
-          <span className="trip-location">{fromCity || "-"} - {toCity || "-"}</span> ({datum || "-"}) út törlése
+          <span style={{color:"#075DBF", fontWeight:"bold"}}>{fromCity || "-"} - {toCity || "-"}</span> ({datum || "-"}) út törlése
         </p>
 
         <Button text={isDeleting ? "Törlés..." : "Törlés"} className="mt-5" onClick={handleDelete} />
@@ -41,7 +40,6 @@ export default function DeleteTrip({ onClose, onDeleted, routeUsageId, fromCity,
           description="Út törölve"
           onClose={() => {
             setShowSuccess(false);
-            if (deletedId !== null) onDeleted?.(deletedId);
             onClose?.();
           }}
         />

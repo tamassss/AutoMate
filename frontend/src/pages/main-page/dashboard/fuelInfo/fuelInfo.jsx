@@ -1,5 +1,3 @@
-import "./fuelInfo.css"
-
 export default function FuelInfo(){
     return(
         <div>

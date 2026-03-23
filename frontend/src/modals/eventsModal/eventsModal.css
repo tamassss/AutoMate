@@ -5,6 +5,7 @@
 
 .events-modal-wrap::-webkit-scrollbar {
   width: 6px;
+  height: 4px;
 }
 
 .events-modal-wrap::-webkit-scrollbar-thumb {

@@ -1,6 +1,6 @@
 import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 
-// Utvonal becsles (backend)
+// Új Út becslés
 export async function estimateRoute(fromText, toText, avgConsumption) {
   const response = await fetch(apiUrl("/routes/estimate/"), {
     method: "POST",
@@ -16,7 +16,7 @@ export async function estimateRoute(fromText, toText, avgConsumption) {
   handleUnauthorized(response);
 
   if (!response.ok) {
-    throw new Error(data.detail || "Nem sikerult utvonalat szamolni.");
+    throw new Error(data.detail || "Nem sikerült útvonalat számolni.");
   }
 
   return data;

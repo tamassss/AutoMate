@@ -1,11 +1,12 @@
 ﻿import Navbar from "../../../../components/navbar/navbar";
 import "./tripsAndFuels.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Trips from "./trips/trips";
 import Fuels from "./fuels/fuels";
 import { getRoutes } from "../../../../actions/routes/routeActions";
 import { getFuelings } from "../../../../actions/fuelings/fuelingActions";
 import Menu from "../../dashboard/menu/menu";
+import SuccessModal from "../../../../components/success-modal/successModal";
 import "../menuLayout.css";
 
 export default function TripsAndFuels() {
@@ -13,51 +14,44 @@ export default function TripsAndFuels() {
     const [trips, setTrips] = useState([]);
     const [fuelGroups, setFuelGroups] = useState([]);
     const [error, setError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
 
-    useEffect(() => {
-        async function loadData() {
-            setError("");
-            try {
-                const [routesData, fuelingsData] = await Promise.all([
-                    getRoutes(),
-                    getFuelings(),
-                ]);
-                setTrips(routesData);
-                setFuelGroups(fuelingsData);
-            } catch (err) {
-                setError(err.message || "Nem sikerült betölteni az adatokat.");
-            }
+    // Adatok DB-ből
+    const loadData = useCallback(async function() {
+        setError("");
+        try {
+            const [routesData, fuelingsData] = await Promise.all([
+                getRoutes(),
+                getFuelings(),
+            ]);
+            setTrips(routesData);
+            setFuelGroups(fuelingsData);
+        } catch (err) {
+            setError(err.message || "Nem sikerült betölteni az adatokat.");
         }
-
-        loadData();
     }, []);
 
-    function handleDeletedFuel(deletedFuelId) {
-        setFuelGroups((prev) =>
-            prev
-                .map((group) => ({
-                    ...group,
-                    items: (group.items || []).filter((item) => item.id !== deletedFuelId),
-                }))
-                .filter((group) => (group.items || []).length > 0)
-        );
+    useEffect(function() {
+        loadData();
+    }, [loadData]);
+
+    // Tankolás törölve
+    function handleDeletedFuel() {
+        setSuccessMessage("Tankolás törölve");
+        loadData();
     }
 
+    // Tankolás módosítva
     function handleUpdatedFuel(updatedFuel) {
         if (!updatedFuel?.id) return;
-
-        setFuelGroups((prev) =>
-            prev.map((group) => ({
-                ...group,
-                items: (group.items || []).map((item) =>
-                    item.id === updatedFuel.id ? { ...item, ...updatedFuel } : item
-                ),
-            }))
-        );
+        setSuccessMessage("Tankolás sikeresen módosítva");
+        loadData();
     }
 
-    function handleDeletedTrip(deletedTripId) {
-        setTrips((prev) => prev.filter((trip) => trip.id !== deletedTripId));
+    // Út törölve
+    function handleDeletedTrip() {
+        setSuccessMessage("Út törölve");
+        loadData();
     }
 
     return (
@@ -69,16 +63,17 @@ export default function TripsAndFuels() {
             <div className="flex-grow-1">
                 <Navbar />
                 <div>
+                    {/* Tab */}
                     <div className="container-fluid p-0 tf-nav-tabs">
                         <div className="row g-0">
                             <div
-                                className={`col-6 d-flex justify-content-center align-items-center tf-nav-tab ${showTrips ? "active" : "inactive"}`}
+                                className={"col-6 d-flex justify-content-center align-items-center tf-nav-tab " + (showTrips ? "active" : "inactive")}
                                 onClick={() => setShowTrips(true)}
                             >
                                 <p className="fs-5">Utak</p>
                             </div>
                             <div
-                                className={`col-6 d-flex justify-content-center align-items-center tf-nav-tab ${showTrips ? "inactive" : "active"}`}
+                                className={"col-6 d-flex justify-content-center align-items-center tf-nav-tab " + (showTrips ? "inactive" : "active")}
                                 onClick={() => setShowTrips(false)}
                             >
                                 <p className="fs-5">Tankolások</p>
@@ -88,6 +83,8 @@ export default function TripsAndFuels() {
 
                     <div className="container mt-4">
                         {error && <p className="text-danger">{error}</p>}
+                        
+                        {/* Tab alapján megjelnítés */}
                         {showTrips ? (
                             <Trips trips={trips} onDeletedTrip={handleDeletedTrip} />
                         ) : (
@@ -100,9 +97,15 @@ export default function TripsAndFuels() {
                     </div>
                 </div>
             </div>
+
+            {successMessage && (
+                <SuccessModal
+                    description={successMessage}
+                    onClose={function() {
+                        setSuccessMessage("");
+                    }}
+                />
+            )}
         </div>
     );
 }
-
-
-

@@ -1,7 +1,7 @@
 import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 import { formatDate } from "../shared/formatters";
 
-// Cím összerakása
+// Benzinkút címének összeállítása (utca + házszám)
 function buildAddress(gasStation) {
   if (!gasStation) return "-";
 
@@ -11,7 +11,7 @@ function buildAddress(gasStation) {
   return gasStation.name || "-";
 }
 
-// Benzinkutak lekérése
+// Benzinkút kártyák lekérése
 export async function getGasStations() {
   const carId = localStorage.getItem("selected_car_id");
   const url = carId ? apiUrl(`/gas-stations/?car_id=${carId}`) : apiUrl("/gas-stations/");
@@ -50,7 +50,7 @@ export async function getGasStations() {
     }));
 }
 
-// Benzinkút létrehozása
+// Új benzinkút
 export async function createGasStation(gasStationData) {
   const response = await fetch(apiUrl("/gas-stations/create/"), {
     method: "POST",
@@ -102,7 +102,7 @@ export async function editGasStation(gasStationId, gasStationData) {
   return data?.gas_station || null;
 }
 
-// Tankolás módosítása ID alapján
+// Tankolás módosítása
 export async function editFuelingById(fuelingId, fuelingData) {
   if (!fuelingId) {
     throw new Error("Hiányzik a tankolás azonosítója.");

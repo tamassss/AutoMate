@@ -20,14 +20,13 @@ def list_route_cards(user: User, car: Car, limit: int = 50) -> List[Dict[str, An
 
     result: List[Dict[str, Any]] = []
 
-    for idx, r in enumerate(items):
-        newer_or_equal_dt = r.date
-        older_dt = items[idx + 1].date if idx + 1 < len(items) else None
-
-        fueling_qs = Fueling.objects.filter(user=user, car=car, date__lte=newer_or_equal_dt)
-        if older_dt is not None:
-            fueling_qs = fueling_qs.filter(date__gt=older_dt)
-
+    for r in items:
+        fueling_qs = Fueling.objects.filter(
+            user=user,
+            car=car,
+            route_usage=r,
+            liters__gt=0,
+        )
         fueling_count = fueling_qs.count()
         fueling_spent = fueling_qs.aggregate(total=Sum(MONEY_EXPR))["total"] or 0
 

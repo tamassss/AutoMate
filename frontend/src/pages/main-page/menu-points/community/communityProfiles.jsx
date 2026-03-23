@@ -3,35 +3,62 @@ import Button from "../../../../components/button/button";
 import { getCarImageSrc } from "../../../../assets/car-images/carImageOptions";
 
 export default function CommunityProfiles({ loading, enabled, profiles, onCompare }) {
-  if (loading) return null;
+  if (loading) {
+    return null;
+  }
 
   if (!enabled) {
-    return <p className="text-center text-light">Ehhez az autÛhoz nincs engedÈlyezve a kˆzˆssÈg.</p>;
+    return (
+      <p className="text-center text-light">
+        Ehhez az aut√≥hoz nincs enged√©lyezve a k√∂z√∂ss√©gi r√©sz.
+      </p>
+    );
+  }
+
+  // Profilok megjelen√≠t√©se
+  function renderProfiles() {
+    if (profiles.length === 0) {
+      return (
+        <p className="text-center text-light">
+          M√©g nincs m√°sik enged√©lyezett profil.
+        </p>
+      );
+    }
+
+    return profiles.map(function(profile) {
+      const profileKey = `${profile.user_id}_${profile.car_id}`;
+      const carImage = profile.car_image || profile.carImage;
+      const imageSrc = profile.profile_image || getCarImageSrc(carImage);
+
+      return (
+        <div key={profileKey} className="col-12 col-md-6 col-xl-4">
+          <Card>
+            <div className="p-3 text-center text-light">
+              <img
+                src={imageSrc}
+                alt={profile.car_name || "Aut√≥"}
+                style={{ width: "130px", height: "130px", objectFit: "contain" }}
+              />
+              <h5 className="text-primary mt-3 mb-1">{profile.full_name}</h5>
+              <p className="mb-1">{profile.car_name}</p>
+              <p className="mb-3 text-secondary">{profile.license_plate}</p>
+              
+              <Button 
+                text="Statisztik√°k √∂sszehasonl√≠t√°sa" 
+                onClick={function() {
+                  onCompare(profile);
+                }} 
+              />
+            </div>
+          </Card>
+        </div>
+      );
+    });
   }
 
   return (
     <div className="row g-4">
-      {profiles.length === 0 ? (
-        <p className="text-center text-light">MÈg nincs m·sik engedÈlyezett profil.</p>
-      ) : (
-        profiles.map((profile) => (
-          <div key={`${profile.user_id}_${profile.car_id}`} className="col-12 col-md-6 col-xl-4">
-            <Card>
-              <div className="p-3 text-center text-light">
-                <img
-                  src={profile.profile_image || getCarImageSrc(profile.car_image || profile.carImage)}
-                  alt={profile.car_name || "AutÛ"}
-                  style={{ width: "130px", height: "130px", objectFit: "contain" }}
-                />
-                <h5 className="text-primary mt-3 mb-1">{profile.full_name}</h5>
-                <p className="mb-1">{profile.car_name}</p>
-                <p className="mb-3 text-secondary">{profile.license_plate}</p>
-                <Button text="Statisztik·k ˆsszehasonlÌt·sa" onClick={() => onCompare(profile)} />
-              </div>
-            </Card>
-          </div>
-        ))
-      )}
+      {renderProfiles()}
     </div>
   );
 }

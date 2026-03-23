@@ -21,6 +21,7 @@ export default function CarImageSelectModal({ selectedImageId, onSelect, onClose
               title={item.label}
             >
               <img src={item.src} alt={item.label} className="car-image-select-img" />
+              <span className="car-image-select-type">{item.typeLabel || item.label}</span>
             </button>
           );
         })}

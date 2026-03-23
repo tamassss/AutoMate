@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
-from AutoApp.models import Fueling, User, Car
+from AutoApp.models import CarGasStation, Fueling, User, Car
 
 
 def list_gas_station_cards(user: User, car: Car, limit: int = 50) -> List[Dict[str, Any]]:
@@ -41,4 +41,33 @@ def list_gas_station_cards(user: User, car: Car, limit: int = 50) -> List[Dict[s
 
         if len(cards) >= limit:
             break
+
+    if len(cards) < limit:
+        standalone_qs = (
+            CarGasStation.objects.filter(user=user, car=car)
+            .exclude(gas_station_id__in=seen_station_ids)
+            .select_related("gas_station")
+            .order_by("-created_at")
+        )
+        for link in standalone_qs:
+            gs = link.gas_station
+            cards.append({
+                "fueling_id": None,
+                "date": link.date or link.created_at,
+                "price_per_liter": float(link.price_per_liter) if link.price_per_liter is not None else 0.0,
+                "supplier": link.supplier or gs.name,
+                "fuel_type": link.fuel_type.name if link.fuel_type else None,
+                "fuel_type_id": link.fuel_type_id,
+                "gas_station": {
+                    "gas_station_id": gs.gas_station_id,
+                    "name": gs.name,
+                    "city": gs.city,
+                    "postal_code": gs.postal_code,
+                    "street": gs.street,
+                    "house_number": gs.house_number,
+                },
+            })
+
+            if len(cards) >= limit:
+                break
     return cards

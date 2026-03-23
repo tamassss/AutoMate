@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
 import tripsAndFuelsIcon from "../../../../assets/menu-points/trips-fuels.png";
 import gasStationsIcon from "../../../../assets/menu-points/gas-stations.png";
@@ -11,13 +11,13 @@ import EventItem from "../../../../components/event-item/eventItem";
 import NewEvent from "../../../../modals/newEvent/newEvent";
 import EventsModal from "../../../../modals/eventsModal/eventsModal";
 import Button from "../../../../components/button/button";
-import { getDashboard } from "../../../../actions/dashboard/dashboardActions";
-import { createEvent } from "../../../../actions/serviceLog/serviceLogActions";
+
+import { createEvent, getEvents } from "../../../../actions/events/eventActions";
 import { getCurrentUserMeta, isCommunityEnabledForCar, setCommunityEnabledForCar } from "../../../../actions/community/communityLocalActions";
 
 import "./menu.css";
 
-export default function Menu({ events = [], onEventCreated }) {
+export default function Menu({ events, onEventCreated }) {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [showNewEvent, setShowNewEvent] = useState(false);
@@ -32,88 +32,84 @@ export default function Menu({ events = [], onEventCreated }) {
 
   const closeMenu = () => setIsOpen(false);
 
-  // Események betöltése
-  const loadEvents = useCallback(async () => {
+  // Események API-ból
+  const loadEvents = async () => {
     try {
-      const data = await getDashboard();
-      setLoadedEvents(data?.events?.items || []);
-    } catch {
+      const data = await getEvents();
+      const formattedEvents = (data || []).map((event) => ({
+        event_id: event.id,
+        title: event.title,
+        reminder: event.reminder,
+        date: event.date,
+      }));
+      setLoadedEvents(formattedEvents);
+    } catch (err) {
+      console.error("Hiba az események betöltésekor:", err);
       setLoadedEvents([]);
     }
-  }, []);
+  };
 
-  // Betöltés oldalváltáskor
+  // Események betöltése
   useEffect(() => {
-    loadEvents();
-  }, [location.pathname, loadEvents]);
-
-  // Közösségi rész állapot
-  useEffect(() => {
-    if (!userId || !selectedCarId) {
-      setCommunityEnabled(false);
-      return;
+    if (events) {
+      setLoadedEvents(events);
+    } else {
+      loadEvents();
     }
+  }, [events]);
 
+  /*****KÖZÖSSÉGI RÉSZ*****/
+  // Be van-e kapcsolva a közösség az autóhoz
+  useEffect(() => {
     isCommunityEnabledForCar(userId, selectedCarId)
-      .then(setCommunityEnabled)
+      .then((status) => setCommunityEnabled(status))
       .catch(() => setCommunityEnabled(false));
-  }, [userId, selectedCarId, location.pathname]);
+  }, [selectedCarId, userId]);
 
-  const handleCommunityToggle = async (event) => {
-    event.stopPropagation();
-    if (isCommunityRoute || savingCommunity || !selectedCarId || !userId) return;
-
-    const enabled = !!event.target.checked;
+  // 2. Kapcsoló kezelése (Checkbox)
+  const handleCommunityToggle = async (e) => {
+    e.stopPropagation(); // pipa != menüpont
+    
+    const newStatus = e.target.checked;
     setSavingCommunity(true);
+
     try {
-      const nextEnabled = await setCommunityEnabledForCar(userId, selectedCarId, enabled);
-      setCommunityEnabled(nextEnabled);
+      // mentés DB-be
+      await setCommunityEnabledForCar(userId, selectedCarId, newStatus);
+      // UI frissítés
+      setCommunityEnabled(newStatus);
+      window.dispatchEvent(new CustomEvent("community-settings-changed", { detail: { carId: selectedCarId, enabled: newStatus } }));
+    } catch (err) {
+      alert("Sajnos nem sikerült menteni a beállítást!");
     } finally {
       setSavingCommunity(false);
     }
   };
-
-  const openEventsModal = () => {
-    setShowEventsModal(true);
-    closeMenu();
-  };
-
-  const menuEvents = events.length > 0 ? events : loadedEvents;
+  /************************/
 
   return (
     <>
-      <button className="menu-toggle" type="button" aria-label="Menu" onClick={() => setIsOpen(true)}>
+      {/* Hamburger menü gomb */}
+      <button className="menu-toggle" type="button" onClick={() => setIsOpen(true)}>
         <span className="menu-toggle-bar" />
         <span className="menu-toggle-bar" />
         <span className="menu-toggle-bar" />
       </button>
 
+      {/* Sötét háttér overlay */}
       <div className={`menu-overlay ${isOpen ? "is-open" : ""}`} onClick={closeMenu} />
 
+      {/* Oldal menü */}
       <div className={`menu-panel ${isOpen ? "is-open" : ""}`}>
         <div className="menu-items">
-          <NavLink className={({ isActive }) => `menu-item ${isActive ? "menu-item-active" : ""}`} to="/muszerfal/utak-tankolasok" onClick={closeMenu}>
-            <img className="menu-icon" src={tripsAndFuelsIcon} alt="UT" />
-            <p className="menu-text">Utak és tankolások</p>
-          </NavLink>
+          <MenuLink to="/muszerfal/utak-tankolasok" icon={tripsAndFuelsIcon} text="Utak és Tankolások" onClick={closeMenu} />
+          <MenuLink to="/muszerfal/benzinkutak" icon={gasStationsIcon} text="Benzinkutak" onClick={closeMenu} />
+          <MenuLink to="/muszerfal/szerviznaplo" icon={servicelogIcon} text="Szerviznapló" onClick={closeMenu} />
+          <MenuLink to="/muszerfal/statisztikak" icon={statisticsIcon} text="Statisztikák" onClick={closeMenu} />
 
-          <NavLink className={({ isActive }) => `menu-item ${isActive ? "menu-item-active" : ""}`} to="/muszerfal/benzinkutak" onClick={closeMenu}>
-            <img className="menu-icon" src={gasStationsIcon} alt="BK" />
-            <p className="menu-text">Benzinkutak</p>
-          </NavLink>
-
-          <NavLink className={({ isActive }) => `menu-item ${isActive ? "menu-item-active" : ""}`} to="/muszerfal/statisztikak" onClick={closeMenu}>
-            <img className="menu-icon" src={statisticsIcon} alt="S" />
-            <p className="menu-text">Statisztikák</p>
-          </NavLink>
-
-          <NavLink className={({ isActive }) => `menu-item ${isActive ? "menu-item-active" : ""}`} to="/muszerfal/szerviznaplo" onClick={closeMenu}>
-            <img className="menu-icon" src={servicelogIcon} alt="SZN" />
-            <p className="menu-text">Szerviznapló</p>
-          </NavLink>
-
+          {/* Közösség */}
           <NavLink
-            className={({ isActive }) =>
+            className={({ isActive }) => 
               `menu-item ${isActive ? "menu-item-active" : ""} ${!communityEnabled ? "menu-item-unavailable" : ""}`
             }
             to={communityEnabled ? "/muszerfal/kozosseg" : "#"}
@@ -123,45 +119,42 @@ export default function Menu({ events = [], onEventCreated }) {
             }}
           >
             <img className="menu-icon" src={communityIcon} alt="K" />
-            <div className="menu-community-row">
-              <p className="menu-text">Közösség</p>
+            <div className="menu-community-row w-100 d-flex justify-content-between align-items-center">
+              <p className="menu-text m-0">Közösség</p>
               <input
                 type="checkbox"
                 checked={communityEnabled}
-                disabled={isCommunityRoute || savingCommunity || !selectedCarId}
-                onClick={(e) => e.stopPropagation()}
+                disabled={isCommunityRoute || savingCommunity}
                 onChange={handleCommunityToggle}
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
           </NavLink>
         </div>
 
-        <div className="menu-events d-flex flex-column">
-          <div className="menu-events-open-target" onClick={openEventsModal}>
+        {/* Események */}
+        <div className="menu-events d-flex flex-column" onClick={() => { setShowEventsModal(true); closeMenu(); }}>
+          <div className="menu-events-open-target">
             <h3>Események</h3>
             <hr className="my-2 mx-3" />
           </div>
 
-          <div className="menu-events-content overflow-auto menu-events-open-target" onClick={openEventsModal}>
-            {menuEvents.length > 0 ? (
-              menuEvents.map((event) => (
+          <div className="menu-events-content overflow-auto px-3">
+            {loadedEvents.length > 0 ? (
+              loadedEvents.slice(0, 5).map((event) => (
                 <EventItem
-                  key={event.maintenance_id}
-                  title={event.part_name || "Esemény"}
+                  key={event.event_id}
+                  title={event.title || "Esemény"}
                   reminder={event.reminder}
                   date={event.date}
                 />
               ))
             ) : (
-              <div className="menu-events-empty">
-                <p>Még nincs felvett esemény.</p>
-              </div>
+              <p className="menu-events-empty">Még nincs felvett esemény.</p>
             )}
           </div>
 
-          <hr className="my-2 mx-3" />
-
-          <div className="menu-events-footer">
+          <div className="menu-events-footer mt-auto p-3" onClick={(e) => e.stopPropagation()}>
             <Button text="Új esemény" onClick={() => setShowNewEvent(true)} />
           </div>
         </div>
@@ -171,8 +164,11 @@ export default function Menu({ events = [], onEventCreated }) {
         <NewEvent
           onClose={() => setShowNewEvent(false)}
           onSave={async (payload) => {
-            if (onEventCreated) await onEventCreated(payload);
-            else await createEvent(payload);
+            if (onEventCreated) {
+              await onEventCreated(payload);
+            } else {
+              await createEvent(payload);
+            }
             await loadEvents();
             setShowNewEvent(false);
           }}
@@ -187,4 +183,18 @@ export default function Menu({ events = [], onEventCreated }) {
       )}
     </>
   );
-} 
+}
+
+// Menüpont sablon
+function MenuLink({ to, icon, text, onClick }) {
+  return (
+    <NavLink 
+      className={({ isActive }) => `menu-item ${isActive ? "menu-item-active" : ""}`} 
+      to={to} 
+      onClick={onClick}
+    >
+      <img className="menu-icon" src={icon} alt={text} />
+      <p className="menu-text">{text}</p>
+    </NavLink>
+  );
+}

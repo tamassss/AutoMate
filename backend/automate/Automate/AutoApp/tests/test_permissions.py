@@ -36,3 +36,90 @@ class TestPermissions(TestCase):
         self.client.force_authenticate(self.other)
         resp = self.client.get(f"/api/routes/?car_id={self.car.car_id}")
         self.assertEqual(resp.status_code, 403)
+
+
+class TestAdminPermissions(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.admin = User.objects.create_user(
+            email="admin@example.com",
+            password="pass1234",
+            full_name="Admin User",
+            role="admin",
+            is_staff=True,
+        )
+        self.superadmin = User.objects.create_user(
+            email="superadmin@example.com",
+            password="pass1234",
+            full_name="Super Admin",
+            role="admin",
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.other_user = User.objects.create_user(
+            email="member@example.com",
+            password="pass1234",
+            full_name="Member User",
+        )
+        self.other_admin = User.objects.create_user(
+            email="other-admin@example.com",
+            password="pass1234",
+            full_name="Other Admin",
+            role="admin",
+            is_staff=True,
+        )
+
+    def test_admin_cannot_update_own_account_via_admin_endpoint(self):
+        self.client.force_authenticate(self.admin)
+        resp = self.client.patch(
+            f"/api/admin/users/{self.admin.user_id}/",
+            {"role": "user"},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_can_update_other_user(self):
+        self.client.force_authenticate(self.admin)
+        resp = self.client.patch(
+            f"/api/admin/users/{self.other_user.user_id}/",
+            {"role": "moderator"},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_admin_list_includes_admin_accounts(self):
+        self.client.force_authenticate(self.admin)
+        resp = self.client.get("/api/admin/users/")
+        self.assertEqual(resp.status_code, 200)
+        returned_ids = [user["user_id"] for user in resp.data["users"]]
+        self.assertIn(self.admin.user_id, returned_ids)
+        self.assertIn(self.other_admin.user_id, returned_ids)
+        self.assertIn(self.other_user.user_id, returned_ids)
+
+    def test_admin_cannot_update_other_admin_account(self):
+        self.client.force_authenticate(self.admin)
+        resp = self.client.patch(
+            f"/api/admin/users/{self.other_admin.user_id}/",
+            {"role": "user"},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_cannot_delete_other_admin_account(self):
+        self.client.force_authenticate(self.admin)
+        resp = self.client.delete(f"/api/admin/users/{self.other_admin.user_id}/delete/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_superadmin_can_update_other_admin_account(self):
+        self.client.force_authenticate(self.superadmin)
+        resp = self.client.patch(
+            f"/api/admin/users/{self.other_admin.user_id}/",
+            {"role": "moderator"},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_superadmin_can_delete_other_admin_account(self):
+        self.client.force_authenticate(self.superadmin)
+        resp = self.client.delete(f"/api/admin/users/{self.other_admin.user_id}/delete/")
+        self.assertEqual(resp.status_code, 200)

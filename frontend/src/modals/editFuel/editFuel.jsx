@@ -6,74 +6,77 @@ import ErrorModal from "../../components/error-modal/errorModal";
 import SuccessModal from "../../components/success-modal/successModal";
 import { editFuel } from "../../actions/fuelings/fuelingActions";
 import { clampNumberInput } from "../../actions/shared/inputValidation";
-import "./editFuel.css";
 
 export default function EditFuel({ onClose, onSave, selectedFuel }) {
+  // Állapotok
   const [liters, setLiters] = useState("");
   const [pricePerLiter, setPricePerLiter] = useState("");
   const [odometerKm, setOdometerKm] = useState("");
-  const [localError, setLocalError] = useState("");
-  const [serverError, setServerError] = useState("");
+
+  // Visszajelzések
   const [fieldErrors, setFieldErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  useEffect(() => {
+  // ADATOK
+  useEffect(function() {
     if (!selectedFuel) return;
+
+    // Meglévő adatok betöltése
     setLiters(selectedFuel.mennyiseg ? String(selectedFuel.mennyiseg) : "");
     setPricePerLiter(selectedFuel.literft ? String(selectedFuel.literft) : "");
-    setOdometerKm(selectedFuel.kmallas && selectedFuel.kmallas !== "-" ? String(selectedFuel.kmallas) : "");
+    
+    const km = selectedFuel.kmallas;
+    setOdometerKm(km && km !== "-" ? String(km) : "");
   }, [selectedFuel]);
 
-  async function handleSave(e) {
-    e.preventDefault();
+  // MENTÉS
+  async function handleSave(event) {
+    event.preventDefault();
+
     if (!selectedFuel?.id) {
-      setLocalError("Hiányzik a tankolás azonosítója.");
+      setServerError("Hiányzik a tankolás azonosítója.");
       return;
     }
 
-    setLocalError("");
     setServerError("");
     setFieldErrors({});
 
-    const tempErrors = {};
-    if (!liters) tempErrors.liters = "A mennyiség megadása kötelező.";
-    if (!pricePerLiter) tempErrors.pricePerLiter = "A Ft/liter megadása kötelező.";
-    if (!odometerKm) tempErrors.odometerKm = "A km óra állás megadása kötelező.";
+    // validáció
+    const errors = {};
+    if (!liters) errors.liters = "A mennyiség megadása kötelező.";
+    if (!pricePerLiter) errors.pricePerLiter = "A Ft/liter megadása kötelező.";
+    if (!odometerKm) errors.odometerKm = "A km óra állás megadása kötelező.";
 
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    // számmá alakítás
     const parsedLiters = Number(liters);
     const parsedPrice = Number(pricePerLiter);
     const parsedOdometer = Number(odometerKm);
 
-    if (!tempErrors.liters && (Number.isNaN(parsedLiters) || parsedLiters < 1 || parsedLiters > 100)) {
-      tempErrors.liters = "A mennyiség 1 és 100 liter között lehet.";
-    }
-    if (!tempErrors.pricePerLiter && (Number.isNaN(parsedPrice) || parsedPrice < 1 || parsedPrice > 1000)) {
-      tempErrors.pricePerLiter = "A Ft/liter érték 1 és 1000 között lehet.";
-    }
-    if (!tempErrors.odometerKm && (Number.isNaN(parsedOdometer) || parsedOdometer < 0 || parsedOdometer > 999999)) {
-      tempErrors.odometerKm = "A km óra állás 0 és 999999 között lehet.";
-    }
-
-    if (Object.keys(tempErrors).length > 0) {
-      setFieldErrors(tempErrors);
-      return;
-    }
-
     setIsSaving(true);
     try {
+      // 3. küldés DB-re
       const updatedFueling = await editFuel(selectedFuel.id, {
         liters: parsedLiters,
         price_per_liter: parsedPrice,
         odometer_km: parsedOdometer,
       });
 
-      onSave?.({
-        id: selectedFuel.id,
-        mennyiseg: updatedFueling?.liters ?? parsedLiters,
-        literft: updatedFueling?.price_per_liter ?? parsedPrice,
-        kmallas: updatedFueling?.odometer_km ?? parsedOdometer,
-      });
+      if (typeof onSave === "function") {
+        onSave({
+          id: selectedFuel.id,
+          mennyiseg: updatedFueling?.liters ?? parsedLiters,
+          literft: updatedFueling?.price_per_liter ?? parsedPrice,
+          kmallas: updatedFueling?.odometer_km ?? parsedOdometer,
+        });
+      }
+      
       setShowSuccess(true);
     } catch (err) {
       setServerError(err.message || "Nem sikerült módosítani a tankolást.");
@@ -85,56 +88,56 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
   return (
     <>
       <Modal
-        title={"Tankolás módosítása"}
-        columns={1}
+        title="Tankolás módosítása"
         onClose={onClose}
+        columns={1}
         onSubmit={handleSave}
-        footer={<Button text={isSaving ? "Mentés..." : "Módosítás"} type={"submit"} />}
+        footer={<Button text={isSaving ? "Mentés..." : "Módosítás"} type="submit" />}
       >
         <LabeledInput
-          label={"Mennyiség (liter)"}
-          type={"number"}
-          min={1}
-          max={100}
+          label="Mennyiség (liter)"
+          type="number"
           value={liters}
-          onChange={(e) => {
+          onChange={function(e) {
             setLiters(clampNumberInput(e.target.value, { min: 1, max: 100, decimals: 2 }));
-            if (fieldErrors.liters) setFieldErrors((prev) => ({ ...prev, liters: "" }));
+            if (fieldErrors.liters) setFieldErrors({ ...fieldErrors, liters: "" });
           }}
           error={fieldErrors.liters}
         />
+
         <LabeledInput
-          label={"Ft/liter"}
-          type={"number"}
-          min={1}
-          max={1000}
+          label="Egységár (Ft/liter)"
+          type="number"
           value={pricePerLiter}
-          onChange={(e) => {
+          onChange={function(e) {
             setPricePerLiter(clampNumberInput(e.target.value, { min: 1, max: 1000, decimals: 2 }));
-            if (fieldErrors.pricePerLiter) setFieldErrors((prev) => ({ ...prev, pricePerLiter: "" }));
+            if (fieldErrors.pricePerLiter) setFieldErrors({ ...fieldErrors, pricePerLiter: "" });
           }}
           error={fieldErrors.pricePerLiter}
         />
+
         <LabeledInput
-          label={"Km óra állás"}
-          type={"number"}
-          min={0}
-          max={999999}
+          label="Km óra állása"
+          type="number"
           value={odometerKm}
-          onChange={(e) => {
+          onChange={function(e) {
             setOdometerKm(clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }));
-            if (fieldErrors.odometerKm) setFieldErrors((prev) => ({ ...prev, odometerKm: "" }));
+            if (fieldErrors.odometerKm) setFieldErrors({ ...fieldErrors, odometerKm: "" });
           }}
           error={fieldErrors.odometerKm}
         />
-        {localError && <p className="text-danger m-0">{localError}</p>}
       </Modal>
 
-      {serverError && <ErrorModal title={"Hiba!"} description={serverError} onClose={() => setServerError("")} />}
+      {/* Hiba */}
+      {serverError && (
+        <ErrorModal title="Hiba!" description={serverError} onClose={() => setServerError("")} />
+      )}
+
+      {/* Siker */}
       {showSuccess && (
         <SuccessModal
           description="Tankolás sikeresen módosítva"
-          onClose={() => {
+          onClose={function() {
             setShowSuccess(false);
             onClose?.();
           }}

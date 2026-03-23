@@ -31,8 +31,9 @@ from AutoApp.services.external.route_estimate import (
 from AutoApp.models import (
     CarUser,
     Brand, CarModel, FuelType, Car,
-    GasStation, Fueling,
-    ServiceCenter, Maintenance,
+      GasStation, Fueling,
+      CarGasStation,
+      ServiceCenter, Maintenance, Event,
     Address, Route, RouteUsage,
     CommunityCarSetting, CommunityGasStationShare,
 )
@@ -113,6 +114,11 @@ def _build_shared_station_card(share_row, date_value):
         .order_by("-date", "-fueling_id")
         .first()
     )
+    linked_station = (
+        CarGasStation.objects.filter(user=share_row.requester, car=share_row.car, gas_station=share_row.gas_station)
+        .select_related("fuel_type")
+        .first()
+    )
 
     return {
         "gasStationId": share_row.gas_station.gas_station_id,
@@ -124,14 +130,34 @@ def _build_shared_station_card(share_row, date_value):
         "stationStreet": share_row.gas_station.street or "",
         "stationHouseNumber": share_row.gas_station.house_number or "",
         "datum": str(date_value.date()),
-        "literft": float(latest_fueling.price_per_liter) if latest_fueling and latest_fueling.price_per_liter is not None else 0,
+        "literft": (
+            float(latest_fueling.price_per_liter)
+            if latest_fueling and latest_fueling.price_per_liter is not None
+            else (
+                float(linked_station.price_per_liter)
+                if linked_station and linked_station.price_per_liter is not None
+                else 0
+            )
+        ),
         "supplier": (
             latest_fueling.supplier
             if latest_fueling and latest_fueling.supplier
-            else (share_row.gas_station.name or "")
+            else (
+                linked_station.supplier
+                if linked_station and linked_station.supplier
+                else (share_row.gas_station.name or "")
+            )
         ),
-        "fuelType": latest_fueling.fuel_type.name if latest_fueling and latest_fueling.fuel_type else "",
-        "fuelTypeId": latest_fueling.fuel_type_id if latest_fueling else None,
+        "fuelType": (
+            latest_fueling.fuel_type.name
+            if latest_fueling and latest_fueling.fuel_type
+            else (linked_station.fuel_type.name if linked_station and linked_station.fuel_type else "")
+        ),
+        "fuelTypeId": (
+            latest_fueling.fuel_type_id
+            if latest_fueling
+            else (linked_station.fuel_type_id if linked_station else None)
+        ),
     }
 
 
@@ -714,6 +740,7 @@ def api_admin_users(request):
             "email": u.email,
             "password": "",
             "role": u.role,
+            "is_superadmin": bool(getattr(u, "is_superuser", False)),
         }
         for u in qs
     ]
@@ -730,6 +757,10 @@ def api_admin_user_update(request, user_id: int):
     target_user = User.objects.filter(user_id=user_id).first()
     if not target_user:
         return Response({"detail": "Not found"}, status=404)
+    if _is_admin_user(target_user) and not bool(getattr(current_user, "is_superuser", False)):
+        return _bad("You cannot modify another admin account from the admin page", code=403)
+    if target_user.user_id == current_user.user_id:
+        return _bad("You cannot modify your own account from the admin page", code=403)
 
     d = request.data or {}
 
@@ -784,6 +815,8 @@ def api_admin_user_delete(request, user_id: int):
     target_user = User.objects.filter(user_id=user_id).first()
     if not target_user:
         return Response({"detail": "Not found"}, status=404)
+    if _is_admin_user(target_user) and not bool(getattr(current_user, "is_superuser", False)):
+        return _bad("You cannot delete another admin account from the admin page", code=403)
     if target_user.user_id == current_user.user_id:
         return _bad("Cannot delete your own account")
 
@@ -950,7 +983,18 @@ def api_gas_station_create(request):
     Body:
     { "name": "...", "city": "...", "postal_code": "...", "street": "...", "house_number": "..." }
     """
+    user = get_current_user(request)
     d = request.data
+    car_id = d.get("car_id")
+    car = None
+
+    if car_id not in (None, ""):
+        try:
+            car = get_car_or_default(user, int(car_id))
+        except (TypeError, ValueError):
+            return _bad("car_id must be an integer")
+        if not user_has_access_to_car(user, car):
+            return Response({"detail": "Forbidden"}, status=403)
 
     try:
         gas_station = GasStation.objects.create(
@@ -960,6 +1004,24 @@ def api_gas_station_create(request):
             street=(d.get("street") or None),
             house_number=(d.get("house_number") or None),
         )
+        if car is not None:
+            fuel_type_id = d.get("fuel_type_id")
+            if fuel_type_id in (None, ""):
+                fuel_type_id = None
+            else:
+                try:
+                    fuel_type_id = int(fuel_type_id)
+                except (TypeError, ValueError):
+                    return _bad("fuel_type_id must be an integer")
+
+            gas_station_link, _ = CarGasStation.objects.get_or_create(user=user, car=car, gas_station=gas_station)
+            gas_station_link.date = _parse_dt(d.get("date"), "date") if d.get("date") not in (None, "") else None
+            gas_station_link.price_per_liter = _to_decimal_str(d.get("price_per_liter"), "price_per_liter") if d.get("price_per_liter") not in (None, "") else None
+            gas_station_link.supplier = d.get("supplier") or None
+            gas_station_link.fuel_type_id = fuel_type_id
+            gas_station_link.save()
+    except ValueError as e:
+        return _bad(str(e))
     except IntegrityError:
         return _bad("Could not create gas station (integrity error).")
 
@@ -969,6 +1031,7 @@ def api_gas_station_create(request):
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def api_gas_station_update(request, gas_station_id: int):
+    user = get_current_user(request)
     try:
         gs = GasStation.objects.get(gas_station_id=gas_station_id)
     except GasStation.DoesNotExist:
@@ -991,6 +1054,29 @@ def api_gas_station_update(request, gas_station_id: int):
         gs.save()
     except IntegrityError:
         return _bad("Could not update gas station (integrity error).")
+
+    car_id = d.get("car_id")
+    if car_id not in (None, ""):
+        try:
+            car = get_car_or_default(user, int(car_id))
+        except (TypeError, ValueError):
+            return _bad("car_id must be an integer")
+        if not user_has_access_to_car(user, car):
+            return Response({"detail": "Forbidden"}, status=403)
+
+        try:
+            link, _ = CarGasStation.objects.get_or_create(user=user, car=car, gas_station=gs)
+            if "date" in d:
+                link.date = _parse_dt(d.get("date"), "date") if d.get("date") not in (None, "") else None
+            if "price_per_liter" in d:
+                link.price_per_liter = _to_decimal_str(d.get("price_per_liter"), "price_per_liter") if d.get("price_per_liter") not in (None, "") else None
+            if "supplier" in d:
+                link.supplier = d.get("supplier") or None
+            if "fuel_type_id" in d:
+                link.fuel_type_id = _to_int(d.get("fuel_type_id"), "fuel_type_id") if d.get("fuel_type_id") not in (None, "") else None
+            link.save()
+        except ValueError as e:
+            return _bad(str(e))
 
     return Response(
         {
@@ -1039,6 +1125,7 @@ def api_fueling_create(request):
         car_id = _to_int(d.get("car_id"), "car_id")
         gas_station_id = _to_int(d.get("gas_station_id"), "gas_station_id") if d.get("gas_station_id") not in (None, "") else None
         fuel_type_id = _to_int(d.get("fuel_type_id"), "fuel_type_id") if d.get("fuel_type_id") not in (None, "") else None
+        route_usage_id = _to_int(d.get("route_usage_id"), "route_usage_id") if d.get("route_usage_id") not in (None, "") else None
         odometer_km = _to_int(d.get("odometer_km"), "odometer_km")
         dt = _parse_dt(d.get("date"), "date")
         liters = _to_decimal_str(d.get("liters"), "liters")
@@ -1054,11 +1141,18 @@ def api_fueling_create(request):
         return _bad("Invalid gas_station_id")
     if fuel_type_id is not None and not FuelType.objects.filter(fuel_type_id=fuel_type_id).exists():
         return _bad("Invalid fuel_type_id")
+    if route_usage_id is not None:
+        route_usage = RouteUsage.objects.filter(route_usage_id=route_usage_id).select_related("car").first()
+        if not route_usage:
+            return _bad("Invalid route_usage_id")
+        if route_usage.car_id != car.car_id or route_usage.user_id != user.user_id:
+            return Response({"detail": "Forbidden"}, status=403)
 
     try:
         fueling = Fueling.objects.create(
             user=user,
             car=car,
+            route_usage_id=route_usage_id,
             gas_station_id=gas_station_id,
             fuel_type_id=fuel_type_id,
             date=dt,
@@ -1067,6 +1161,13 @@ def api_fueling_create(request):
             supplier=d.get("supplier") or None,
             odometer_km=odometer_km,
         )
+        if gas_station_id is not None:
+            link, _ = CarGasStation.objects.get_or_create(user=user, car=car, gas_station_id=gas_station_id)
+            link.date = dt
+            link.price_per_liter = price_per_liter
+            link.supplier = d.get("supplier") or None
+            link.fuel_type_id = fuel_type_id
+            link.save()
     except IntegrityError:
         return _bad("Could not create fueling (integrity error). Check ids and values.")
 
@@ -1106,6 +1207,16 @@ def api_fueling_update(request, fueling_id: int):
             if fuel_type_id is not None and not FuelType.objects.filter(fuel_type_id=fuel_type_id).exists():
                 return _bad("Invalid fuel_type_id")
             fueling.fuel_type_id = fuel_type_id
+
+        if "route_usage_id" in d:
+            route_usage_id = _to_int(d.get("route_usage_id"), "route_usage_id") if d.get("route_usage_id") not in (None, "") else None
+            if route_usage_id is not None:
+                route_usage = RouteUsage.objects.filter(route_usage_id=route_usage_id).select_related("car").first()
+                if not route_usage:
+                    return _bad("Invalid route_usage_id")
+                if route_usage.car_id != fueling.car_id or route_usage.user_id != user.user_id:
+                    return Response({"detail": "Forbidden"}, status=403)
+            fueling.route_usage_id = route_usage_id
     except ValueError as e:
         return _bad(str(e))
 
@@ -1123,6 +1234,7 @@ def api_fueling_update(request, fueling_id: int):
                 "price_per_liter": float(fueling.price_per_liter),
                 "odometer_km": fueling.odometer_km,
                 "supplier": fueling.supplier,
+                "route_usage_id": fueling.route_usage_id,
                 "fuel_type_id": fueling.fuel_type_id,
                 "fuel_type": fueling.fuel_type.name if fueling.fuel_type else None,
             },
@@ -1213,6 +1325,203 @@ def api_maintenance_create(request):
     return Response({"maintenance_id": m.maintenance_id}, status=201)
 
 
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def api_maintenance_update(request, maintenance_id: int):
+    user = get_current_user(request)
+
+    try:
+        maintenance = Maintenance.objects.select_related("car").get(maintenance_id=maintenance_id)
+    except Maintenance.DoesNotExist:
+        return Response({"detail": "Not found"}, status=404)
+
+    if not user_has_access_to_car(user, maintenance.car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    d = request.data or {}
+
+    try:
+        if "part_name" in d:
+            maintenance.part_name = (d.get("part_name") or None)
+
+        if "date" in d:
+            maintenance.date = _parse_dt(d.get("date"), "date")
+
+        if "cost" in d:
+            maintenance.cost = _to_decimal_str(d.get("cost"), "cost") if d.get("cost") not in (None, "") else None
+
+        if "description" in d:
+            maintenance.description = d.get("description") or None
+
+        if "reminder" in d:
+            maintenance.reminder = d.get("reminder") or None
+    except ValueError as e:
+        return _bad(str(e))
+
+    try:
+        maintenance.save()
+    except IntegrityError:
+        return _bad("Could not update maintenance (integrity error).")
+
+    return Response(
+        {
+            "ok": True,
+            "maintenance": {
+                "maintenance_id": maintenance.maintenance_id,
+                "part_name": maintenance.part_name,
+                "date": maintenance.date,
+                "cost": float(maintenance.cost) if maintenance.cost is not None else None,
+                "description": maintenance.description,
+                "reminder": maintenance.reminder,
+            },
+        }
+    )
+
+
+# --------------------------
+# Event CRUD
+# --------------------------
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_events(request):
+    user = get_current_user(request)
+    car_id = request.query_params.get("car_id")
+
+    if car_id in (None, ""):
+        car = get_car_or_default(user, None)
+    else:
+        try:
+            car = get_car_or_default(user, _to_int(car_id, "car_id"))
+        except ValueError as e:
+            return _bad(str(e))
+
+    if car is None:
+        return Response({"events": []})
+
+    if not user_has_access_to_car(user, car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    items = (
+        Event.objects.filter(user=user, car=car)
+        .order_by("date", "event_id")
+    )
+
+    return Response(
+        {
+            "events": [
+                {
+                    "event_id": event.event_id,
+                    "title": event.title,
+                    "date": event.date,
+                    "reminder": event.reminder,
+                }
+                for event in items
+            ]
+        }
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_event_create(request):
+    user = get_current_user(request)
+    d = request.data or {}
+
+    required = ["car_id", "title", "date"]
+    missing = [k for k in required if d.get(k) in (None, "")]
+    if missing:
+        return _bad(f"Missing fields: {', '.join(missing)}")
+
+    try:
+        car_id = _to_int(d.get("car_id"), "car_id")
+        dt = _parse_dt(d.get("date"), "date")
+    except ValueError as e:
+        return _bad(str(e))
+
+    car = get_car_or_default(user, car_id)
+    if not user_has_access_to_car(user, car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    try:
+        event = Event.objects.create(
+            user=user,
+            car=car,
+            title=str(d.get("title") or "").strip(),
+            date=dt,
+            reminder=d.get("reminder") or None,
+        )
+    except IntegrityError:
+        return _bad("Could not create event (integrity error).")
+
+    return Response({"event_id": event.event_id}, status=201)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def api_event_update(request, event_id: int):
+    user = get_current_user(request)
+
+    try:
+        event = Event.objects.select_related("car").get(event_id=event_id)
+    except Event.DoesNotExist:
+        return Response({"detail": "Not found"}, status=404)
+
+    if not user_has_access_to_car(user, event.car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    d = request.data or {}
+
+    try:
+        if "title" in d:
+            title = str(d.get("title") or "").strip()
+            if not title:
+                return _bad("title cannot be empty")
+            event.title = title
+
+        if "date" in d:
+            event.date = _parse_dt(d.get("date"), "date")
+
+        if "reminder" in d:
+            event.reminder = d.get("reminder") or None
+    except ValueError as e:
+        return _bad(str(e))
+
+    try:
+        event.save()
+    except IntegrityError:
+        return _bad("Could not update event (integrity error).")
+
+    return Response(
+        {
+            "ok": True,
+            "event": {
+                "event_id": event.event_id,
+                "title": event.title,
+                "date": event.date,
+                "reminder": event.reminder,
+            },
+        }
+    )
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def api_event_delete(request, event_id: int):
+    user = get_current_user(request)
+
+    try:
+        event = Event.objects.select_related("car").get(event_id=event_id)
+    except Event.DoesNotExist:
+        return Response({"detail": "Not found"}, status=404)
+
+    if not user_has_access_to_car(user, event.car):
+        return Response({"detail": "Forbidden"}, status=403)
+
+    event.delete()
+    return Response(status=204)
+
+
 # --------------------------
 # Address + Route + RouteUsage create
 # --------------------------
@@ -1298,6 +1607,7 @@ def api_route_usage_create(request):
         dt = _parse_dt(d.get("date"), "date")
         departure_time = _to_int(d.get("departure_time"), "departure_time") if d.get("departure_time") not in (None, "") else None
         arrival_time = _to_int(d.get("arrival_time"), "arrival_time") if d.get("arrival_time") not in (None, "") else None
+        arrival_delta_min = _to_int(d.get("arrival_delta_min"), "arrival_delta_min") if d.get("arrival_delta_min") not in (None, "") else None
         distance_km = _to_decimal_str(d.get("distance_km"), "distance_km") if d.get("distance_km") not in (None, "") else None
     except ValueError as e:
         return _bad(str(e))
@@ -1316,6 +1626,7 @@ def api_route_usage_create(request):
         date=dt,
         departure_time=departure_time,
         arrival_time=arrival_time,
+        arrival_delta_min=arrival_delta_min,
         distance_km=distance_km,
     )
 
@@ -1351,15 +1662,40 @@ def api_car_delete(request, car_id: int):
     if not _is_owner(user, car):
         return Response({"detail": "Only the owner can delete a car"}, status=403)
 
-    if Fueling.objects.filter(car=car).exists():
-        return Response({"detail": "Cannot delete car: it has fuelings"}, status=409)
-    if Maintenance.objects.filter(car=car).exists():
-        return Response({"detail": "Cannot delete car: it has maintenance logs"}, status=409)
-    if RouteUsage.objects.filter(car=car).exists():
-        return Response({"detail": "Cannot delete car: it has route usage entries"}, status=409)
+    route_ids = list(RouteUsage.objects.filter(car=car).values_list("route_id", flat=True).distinct())
+    gas_station_ids = list(Fueling.objects.filter(car=car, gas_station__isnull=False).values_list("gas_station_id", flat=True).distinct())
+    service_center_ids = list(Maintenance.objects.filter(car=car).values_list("service_center_id", flat=True).distinct())
 
-    CarUser.objects.filter(car=car).delete()
-    car.delete()
+    address_ids = []
+    if route_ids:
+        address_ids = list(
+            Address.objects.filter(
+                Q(routes_from__route_id__in=route_ids) | Q(routes_to__route_id__in=route_ids)
+            )
+            .values_list("address_id", flat=True)
+            .distinct()
+        )
+
+    with transaction.atomic():
+        CarUser.objects.filter(car=car).delete()
+        car.delete()
+
+        if gas_station_ids:
+            GasStation.objects.filter(gas_station_id__in=gas_station_ids).exclude(
+                Q(fueling__isnull=False) | Q(communitygasstationshare__isnull=False)
+            ).delete()
+
+        if service_center_ids:
+            ServiceCenter.objects.filter(service_center_id__in=service_center_ids, maintenance__isnull=True).delete()
+
+        if route_ids:
+            Route.objects.filter(route_id__in=route_ids, routeusage__isnull=True).delete()
+
+        if address_ids:
+            Address.objects.filter(address_id__in=address_ids).exclude(
+                Q(routes_from__isnull=False) | Q(routes_to__isnull=False)
+            ).delete()
+
     return Response(status=204)
 
 

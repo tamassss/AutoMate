@@ -156,6 +156,7 @@ class RouteUsage(models.Model):
     date = models.DateTimeField()
     departure_time = models.IntegerField(null=True, blank=True)
     arrival_time = models.IntegerField(null=True, blank=True)
+    arrival_delta_min = models.IntegerField(null=True, blank=True)
     distance_km = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
     title = models.CharField(max_length=255, null=True, blank=True)
 
@@ -185,6 +186,7 @@ class Fueling(models.Model):
     fueling_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     car = models.ForeignKey(Car, on_delete=models.CASCADE)
+    route_usage = models.ForeignKey("RouteUsage", on_delete=models.SET_NULL, null=True, blank=True)
     gas_station = models.ForeignKey(GasStation, on_delete=models.SET_NULL, null=True, blank=True)
     fuel_type = models.ForeignKey(FuelType, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateTimeField()
@@ -231,6 +233,21 @@ class Maintenance(models.Model):
 
 
 # ---------------------------
+# Event
+# ---------------------------
+class Event(models.Model):
+    event_id = models.AutoField(primary_key=True)
+    car = models.ForeignKey(Car, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    date = models.DateTimeField()
+    reminder = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = "event"
+
+
+# ---------------------------
 # Community car setting
 # ---------------------------
 class CommunityCarSetting(models.Model):
@@ -273,3 +290,19 @@ class CommunityGasStationShare(models.Model):
     class Meta:
         db_table = "community_gas_station_share"
         unique_together = ("requester", "car", "gas_station")
+
+
+class CarGasStation(models.Model):
+    link_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    car = models.ForeignKey(Car, on_delete=models.CASCADE)
+    gas_station = models.ForeignKey(GasStation, on_delete=models.CASCADE)
+    fuel_type = models.ForeignKey(FuelType, on_delete=models.SET_NULL, null=True, blank=True)
+    date = models.DateTimeField(null=True, blank=True)
+    price_per_liter = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    supplier = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "car_gas_station"
+        unique_together = ("user", "car", "gas_station")

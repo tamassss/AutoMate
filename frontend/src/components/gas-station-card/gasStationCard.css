@@ -1,3 +1,19 @@
+.gas-station-card-content {
+    width: 100%;
+}
+
+.gas-station-card-body {
+    padding-inline: 10px;
+}
+
+.gas-station-card-row {
+    gap: 28px;
+}
+
+.gas-station-card-value {
+    min-width: 120px;
+}
+
 .date-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -29,7 +45,19 @@
     width: 120px;
 }
 
+.gas-station-card-actions {
+    width: 100%;
+}
+
 @media(max-width:768px){
+
+    .gas-station-card-row {
+        gap: 16px;
+    }
+
+    .gas-station-card-value {
+        min-width: 90px;
+    }
 
     .card{
         padding: 0;

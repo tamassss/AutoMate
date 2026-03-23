@@ -33,14 +33,9 @@
   margin-bottom: 15px;
 }
 
-.admin-search-input {
+.admin-search-row .input {
   width: 100%;
   max-width: 420px;
-  background: #20232b;
-  color: #fff;
-  border: 1px solid #454a57;
-  border-radius: 8px;
-  padding: 8px 10px;
   margin: 0;
 }
 
@@ -51,6 +46,11 @@
   padding: 7px 10px;
   color: #fff;
   white-space: nowrap;
+}
+
+.admin-action-btn:hover,
+.admin-delete-btn:hover {
+  border-width: 1px;
 }
 
 .admin-action-btn {
@@ -77,13 +77,23 @@
 }
 
 .admin-role-select {
+  width: 100%;
   min-width: 170px;
+}
+
+.admin-table .input {
+  min-width: 140px;
+  margin: 0;
 }
 
 .admin-buttons-cell {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.admin-self-row {
+  opacity: 0.9;
 }
 
 .superadmin-tag {

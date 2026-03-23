@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+ï»¿import { useEffect, useState, useCallback } from "react";
+import { Navigate } from "react-router-dom";
 
 import Navbar from "../../../../components/navbar/navbar";
 import Menu from "../../dashboard/menu/menu";
@@ -29,14 +30,14 @@ export default function Community() {
   const [compareTarget, setCompareTarget] = useState(null);
   const [compareState, setCompareState] = useState({ data: null, loading: false, error: "" });
 
-  const refreshCommunityData = useCallback(async () => {
+  /***** FUNCTION-Ã–K *****/
+  // KÃ¶zÃ¶ssÃ©gi adatok frissÃ­tÃ©se
+  const refreshCommunityData = useCallback(async function() {
     setLoading(true);
     setError("");
     try {
-      const [payload, shared] = await Promise.all([
-        CommunityActions.getCommunityProfilesPayload(selectedCarId),
-        CommunityActions.getApprovedSharedStations(),
-      ]);
+      const payload = await CommunityActions.getCommunityProfilesPayload(selectedCarId);
+      const shared = await CommunityActions.getApprovedSharedStations();
 
       setEnabled(!!payload.enabled);
       setMyProfile(payload.my_profile || null);
@@ -50,32 +51,35 @@ export default function Community() {
         setPendingRequests([]);
       }
     } catch (err) {
-      setError(err.message || "Hiba történt az adatok betöltésekor.");
+      setError(err.message || "Error loading community data.");
     } finally {
       setLoading(false);
     }
   }, [isModerator, selectedCarId]);
 
-  useEffect(() => {
+  useEffect(function() {
     refreshCommunityData();
   }, [refreshCommunityData]);
 
-  const handleReviewRequest = async (requestId, decision) => {
+  // BenzinkÃºt elfogadÃ¡sa/elutasÃ­tÃ¡sa
+  async function handleReviewRequest(requestId, decision) {
     await CommunityActions.reviewShareRequest(requestId, decision);
     await refreshCommunityData();
-  };
+  }
 
-  const handleDeleteShared = async (requestId) => {
+  // BenzinkÃºt tÃ¶rlÃ©se
+  async function handleDeleteShared(requestId) {
     if (!isModerator) return;
     try {
       await CommunityActions.moderatorDeleteSharedStation(requestId);
       await refreshCommunityData();
-    } catch {
-      setError("Nem sikerült a törlés.");
+    } catch (err) {
+      setError("Failed to delete shared station.");
     }
-  };
+  }
 
-  const handleCompare = async (targetProfile) => {
+  // Profilok Ã¶sszehasonlÃ­tÃ¡sa
+  async function handleCompare(targetProfile) {
     if (!myProfile) return;
     setCompareTarget(targetProfile);
     setCompareState({ data: null, loading: true, error: "" });
@@ -86,22 +90,35 @@ export default function Community() {
         otherUserId: targetProfile.user_id,
         otherCarId: targetProfile.car_id,
       });
-      setCompareState((previousState) => ({ ...previousState, data: result, loading: false }));
-    } catch {
-      setCompareState((previousState) => ({ ...previousState, error: "Hiba a mérésnél.", loading: false }));
+      setCompareState(function(prevState) {
+        return { ...prevState, data: result, loading: false };
+      });
+    } catch (err) {
+      setCompareState(function(prevState) {
+        return { ...prevState, error: "Comparison failed.", loading: false };
+      });
     }
-  };
+  }
 
-  const formattedSharedStations = useMemo(
-    () =>
-      sharedStations.map((sharedItem) => ({
-        ...sharedItem.station,
-        datum: sharedItem.approved_at?.slice(0, 10) || "-",
-        extraInfo: `${sharedItem.full_name} - ${sharedItem.car_name}`,
-        requestId: sharedItem.request_id,
-      })),
-    [sharedStations]
-  );
+  // Benzinkutak formÃ¡zÃ¡sa
+  const formattedStations = sharedStations.map(function(item) {
+    return {
+      ...item.station,
+      date: item.approved_at?.slice(0, 10) || "-",
+      extraInfo: `${item.full_name} - ${item.car_name}`,
+      requestId: item.request_id,
+    };
+  });
+
+  if (!loading && !enabled && !isModerator) {
+    return (
+      <Navigate 
+        to="/muszerfal" 
+        replace 
+        state={{ successMessage: "Community features are not enabled for this car." }} 
+      />
+    );
+  }
 
   return (
     <div className="main-menu-layout">
@@ -113,37 +130,46 @@ export default function Community() {
         <Navbar />
 
         <div>
-          <div className="container-fluid p-0 community-tabs">
+          <div className="container-fluid p-0 tf-nav-tabs community-tabs">
             <div className="row g-0">
-              {["profiles", "stations"].map((tab) => (
-                <div
-                  key={tab}
-                  className={`col-6 d-flex justify-content-center align-items-center community-tab ${activeTab === tab ? "active" : "inactive"}`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  <p className="fs-5 m-0 py-3">{tab === "profiles" ? "Profilok" : "Benzinkutak"}</p>
-                </div>
-              ))}
+              {["profiles", "stations"].map(function(tab) {
+                return (
+                  <div
+                    key={tab}
+                    className={`col-6 d-flex justify-content-center align-items-center tf-nav-tab community-tab ${activeTab === tab ? "active" : "inactive"}`}
+                    onClick={function() { setActiveTab(tab); }}
+                  >
+                    <p className="fs-5 m-0 py-3">
+                      {tab === "profiles" ? "Profilok" : "Benzinkutak"}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           <div className="container py-4">
-            <h1 className="text-center text-primary mb-4 fw-bold">Közösség</h1>
+            <h1 className="text-center text-primary mb-4 fw-bold">KÃ¶zÃ¶ssÃ©g</h1>
 
-            {loading && <p className="text-center text-light">Betöltés...</p>}
+            {loading && <p className="text-center text-light">Loading...</p>}
             {error && <p className="text-danger text-center">{error}</p>}
 
-            {activeTab === "profiles" && (
-              <CommunityProfiles loading={loading} enabled={enabled} profiles={profiles} onCompare={handleCompare} />
+            {!loading && activeTab === "profiles" && (
+              <CommunityProfiles 
+                loading={loading} 
+                enabled={enabled} 
+                profiles={profiles} 
+                onCompare={handleCompare} 
+              />
             )}
 
-            {activeTab === "stations" && (
+            {!loading && activeTab === "stations" && (
               <CommunityGasStations
                 loading={loading}
                 canShowStationsTab={enabled || isModerator}
                 isModerator={isModerator}
                 pendingRequests={pendingRequests}
-                sharedCards={formattedSharedStations}
+                sharedCards={formattedStations}
                 onReview={handleReviewRequest}
                 onDeleteShared={handleDeleteShared}
               />
@@ -154,7 +180,7 @@ export default function Community() {
 
       {compareTarget && myProfile && (
         <CommunityComparisonModal
-          onClose={() => setCompareTarget(null)}
+          onClose={function() { setCompareTarget(null); }}
           myProfile={myProfile}
           otherProfile={compareTarget}
           compareData={compareState.data}

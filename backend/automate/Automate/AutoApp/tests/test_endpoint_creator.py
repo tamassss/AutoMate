@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from AutoApp.models import (
     User, Brand, CarModel, FuelType, Car, CarUser,
+    CarGasStation,
     GasStation, Fueling,
     ServiceCenter, Maintenance,
     Address, Route, RouteUsage,
@@ -133,6 +134,11 @@ class TestCarCreateAndPatch(BaseCreateAPITestCase):
 class TestGasStationAndFuelingCreate(BaseCreateAPITestCase):
     def test_gas_station_create_success(self):
         payload = {
+            "car_id": self.car.car_id,
+            "date": timezone.now().isoformat(),
+            "price_per_liter": "620.00",
+            "supplier": "OMV",
+            "fuel_type_id": self.fuel_type.fuel_type_id,
             "name": "OMV",
             "city": "Budapest",
             "postal_code": "1111",
@@ -143,6 +149,10 @@ class TestGasStationAndFuelingCreate(BaseCreateAPITestCase):
         self.assertEqual(resp.status_code, 201)
         gas_station_id = resp.json()["gas_station_id"]
         self.assertTrue(GasStation.objects.filter(gas_station_id=gas_station_id).exists())
+        link = CarGasStation.objects.get(user=self.user, car=self.car, gas_station_id=gas_station_id)
+        self.assertEqual(float(link.price_per_liter), 620.0)
+        self.assertEqual(link.supplier, "OMV")
+        self.assertEqual(link.fuel_type_id, self.fuel_type.fuel_type_id)
 
     def test_fueling_create_success(self):
         gas_station = GasStation.objects.create(

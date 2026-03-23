@@ -16,11 +16,13 @@ import icon4 from "../../../assets/home/4.png";
 import icon6 from "../../../assets/home/6.png";
 import icon7 from "../../../assets/home/7.png";
 import icon8 from "../../../assets/home/8.png";
+import icon5 from "../../../assets/home/5.png";
 import helpIcon from "../../../assets/icons/help.png";
 
 export default function Home() {
     const navigate = useNavigate()
     const [showLogin, setShowLogin] = useState(true);
+    
     const isLoggedIn = Boolean(localStorage.getItem("token"));
     const role = localStorage.getItem("role");
 
@@ -99,6 +101,12 @@ export default function Home() {
                     title={"Statisztikák"}
                     content={"az AutoMate automatikusan statisztikákat készít a szokásairól"}
                     content2={"megtekintheti, hogy havonta mennyi kilométert tesz meg, mennyi üzemanyagot vásárol és az egyes hónapokban mennyibe került Önnek 1 kilométer megtétele"}
+                />
+
+                <Feature
+                    icon={icon5}
+                    title={"Közösség"}
+                    content={"Hasonlítsa össze statisztikáit a többi felhasználóval és tekintse meg a tagok által hozzáadott benzinkutakat"}
                 />
 
                 <Feature

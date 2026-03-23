@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
 import Navbar from "../../../components/navbar/navbar";
+import Input from "../../../components/input/input";
 import Loading from "../../../components/loading/loading";
 import SuccessModal from "../../../components/success-modal/successModal";
 import { deleteAdminUser, getAdminUsers, updateAdminUser } from "../../../actions/admin/adminActions";
+
 import "./adminPage.css";
 
 export default function AdminPage() {
@@ -12,120 +15,233 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  
+  // bejelentkezett id
+  const currentUserId = Number(localStorage.getItem("user_id") || 0);
+  const currentUser = users.find(function(user) {
+    return user.user_id === currentUserId;
+  });
+  const currentIsSuperadmin = !!currentUser?.is_superadmin;
 
-  // Felhasználók betöltése
-  const loadUsers = async (email = "") => {
+  // felhasználók betöltése
+  async function loadUsers(email) {
+    const searchParam = email || "";
     setLoading(true);
-    try {
-      const data = await getAdminUsers(email);
 
-      setUsers(data.map(u => ({
-        ...u,
-        full_name: u.full_name || "",
-        password: "",
-        role: u.role || "user"
-      })));
+    try {
+      const data = await getAdminUsers(searchParam);
+
+      // Adatok normalizálása
+      setUsers(
+        data.map(function(user) {
+          return {
+            ...user,
+            full_name: user.full_name || "",
+            password: "",
+            role: user.role || "user",
+          };
+        })
+      );
     } catch (err) {
-      setError("Nem sikerült betölteni a listát.");
+      setError(err.message || "Nem sikerült betölteni a listát.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  useEffect(() => { loadUsers(); }, []);
+  // betöltés
+  useEffect(function() {
+    loadUsers();
+  }, []);
 
-  //írás közben
-  const handleChange = (id, field, value) => {
-    setUsers(prev => prev.map(u => u.user_id === id ? { ...u, [field]: value, isChanged: true } : u));
-  };
+  // mezők kezelése
+  function handleChange(id, field, value) {
+    setUsers(function(prev) {
+      return prev.map(function(user) {
+        if (user.user_id === id) {
+          return { ...user, [field]: value, isChanged: true };
+        }
+        return user;
+      });
+    });
+  }
 
-  //Mentés
-  const handleSave = async (user) => {
+  // Módosítás mentése
+  async function handleSave(user) {
     setError("");
+
     try {
       const { full_name, email, role, password } = user;
       await updateAdminUser(user.user_id, { full_name, email, role, password });
-      
+
       setSuccessMessage("Sikeres módosítás.");
       loadUsers(searchEmail);
     } catch (err) {
-      setError("Hiba a mentés során.");
+      setError(err.message || "Hiba a mentés során.");
     }
-  };
+  }
 
-  //törlés
-  const handleDelete = async (id) => {
+  // Törlés
+  async function handleDelete(id) {
     try {
       await deleteAdminUser(id);
       setSuccessMessage("Sikeres törlés.");
       loadUsers(searchEmail);
     } catch (err) {
-      setError("Hiba a törlésnél.");
+      setError(err.message || "Hiba a törlésnél.");
     }
-  };
+  }
 
   return (
     <div className="admin-page">
       <Navbar forceHomeLink />
+
       <div className="admin-page-content container">
         <div className="admin-header-row">
-          <h1>Admin felület</h1>
-          <Link to="/">Főoldal</Link>
+          <h1 className="admin-title">Admin felület</h1>
+          <Link className="admin-home-link" to="/">
+            Főoldal
+          </Link>
         </div>
 
-        <form className="admin-search-row" onSubmit={(e) => { e.preventDefault(); loadUsers(searchEmail); }}>
-          <input 
-            type="text" 
-            placeholder="Keresés email alapján..." 
-            value={searchEmail} 
-            onChange={e => setSearchEmail(e.target.value)} 
+        {/* Keresés */}
+        <form
+          className="admin-search-row"
+          onSubmit={function(e) {
+            e.preventDefault();
+            loadUsers(searchEmail);
+          }}
+        >
+          <Input
+            type="text"
+            value={searchEmail}
+            onChange={function(e) {
+              setSearchEmail(e.target.value);
+            }}
+            placeholder="Keresés email alapján..."
           />
-          <button type="submit" className="admin-search-btn">Keresés</button>
+          <button type="submit" className="admin-action-btn admin-search-btn">
+            Keresés
+          </button>
         </form>
 
         {error && <p className="admin-error">{error}</p>}
 
-        {loading ? <Loading /> : (
+        {loading ? (
+          <Loading />
+        ) : (
           <div className="table-responsive">
-
             <table className="table table-dark admin-table">
-              
               <thead>
                 <tr>
-                  <th>Email</th><th>Név</th><th>Jelszó</th><th>Jog</th><th>Műveletek</th>
+                  <th>Email</th>
+                  <th>Név</th>
+                  <th>Jelszó</th>
+                  <th>Jog</th>
+                  <th>Műveletek</th>
                 </tr>
               </thead>
 
               <tbody>
-                {users.map((user) => (
-                  <tr key={user.user_id} className={user.is_superadmin ? "superadmin-row" : ""}>
-                    <td><input value={user.email} onChange={e => handleChange(user.user_id, "email", e.target.value)} disabled={user.is_superadmin} /></td>
-                    <td><input value={user.full_name} onChange={e => handleChange(user.user_id, "full_name", e.target.value)} disabled={user.is_superadmin} /></td>
-                    <td><input type="password" placeholder="Új jelszó" onChange={e => handleChange(user.user_id, "password", e.target.value)} disabled={user.is_superadmin} /></td>
-                    <td>
-                      <select value={user.role} onChange={e => handleChange(user.user_id, "role", e.target.value)} disabled={user.is_superadmin}>
-                        <option value="user">Felhasználó</option>
-                        <option value="admin">Admin</option>
-                        <option value="moderator">Moderátor</option>
-                      </select>
-                    </td>
-                    <td className="admin-buttons-cell">
-                      {user.is_superadmin ? <span className="superadmin-tag">superadmin</span> : (
-                        <>
-                          <button onClick={() => handleSave(user)} disabled={!user.isChanged} className={!user.isChanged ? "unavailable" : ""}>Mentés</button>
-                          <button onClick={() => handleDelete(user.user_id)} className="admin-delete-btn">Törlés</button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                {users.map(function(user) {
+                  // ellenőrzés: saját profil és admin fiók
+                  const isOwnAccount = user.user_id === currentUserId;
+                  const isAdminAccount = user.role === "admin";
+                  const showActionButtons = !isOwnAccount && (currentIsSuperadmin || !isAdminAccount);
+                  const isDisabled = !showActionButtons;
 
+                  return (
+                    <tr
+                      key={user.user_id}
+                      className={user.is_superadmin ? "superadmin-row" : isOwnAccount ? "admin-self-row" : ""}
+                    >
+                      <td>
+                        <Input
+                          type="text"
+                          value={user.email}
+                          onChange={function(e) {
+                            handleChange(user.user_id, "email", e.target.value);
+                          }}
+                          disabled={isDisabled}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          type="text"
+                          value={user.full_name}
+                          onChange={function(e) {
+                            handleChange(user.user_id, "full_name", e.target.value);
+                          }}
+                          disabled={isDisabled}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          type="password"
+                          value={user.password}
+                          onChange={function(e) {
+                            handleChange(user.user_id, "password", e.target.value);
+                          }}
+                          placeholder="Új jelszó"
+                          disabled={isDisabled}
+                        />
+                      </td>
+                      <td>
+                        <select
+                          className="admin-cell-input admin-role-select"
+                          value={user.role}
+                          onChange={function(e) {
+                            handleChange(user.user_id, "role", e.target.value);
+                          }}
+                          disabled={isDisabled}
+                        >
+                          <option value="user">Felhasználó</option>
+                          <option value="admin">Admin</option>
+                          <option value="moderator">Moderátor</option>
+                        </select>
+                      </td>
+                      <td className="admin-buttons-cell">
+                        {showActionButtons && (
+                          <>
+                            <button
+                              type="button"
+                              className="admin-action-btn"
+                              onClick={function() {
+                                handleSave(user);
+                              }}
+                              disabled={!user.isChanged}
+                            >
+                              Mentés
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-delete-btn"
+                              onClick={function() {
+                                handleDelete(user.user_id);
+                              }}
+                            >
+                              Törlés
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
             </table>
           </div>
         )}
       </div>
-      {successMessage && <SuccessModal description={successMessage} onClose={() => setSuccessMessage("")} />}
+
+      {successMessage && (
+        <SuccessModal 
+          description={successMessage} 
+          onClose={function() {
+            setSuccessMessage("");
+          }} 
+        />
+      )}
     </div>
   );
 }

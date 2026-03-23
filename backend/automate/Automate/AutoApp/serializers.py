@@ -110,6 +110,7 @@ class FuelingSerializer(serializers.ModelSerializer):
             "fueling_id",
             "user",
             "car",
+            "route_usage",
             "gas_station",
             "fuel_type",
             "date",

@@ -47,6 +47,8 @@ export default function FuelTable({month, data, onDeletedFuel, onUpdatedFuel}){
                 </table>
             </Card>
 
+
+            {/* Modals */}
             {selectedFuel && (
                 <DeleteFuel
                     onClose={() => setSelectedFuel(null)}

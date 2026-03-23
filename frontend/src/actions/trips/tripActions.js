@@ -1,8 +1,9 @@
-﻿import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
+import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 import { hhmmToMinutes } from "../shared/formatters";
 import { hasValue } from "../shared/valueChecks";
+import { createGasStation as createStandaloneGasStation } from "../gasStations/gasStationActions";
 
-// Cím létrehozása
+// Új város/cím létrehozása
 async function createAddress(cityText) {
   const response = await fetch(apiUrl("/addresses/create/"), {
     method: "POST",
@@ -41,8 +42,10 @@ async function createRoute(fromAddressId, toAddressId) {
   return data.route_id;
 }
 
-// Út mentése
+// Út kötése autóhoz
 async function createRouteUsage(carId, routeId, tripData) {
+  const actualArrival = tripData?.runtime?.actualArrival || null;
+
   const response = await fetch(apiUrl("/route-usage/create/"), {
     method: "POST",
     headers: authHeaders(),
@@ -51,7 +54,7 @@ async function createRouteUsage(carId, routeId, tripData) {
       route_id: Number(routeId),
       date: new Date().toISOString(),
       departure_time: hhmmToMinutes(tripData?.startTime),
-      arrival_time: hhmmToMinutes(tripData?.expectedArrival),
+      arrival_time: hhmmToMinutes(actualArrival),
       arrival_delta_min: tripData?.arrivalDeltaMin ?? null,
       distance_km: tripData?.distanceKm ?? null,
       title: tripData?.title || null,
@@ -62,36 +65,14 @@ async function createRouteUsage(carId, routeId, tripData) {
   handleUnauthorized(response);
 
   if (!response.ok) {
-    throw new Error(data.detail || "Úthasználat mentése sikertelen.");
+    throw new Error(data.detail || "Út mentése sikertelen.");
   }
 
   return data.route_usage_id;
 }
 
-// Új benzinkút
-async function createGasStation(fueling) {
-  const response = await fetch(apiUrl("/gas-stations/create/"), {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify({
-      name: fueling?.stationName || null,
-      city: fueling?.stationCity || null,
-      street: fueling?.stationAddress || null,
-    }),
-  });
-
-  const data = await parseJsonSafe(response);
-  handleUnauthorized(response);
-
-  if (!response.ok) {
-    throw new Error(data.detail || "Benzinkút mentése sikertelen.");
-  }
-
-  return data.gas_station_id;
-}
-
-// Új tankolás
-async function createFueling(carId, gasStationId, fueling) {
+// Új tankolás létrehozása(sima)
+async function createFueling(carId, fueling) {
   const fuelTypeId = fueling?.fuelTypeId ? Number(fueling.fuelTypeId) : null;
 
   let odometer = fueling?.odometerKm;
@@ -108,12 +89,12 @@ async function createFueling(carId, gasStationId, fueling) {
     odometer_km: Number(odometer),
   };
 
-  if (hasValue(gasStationId)) {
-    payload.gas_station_id = Number(gasStationId);
-  }
-
   if (fuelTypeId) {
     payload.fuel_type_id = fuelTypeId;
+  }
+
+  if (hasValue(fueling?.routeUsageId)) {
+    payload.route_usage_id = Number(fueling.routeUsageId);
   }
 
   const response = await fetch(apiUrl("/fuelings/create/"), {
@@ -132,7 +113,27 @@ async function createFueling(carId, gasStationId, fueling) {
   return data.fueling_id;
 }
 
-// Út mentése tankolásokkal
+// Útközbeni tankolás úthoz utólag
+async function assignFuelingToRouteUsage(fuelingId, routeUsageId) {
+  const response = await fetch(apiUrl(`/fuelings/${fuelingId}/`), {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      route_usage_id: Number(routeUsageId),
+    }),
+  });
+
+  const data = await parseJsonSafe(response);
+  handleUnauthorized(response);
+
+  if (!response.ok) {
+    throw new Error(data.detail || "Tankolás útvonalhoz kapcsolása sikertelen.");
+  }
+
+  return data?.fueling || null;
+}
+
+// Út mentése és tankolások kapcsolása
 export async function saveTripWithFuelings(tripData) {
   const carId = tripData?.carId || localStorage.getItem("selected_car_id");
   if (!carId) throw new Error("Nincs kiválasztott autó.");
@@ -141,34 +142,34 @@ export async function saveTripWithFuelings(tripData) {
   const toAddressId = await createAddress(tripData?.to || "Ismeretlen");
   const routeId = await createRoute(fromAddressId, toAddressId);
 
-  await createRouteUsage(carId, routeId, tripData);
+  const routeUsageId = await createRouteUsage(carId, routeId, tripData);
 
   const fuelings = tripData?.fuelings || [];
+
   for (const fueling of fuelings) {
-    const gasStationId = await createGasStation(fueling);
-    await createFueling(carId, gasStationId, fueling);
+    if (!fueling?.fuelingId) {
+      continue;
+    }
+
+    await assignFuelingToRouteUsage(fueling.fuelingId, routeUsageId);
   }
 
-  return { ok: true };
+  return { ok: true, routeUsageId };
 }
 
-// Egy tankolás mentése
-export async function saveFuelingWithGasStation(fuelData, carIdOverride = null) {
+// Tankolás mentése (sima)
+export async function saveFueling(fuelData, carIdOverride = null) {
   const carId = carIdOverride || localStorage.getItem("selected_car_id");
   if (!carId) throw new Error("Nincs kiválasztott autó.");
 
-  await createFueling(carId, null, fuelData || {});
+  const fuelingId = await createFueling(carId, fuelData || {});
 
-  return { ok: true };
+  return { ok: true, fuelingId };
 }
 
-// Új benzinkút mentése (kapcsolódó tankolás adattal)
-export async function saveNewGasStationWithFueling(gasStationData) {
-  const carId = localStorage.getItem("selected_car_id");
-  if (!carId) throw new Error("Nincs kiválasztott autó.");
-
-  const gasStationId = await createGasStation(gasStationData || {});
-  await createFueling(carId, gasStationId, gasStationData || {});
+// Új benzinkút
+export async function saveNewGasStation(gasStationData) {
+  await createStandaloneGasStation(gasStationData || {});
 
   return { ok: true };
 }

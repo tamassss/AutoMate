@@ -5,22 +5,37 @@ import Modal from "../../components/modal/modal";
 import { limitTextLength } from "../../actions/shared/inputValidation";
 import { updateProfileSettings } from "../../actions/auth/authActions";
 
-import "./settings.css";
-
 export default function Settings({ onClose }) {
+  // jelszó1
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [unlockPassword, setUnlockPassword] = useState("");
-  const [fullName, setFullName] = useState(() => (localStorage.getItem("full_name") || "").trim());
-  const [email, setEmail] = useState(() => (localStorage.getItem("email") || "").trim());
-  const [password, setPassword] = useState(() => localStorage.getItem("password") || "");
+
+  // adatok ls-ből
+  const [fullName, setFullName] = useState(function() {
+    const savedName = localStorage.getItem("full_name") || "";
+    return savedName.trim();
+  });
+
+  const [email, setEmail] = useState(function() {
+    const savedEmail = localStorage.getItem("email") || "";
+    return savedEmail.trim();
+  });
+
+  const [password, setPassword] = useState(function() {
+    return localStorage.getItem("password") || "";
+  });
+
+  // hiba + töltés
   const [fieldErrors, setFieldErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  async function handleSave(e) {
-    e.preventDefault();
+  // mentés
+  async function handleSave(event) {
+    event.preventDefault();
     setErrorMessage("");
 
+    // jelszó ellenőrzése
     if (!isUnlocked) {
       if (!unlockPassword) {
         setFieldErrors({ unlockPassword: "A jelszó megadása kötelező!" });
@@ -38,6 +53,7 @@ export default function Settings({ onClose }) {
       return;
     }
 
+    // adatok validálása és mentése
     const tempErrors = {};
     if (!fullName.trim()) tempErrors.fullName = "A teljes név megadása kötelező!";
     if (!email.trim()) tempErrors.email = "Az e-mail cím megadása kötelező!";
@@ -53,7 +69,7 @@ export default function Settings({ onClose }) {
       await updateProfileSettings({
         fullName: fullName.trim(),
         email: email.trim(),
-        password,
+        password: password,
       });
       onClose?.();
     } catch (err) {
@@ -65,57 +81,80 @@ export default function Settings({ onClose }) {
 
   return (
     <Modal
-      title={"Beállítások"}
+      title="Beállítások"
       onClose={onClose}
       columns={1}
       onSubmit={handleSave}
-      footer={<Button text={isUnlocked ? (isSaving ? "Mentés..." : "Megváltoztatás") : "Tovább"} type={"submit"} />}
+      footer={
+        <Button 
+          text={isUnlocked ? (isSaving ? "Mentés..." : "Megváltoztatás") : "Tovább"} 
+          type="submit" 
+        />
+      }
     >
+      {/* Jelszó megadása */}
       {!isUnlocked ? (
         <>
           <p className="m-0">Add meg a jelszót a folytatáshoz.</p>
           <LabeledInput
-            label={"Jelszó"}
-            type={"text"}
+            label="Jelszó"
+            type="password"
             value={unlockPassword}
             maxLength={50}
-            onChange={(e) => {
+            onChange={function(e) {
               setUnlockPassword(limitTextLength(e.target.value, 50));
-              if (fieldErrors.unlockPassword) setFieldErrors((prev) => ({ ...prev, unlockPassword: "" }));
+              if (fieldErrors.unlockPassword) {
+                setFieldErrors(function(prev) {
+                  return { ...prev, unlockPassword: "" };
+                });
+              }
             }}
             error={fieldErrors.unlockPassword}
           />
         </>
       ) : (
+        /* Szerkesztés */
         <>
           <LabeledInput
-            label={"Teljes név"}
+            label="Teljes név"
             value={fullName}
             maxLength={30}
-            onChange={(e) => {
+            onChange={function(e) {
               setFullName(limitTextLength(e.target.value, 30));
-              if (fieldErrors.fullName) setFieldErrors((prev) => ({ ...prev, fullName: "" }));
+              if (fieldErrors.fullName) {
+                setFieldErrors(function(prev) {
+                  return { ...prev, fullName: "" };
+                });
+              }
             }}
             error={fieldErrors.fullName}
           />
           <LabeledInput
-            label={"E-mail cím"}
+            label="E-mail cím"
             value={email}
             maxLength={50}
-            onChange={(e) => {
+            onChange={function(e) {
               setEmail(limitTextLength(e.target.value, 50));
-              if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+              if (fieldErrors.email) {
+                setFieldErrors(function(prev) {
+                  return { ...prev, email: "" };
+                });
+              }
             }}
             error={fieldErrors.email}
           />
           <LabeledInput
-            label={"Jelszó"}
-            type={"text"}
+            label="Jelszó"
+            type="text"
             value={password}
             maxLength={50}
-            onChange={(e) => {
+            onChange={function(e) {
               setPassword(limitTextLength(e.target.value, 50));
-              if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+              if (fieldErrors.password) {
+                setFieldErrors(function(prev) {
+                  return { ...prev, password: "" };
+                });
+              }
             }}
             error={fieldErrors.password}
           />

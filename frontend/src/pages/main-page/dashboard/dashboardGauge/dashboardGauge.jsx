@@ -1,20 +1,22 @@
-﻿import Button from "../../../../components/button/button";
-import "./dashboardGauge.css";
-import { useState } from "react";
-import EditLimit from "../../../../modals/editLimit/editLimit";
+﻿import { useState } from "react";
 import { Link } from "react-router-dom";
+import "./dashboardGauge.css";
+
+import Button from "../../../../components/button/button";
+import EditLimit from "../../../../modals/editLimit/editLimit";
 import BudgetLimit from "../budgetLimit/budgetLimit";
 import { formatGroupedNumber } from "../../../../actions/shared/formatters";
 
 export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit }) {
     const [showLimit, setShowLimit] = useState(false);
-    const hasAverageConsumption =
-        selectedCar?.average_consumption !== null &&
-        selectedCar?.average_consumption !== undefined &&
-        selectedCar?.average_consumption !== "";
+
+    // Fogyasztás jó-e
+    const avgConsumption = selectedCar?.average_consumption;
+    const hasAverageConsumption = avgConsumption !== null && avgConsumption !== undefined && avgConsumption !== "";
 
     return (
         <div className="w-100">
+            {/* Limit */}
             <div className="limit d-flex flex-column align-items-center">
                 <BudgetLimit
                     spent={monthlyBudget?.spent || 0}
@@ -23,11 +25,12 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
 
                 <div className="limit-btn-wrapper">
                     <Button
-                        text={"limit"}
+                        text="limit"
                         onClick={() => setShowLimit(true)}
                     />
                 </div>
 
+                {/* Limit szerkesztés modal */}
                 {showLimit && (
                     <EditLimit
                         onClose={() => setShowLimit(false)}
@@ -39,12 +42,13 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
 
             <hr className="mb-5" />
 
+            {/* Fogyasztás */}
             <div className="screen d-flex flex-column align-items-center w-100">
                 <div className="screen-div w-100">
-                    <table className="dg-table justify-content-center align-items-center w-100">
+                    <table className="dg-table w-100">
                         <thead>
                             <tr className="table-title-tr">
-                                <th colSpan={2} style={{backgroundColor:"#1515158e"}}>
+                                <th colSpan={2} className="title-th">
                                     <p className="field average-consumption-title">
                                         Átlagos fogyasztás
                                     </p>
@@ -53,17 +57,18 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                         </thead>
                         <tbody>
                             <tr>
-                                <th className="even field cons-th">
+                                {/* Átlagfogyasztás */}
+                                <td className="even field cons-td">
                                     <p className="text-center">
                                         {hasAverageConsumption
-                                            ? `${formatGroupedNumber(selectedCar.average_consumption, { decimals: 2, trimTrailingZeros: true })} l/100km`
-                                            : (
-                                                "?"
-                                            )}
+                                            ? `${formatGroupedNumber(avgConsumption, { decimals: 2, trimTrailingZeros: true })} l/100km`
+                                            : "?"}
                                     </p>
-                                </th>
+                                </td>
+                                
+                                {/* Teszt indítása link */}
                                 <td className="odd field test-td">
-                                    <Link to={"/muszerfal/atlagfogyasztas"}>
+                                    <Link to="/muszerfal/atlagfogyasztas">
                                         <p className="test-p text-center">Teszt</p>
                                     </Link>
                                 </td>

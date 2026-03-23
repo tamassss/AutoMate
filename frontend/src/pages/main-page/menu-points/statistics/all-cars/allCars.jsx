@@ -1,16 +1,29 @@
 import Card from "../../../../../components/card/card";
-import "./allCars.css";
 import { formatGroupedNumber, formatMoney } from "../../../../../actions/shared/formatters";
 
 export default function AllCars({ summaryStats = [] }) {
-  const rows = summaryStats.map((item) => ({
-    car: item.car_name,
-    distance: `${formatGroupedNumber(item.distance_km || 0, { decimals: 1, trimTrailingZeros: true })} km`,
-    fuel: `${formatGroupedNumber(item.fuelings?.count || 0)} db | ${formatMoney(item.fuelings?.spent)} | ${formatGroupedNumber(
-      item.fuelings?.liters || 0,
-      { decimals: 1, trimTrailingZeros: true }
-    )} l`,
-  }));
+  // ADATOK ELŐKÉSZÍTÉSE
+  const rows = summaryStats.map(function(item) {
+    // km formázás
+    const formattedDistance = formatGroupedNumber(item.distance_km || 0, { 
+      decimals: 1, 
+      trimTrailingZeros: true 
+    }) + " km";
+
+    // adatok összefűzése
+    const fuelingDetails = formatGroupedNumber(item.fuelings?.count || 0) + " db | " + 
+                           formatMoney(item.fuelings?.spent) + " | " + 
+                           formatGroupedNumber(item.fuelings?.liters || 0, { 
+                             decimals: 1, 
+                             trimTrailingZeros: true 
+                           }) + " l";
+
+    return {
+      car: item.car_name,
+      distance: formattedDistance,
+      fuel: fuelingDetails,
+    };
+  });
 
   return (
     <Card>
@@ -27,14 +40,18 @@ export default function AllCars({ summaryStats = [] }) {
             </thead>
             <tbody>
               {rows.length > 0 ? (
-                rows.map((item, index) => (
-                  <tr key={index} className={index % 2 !== 0 ? "odd" : "even"}>
-                    <td>{item.car}</td>
-                    <td>{item.distance}</td>
-                    <td className="small">{item.fuel}</td>
-                  </tr>
-                ))
+                // Sorok megjelenítése
+                rows.map(function(item, index) {
+                  return (
+                    <tr key={index} className={index % 2 !== 0 ? "odd" : "even"}>
+                      <td>{item.car}</td>
+                      <td>{item.distance}</td>
+                      <td className="small">{item.fuel}</td>
+                    </tr>
+                  );
+                })
               ) : (
+                /* Üres állapot */
                 <tr>
                   <td colSpan={3} className="text-center">
                     Még nincs összesített adat.

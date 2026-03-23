@@ -2,19 +2,41 @@ import { Line } from "react-chartjs-2";
 import { formatDateLocale, formatGroupedNumber, formatMoney } from "../../../../actions/shared/formatters";
 import "./fuel.css";
 
+// Chart.js regisztráció
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 export default function Fuel({ fuelingChart, latestFueling }) {
   const points = fuelingChart?.points || [];
   const chartLabels = ["H", "K", "SZE", "CS", "P", "SZO", "V"];
 
-  // Adatok előkészítése
-  const spentData = points.map((p) => Number(p.spent || 0));
-  const litersData = points.map((p) => Number(p.liters || 0));
+  // Grafikon adatok
+  const spentData = points.map((p) => Number(p.spent ?? 0));
+  const litersData = points.map((p) => Number(p.liters ?? 0));
 
   const chartData = {
     labels: chartLabels,
     datasets: [
       {
-        label: "Költés",
+        label: "Költés (Ft)",
         data: spentData,
         borderColor: "#075DBF",
         backgroundColor: "#075DBF",
@@ -39,8 +61,14 @@ export default function Fuel({ fuelingChart, latestFueling }) {
       y: {
         display: false,
       },
+      y1: {
+        display: false,
+        position: 'right',
+        grid: { drawOnChartArea: false },
+      },
       x: {
-        ticks: { color: "white" },
+        ticks: { color: "rgba(255,255,255,0.7)" },
+        grid: { display: false }
       },
     },
   };
@@ -49,32 +77,37 @@ export default function Fuel({ fuelingChart, latestFueling }) {
     <div className="fuel-container">
       <div className="fuel-heading">
         <h2 className="fuel-title-main">Tankolás</h2>
-        <p className="fuel-subtitle">Heti fogyasztás</p>
+        <p className="fuel-subtitle">Heti statisztika</p>
       </div>
 
-      <div className="fuel-chart-wrap">
+      <div className="fuel-chart-wrap" style={{ height: "200px" }}>
         <Line data={chartData} options={options} />
       </div>
 
-      <hr className="mb-5" />
+      <hr className="my-4 opacity-25" />
 
-      <table className="fuel-table">
+      {/* Legutóbbi tankolás */}
+      <table className="fuel-table w-100">
         <tbody>
           <tr>
             <td className="odd text-center field last-fuel-title" colSpan={2}>
-              Legutóbbi tankolás{" "}
-              <span className="last-fuel-date">{formatDateLocale(latestFueling?.date)}</span>
+              Legutóbbi tankolás:{" "}
+              <span className="last-fuel-date">
+                {latestFueling?.date ? formatDateLocale(latestFueling.date) : "-"}
+              </span>
             </td>
           </tr>
           <tr>
-            <td className="even field">Mennyiség</td>
-            <td className="even field">
-              {formatGroupedNumber(latestFueling?.liters || 0, { decimals: 2 })} l
+            <td className="even field px-3">Mennyiség</td>
+            <td className="even field text-end px-3">
+              {formatGroupedNumber(latestFueling?.liters ?? 0, { decimals: 2 })} l
             </td>
           </tr>
           <tr>
-            <td className="odd field">Elköltött pénz</td>
-            <td className="odd field">{formatMoney(latestFueling?.spent || 0)}</td>
+            <td className="odd field px-3">Elköltött összeg</td>
+            <td className="odd field text-end px-3">
+              {formatMoney(latestFueling?.spent ?? 0)}
+            </td>
           </tr>
         </tbody>
       </table>

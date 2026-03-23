@@ -10,7 +10,7 @@ import Settings from "../../modals/settings/settings";
 
 import "./navbar.css";
 
-export default function Navbar({ forceHomeLink = false }) {
+export default function Navbar({ forceHomeLink = false, backTo = null }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [showSettings, setShowSettings] = useState(false);
@@ -41,6 +41,14 @@ export default function Navbar({ forceHomeLink = false }) {
   }
 
   function handleBackClick() {
+    if (backTo) {
+      navigate(backTo);
+      return;
+    }
+    if (isCarsPage) {
+      navigate("/");
+      return;
+    }
     if (isDashboardRoute) {
       navigate("/autok");
       return;

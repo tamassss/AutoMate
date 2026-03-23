@@ -1,74 +1,132 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { useState } from "react";
 
-import Navbar from "../../../components/navbar/navbar"
-import Button from "../../../components/button/button"
-import EditCar from "../../../modals/editCar/editCar"
-import AddCar from "../../../modals/addCar/addCar"
-import CarSelect from "../carSelect/carSelect"
-import Settings from "../../../modals/settings/settings"
+import Navbar from "../../../components/navbar/navbar";
+import Button from "../../../components/button/button";
+import EditCar from "../../../modals/editCar/editCar";
+import AddCar from "../../../modals/addCar/addCar";
+import DeleteCar from "../../../modals/deleteCar/deleteCar";
+import CarSelect from "../carSelect/carSelect";
+import Settings from "../../../modals/settings/settings";
 
-import "./cars.css"
+import "./cars.css";
 
 export default function Cars() {
-    const fullName = localStorage.getItem("full_name") || "Felhasználó";
+  const fullName = localStorage.getItem("full_name") || "Felhasználó";
 
-    //modal
-    const [showAddCar, setShowAddCar] = useState(false);
-    const [showEditCar, setShowEditCar] = useState(false);
-    const [showSetting, setShowSettings] = useState(false);
+  // Modal állapotok
+  const [showAddCar, setShowAddCar] = useState(false);
+  const [showEditCar, setShowEditCar] = useState(false);
+  const [showDeleteCar, setShowDeleteCar] = useState(false);
+  const [showSetting, setShowSettings] = useState(false);
 
-    const [selectedCar, setSelectedCar] = useState(null)
+  // Adatok
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [deleteTargetCar, setDeleteTargetCar] = useState(null);
 
-    //oldal frissítő
-    const [refreshKey, setRefreshKey] = useState(0)
-    const triggerRefresh = () => setRefreshKey(prev => prev + 1);
+  // Frissítés
+  const [refreshKey, setRefreshKey] = useState(0);
 
-    return (
-        <>
-            <Navbar />
+  function triggerRefresh() {
+    setRefreshKey(function(prev) {
+      return prev + 1;
+    });
+  }
 
-            {showSetting && <Settings onClose={() => setShowSettings(false)} />}
+  return (
+    <>
+      <Navbar />
 
-            <h1 className="title fs-1 mt-3">{fullName}</h1>
-            <h2 className="subtitle fw-4 opacity-75">garázsa</h2>
-            
-            <div className="my-4">
-                <CarSelect refreshKey={refreshKey} onCarChange={setSelectedCar} />
-            </div>
-            
-            <div className="justify-content-center g-3 cars-buttons">
-                <div className="col-12 col-sm-auto">
-                    <Button
-                        text="Módosítás"
-                        onClick={() => setShowEditCar(true)}
-                        disabled={!selectedCar}
-                        className={!selectedCar ? "unavailable" : ""}
-                    />
-                </div>
+      {/* Beállítások */}
+      {showSetting && (
+        <Settings 
+          onClose={function() {
+            setShowSettings(false);
+          }} 
+        />
+      )}
 
-                <div className="col-12 col-sm-auto">
-                    <Button
-                        text="Új autó"
-                        onClick={() => setShowAddCar(true)}
-                    />
-                </div>
-            </div>
+      <h1 className="title fs-1 mt-3">{fullName}</h1>
+      <h2 className="subtitle fw-4 opacity-75">garázsa</h2>
 
-            {showEditCar && (
-                <EditCar 
-                    onClose={() => setShowEditCar(false)}
-                    onSave={triggerRefresh}
-                    selectedCar={selectedCar}
-                />
-            )}
+      <div className="my-4">
+        {/* Autó választó */}
+        <CarSelect 
+          refreshKey={refreshKey} 
+          onCarChange={setSelectedCar} 
+        />
+      </div>
 
-            {showAddCar && (
-                <AddCar 
-                    onClose={() => setShowAddCar(false)}
-                    onSave={triggerRefresh}
-                />
-            )}
-        </>
-    )
+      <div className="cars-buttons">
+        <div className="cars-button-item">
+          <Button
+            text="Módosítás"
+            onClick={function() {
+              setShowEditCar(true);
+            }}
+            disabled={!selectedCar}
+            className={!selectedCar ? "unavailable" : ""}
+          />
+        </div>
+
+        <div className="cars-button-item">
+          <Button 
+            text="Új autó" 
+            onClick={function() {
+              setShowAddCar(true);
+            }} 
+          />
+        </div>
+
+        <div className="cars-button-item">
+          <Button
+            text="Autó törlése"
+            onClick={function() {
+              setDeleteTargetCar(selectedCar);
+              setShowDeleteCar(true);
+            }}
+            disabled={!selectedCar}
+            className={!selectedCar ? "unavailable" : ""}
+          />
+        </div>
+      </div>
+
+      {/* Autó szerkesztése */}
+      {showEditCar && (
+        <EditCar 
+          onClose={function() {
+            setShowEditCar(false);
+          }} 
+          onSave={triggerRefresh} 
+          selectedCar={selectedCar} 
+        />
+      )}
+
+      {/* Új autó hozzáadása */}
+      {showAddCar && (
+        <AddCar 
+          onClose={function() {
+            setShowAddCar(false);
+          }} 
+          onSave={triggerRefresh} 
+        />
+      )}
+
+      {/* Autó törlése */}
+      {showDeleteCar && deleteTargetCar && (
+        <DeleteCar
+          onClose={function() {
+            setShowDeleteCar(false);
+            setDeleteTargetCar(null);
+          }}
+          onDeleted={function() {
+            setSelectedCar(null);
+            triggerRefresh();
+          }}
+          carId={deleteTargetCar.car_id}
+          displayName={deleteTargetCar.display_name}
+          licensePlate={deleteTargetCar.license_plate}
+        />
+      )}
+    </>
+  );
 }

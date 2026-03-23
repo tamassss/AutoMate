@@ -1,5 +1,6 @@
 import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 
+// Felhasználók lekérése
 export async function getAdminUsers(email = "") {
   const q = (email || "").trim();
   const url = q ? apiUrl(`/admin/users/?email=${encodeURIComponent(q)}`) : apiUrl("/admin/users/");
@@ -18,6 +19,7 @@ export async function getAdminUsers(email = "") {
   return data.users || [];
 }
 
+// Felhasználó módosítása
 export async function updateAdminUser(userId, payload) {
   if (!userId) {
     throw new Error("Hiányzik a felhasználó azonosítója.");
@@ -39,6 +41,7 @@ export async function updateAdminUser(userId, payload) {
   return data.user || null;
 }
 
+// Felhasználó törlése
 export async function deleteAdminUser(userId) {
   if (!userId) {
     throw new Error("Hiányzik a felhasználó azonosítója.");

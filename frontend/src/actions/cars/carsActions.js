@@ -1,7 +1,7 @@
 ﻿import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 import { hasValue } from "../shared/valueChecks";
 
-// Autók lekérése
+// Autók listázása
 export async function getCars() {
   const response = await fetch(apiUrl("/cars/"), {
     headers: { Authorization: authHeaders().Authorization },
@@ -15,7 +15,7 @@ export async function getCars() {
   return data.cars ?? [];
 }
 
-// Új autó létrehozása
+// Új autó
 export async function createCar(carData) {
   const payload = {
     license_plate: carData.license_plate,
@@ -85,7 +85,28 @@ export async function editCar(carId, carData) {
   return data;
 }
 
-// Kiválasztott autó mentése
+// Autó törlése
+export async function deleteCar(carId) {
+  if (!carId) {
+    throw new Error("Hiányzik az autó azonosítója.");
+  }
+
+  const response = await fetch(apiUrl(`/cars/${carId}/delete/`), {
+    method: "DELETE",
+    headers: { Authorization: authHeaders().Authorization },
+  });
+
+  const data = await parseJsonSafe(response);
+  handleUnauthorized(response);
+
+  if (!response.ok) {
+    throw new Error(data.detail || "Nem sikerült törölni az autót.");
+  }
+
+  return true;
+}
+
+// Autó kiválasztása
 export function returnSelectedCard(carId) {
   localStorage.setItem("selected_car_id", String(carId));
   return carId;

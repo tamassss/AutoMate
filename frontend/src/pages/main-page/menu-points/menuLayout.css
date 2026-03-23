@@ -13,11 +13,11 @@
 }
 
 .main-menu-layout .flex-grow-1 {
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  height: 100vh;
+  max-height: 100vh;
   min-width: 0;
 }
 

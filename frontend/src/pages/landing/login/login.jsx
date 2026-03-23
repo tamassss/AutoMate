@@ -1,6 +1,4 @@
-﻿import "./login.css";
-
-import { useState, useRef } from "react";
+﻿import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../../actions/auth/authActions";
 
@@ -11,23 +9,27 @@ import Button from "../../../components/button/button";
 export default function Login() {
   const navigate = useNavigate();
 
+  // Input ref
   const emailRef = useRef();
   const passwordRef = useRef();
 
+  // Hibakezelés state
   const [errorMessage, setErrorMessage] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
 
+  // Bejelentkezés
   async function handleLogin(e) {
     e.preventDefault();
     setErrorMessage(null);
     setFieldErrors({});
 
-    const em = emailRef.current.value?.trim();
-    const pw = passwordRef.current.value;
+    const email = emailRef.current.value?.trim();
+    const password = passwordRef.current.value;
 
+    // Mezők ellenőrzése
     const tempErrors = {};
-    if (!em) tempErrors.email = "Az e-mail cím megadása kötelező!";
-    if (!pw) tempErrors.password = "A jelszó megadása kötelező!";
+    if (!email) tempErrors.email = "Az e-mail cím megadása kötelező!";
+    if (!password) tempErrors.password = "A jelszó megadása kötelező!";
 
     if (Object.keys(tempErrors).length > 0) {
       setFieldErrors(tempErrors);
@@ -35,21 +37,35 @@ export default function Login() {
     }
 
     try {
-      const user = await login(em, pw);
+      // API + navigate
+      const user = await login(email, password);
       const targetPath = user?.role === "admin" ? "/admin" : "/autok";
 
       navigate(targetPath, {
         state: { successMessage: "Sikeres bejelentkezés" },
       });
     } catch (err) {
-      setErrorMessage(err?.message || "Ismeretlen hiba!");
+      setErrorMessage(err.message || "Ismeretlen hiba történt!");
     }
   }
 
+  // Hibaüzenet törlése íráskor
+  const clearError = (field) => {
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
   return (
     <Card>
-      <h3 className="mt-2">Bejelentkezés</h3>
-      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+      <h3 className="mt-2 text-center">Bejelentkezés</h3>
+      
+      {/* Hibaüzenet */}
+      {errorMessage && (
+        <p className="text-center" style={{ color: "red" }}>
+          {errorMessage}
+        </p>
+      )}
 
       <form onSubmit={handleLogin}>
         <div className="px-2">
@@ -59,7 +75,7 @@ export default function Login() {
             placeholder="Email cím"
             error={fieldErrors.email}
             maxLength={50}
-            onChange={() => fieldErrors.email && setFieldErrors((prev) => ({ ...prev, email: "" }))}
+            onChange={() => clearError("email")}
           />
         </div>
 
@@ -70,12 +86,12 @@ export default function Login() {
             placeholder="Jelszó"
             error={fieldErrors.password}
             maxLength={50}
-            onChange={() => fieldErrors.password && setFieldErrors((prev) => ({ ...prev, password: "" }))}
+            onChange={() => clearError("password")}
           />
         </div>
 
         <div className="custom-btn-div">
-          <Button text="Bejelentkezés" type={"submit"} />
+          <Button text="Bejelentkezés" type="submit" />
         </div>
       </form>
     </Card>

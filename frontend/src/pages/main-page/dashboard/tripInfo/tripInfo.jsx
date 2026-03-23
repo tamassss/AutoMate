@@ -1,5 +1,3 @@
-import "./tripInfo.css";
-
 export default function TripInfo() {
     return (
         <div>

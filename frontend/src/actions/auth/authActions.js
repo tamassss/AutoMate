@@ -1,6 +1,6 @@
 import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 
-// Bejelentkezés
+// Bejelentkezés (+token)
 export async function login(email, password) {
   const response = await fetch(apiUrl("/auth/login/"), {
     method: "POST",
@@ -17,6 +17,7 @@ export async function login(email, password) {
     throw new Error(data.detail || "Hiba a bejelentkezésnél.");
   }
 
+  // adatok mentése ls-be
   localStorage.setItem("token", data?.tokens?.access || "");
   localStorage.setItem("refresh", data?.tokens?.refresh || "");
   localStorage.setItem("full_name", data?.user?.full_name || "");
@@ -28,7 +29,7 @@ export async function login(email, password) {
   return data.user;
 }
 
-// Regisztráció
+// Regisztrálás
 export async function register(email, password, fullName) {
   const response = await fetch(apiUrl("/auth/register/"), {
     method: "POST",
@@ -42,6 +43,7 @@ export async function register(email, password, fullName) {
 
   const data = await parseJsonSafe(response);
 
+  // hibaüzenetek
   if (!response.ok) {
     const emailError = Array.isArray(data?.email) ? data.email[0] : data?.email;
     const detail = data?.detail;
@@ -53,12 +55,7 @@ export async function register(email, password, fullName) {
   return data;
 }
 
-// Kijelentkezés
-export function logout() {
-  localStorage.clear();
-}
-
-// Beállítások mentése
+// Profiladatok módosítása
 export async function updateProfileSettings({ fullName, email, password }) {
   const response = await fetch(apiUrl("/auth/profile/"), {
     method: "PATCH",
@@ -77,6 +74,7 @@ export async function updateProfileSettings({ fullName, email, password }) {
     throw new Error(data.detail || "Hiba a beállítások mentése közben.");
   }
 
+  // ls adatok frissítése
   localStorage.setItem("full_name", data?.user?.full_name || fullName || "");
   localStorage.setItem("email", data?.user?.email || email || "");
   localStorage.setItem("password", password || "");

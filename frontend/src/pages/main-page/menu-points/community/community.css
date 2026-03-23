@@ -1,22 +1,30 @@
-.community-tabs {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .community-tab {
   height: 60px;
   cursor: pointer;
 }
 
-.community-tab.active {
-  background: rgba(7, 93, 191, 0.3);
-}
-
-.community-tab.inactive {
-  background: rgba(0, 0, 0, 0.2);
-}
-
 .community-tab p {
   margin: 0;
   color: white;
+}
+
+.community-section-card {
+  padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.community-section-card h3 {
+  margin-bottom: 0.75rem;
+}
+
+.community-help-link {
+  color: #89c4ff;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.community-help-link:hover {
+  text-decoration: underline;
 }
 

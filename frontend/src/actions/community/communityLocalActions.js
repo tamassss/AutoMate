@@ -1,5 +1,6 @@
 import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 
+// Aktuális felhasználó adatainak lekérése ls-ből
 export function getCurrentUserMeta() {
   return {
     userId: String(localStorage.getItem("user_id") || ""),
@@ -8,6 +9,7 @@ export function getCurrentUserMeta() {
   };
 }
 
+// Közösségi rész engedélyezve van-e
 export async function isCommunityEnabledForCar(_userId, carId) {
   if (!carId) return false;
   const response = await fetch(apiUrl(`/community/settings/?car_id=${carId}`), {
@@ -19,6 +21,7 @@ export async function isCommunityEnabledForCar(_userId, carId) {
   return !!data.enabled;
 }
 
+// Közösségi rész be-kikapcsolása
 export async function setCommunityEnabledForCar(_userId, carId, enabled) {
   const response = await fetch(apiUrl("/community/settings/"), {
     method: "PUT",
@@ -33,28 +36,7 @@ export async function setCommunityEnabledForCar(_userId, carId, enabled) {
   return !!data.enabled;
 }
 
-export async function upsertCommunityProfile() {
-  return true;
-}
-
-export async function removeCommunityProfile(_userId, carId) {
-  if (!carId) return;
-  await setCommunityEnabledForCar(null, carId, false);
-}
-
-export async function getCommunityProfilesForList(_currentUserId, currentCarId) {
-  if (!currentCarId) return [];
-  const response = await fetch(apiUrl(`/community/profiles/?car_id=${currentCarId}`), {
-    headers: { Authorization: authHeaders().Authorization },
-  });
-  const data = await parseJsonSafe(response);
-  handleUnauthorized(response);
-  if (!response.ok) {
-    throw new Error(data.detail || "Nem sikerült lekérdezni a közösségi profilokat.");
-  }
-  return data.profiles || [];
-}
-
+// Teljes közösségi csomag lekérése (saját profil, mások profiljai és állapot)
 export async function getCommunityProfilesPayload(carId) {
   if (!carId) return { enabled: false, my_profile: null, profiles: [] };
   const response = await fetch(apiUrl(`/community/profiles/?car_id=${carId}`), {
@@ -72,6 +54,7 @@ export async function getCommunityProfilesPayload(carId) {
   };
 }
 
+// Új benzinkút-megosztási kérelem indítása
 export async function createShareRequest({ carId, gasStation }) {
   const response = await fetch(apiUrl("/community/share-requests/create/"), {
     method: "POST",
@@ -89,6 +72,7 @@ export async function createShareRequest({ carId, gasStation }) {
   return data;
 }
 
+// Meglévő megosztási kérelem visszavonása
 export async function revokeShareRequest({ carId, gasStationId }) {
   const response = await fetch(apiUrl("/community/share-requests/revoke/"), {
     method: "POST",
@@ -106,17 +90,7 @@ export async function revokeShareRequest({ carId, gasStationId }) {
   return data;
 }
 
-export async function getShareStatus({ carId, gasStationId }) {
-  const response = await fetch(apiUrl(`/community/share-requests/statuses/?car_id=${carId}`), {
-    headers: { Authorization: authHeaders().Authorization },
-  });
-  const data = await parseJsonSafe(response);
-  handleUnauthorized(response);
-  if (!response.ok) return "none";
-  const found = (data.statuses || []).find((s) => Number(s.gas_station_id) === Number(gasStationId));
-  return found?.status || "none";
-}
-
+// Az összes benzinkút megosztási állapotának lekérése az adott autóhoz
 export async function getShareStatusesByCar(carId) {
   const response = await fetch(apiUrl(`/community/share-requests/statuses/?car_id=${carId}`), {
     headers: { Authorization: authHeaders().Authorization },
@@ -131,6 +105,7 @@ export async function getShareStatusesByCar(carId) {
   return out;
 }
 
+// Függőben lévő megosztási kérelmek lekérése (moderátori funkció)
 export async function getPendingShareRequests() {
   const response = await fetch(apiUrl("/community/share-requests/pending/"), {
     headers: { Authorization: authHeaders().Authorization },
@@ -143,6 +118,7 @@ export async function getPendingShareRequests() {
   return data.pending || [];
 }
 
+// Megosztási kérelem elbírálása (elfogadás/elutasítás)
 export async function reviewShareRequest(requestId, decision) {
   const response = await fetch(apiUrl(`/community/share-requests/${requestId}/review/`), {
     method: "POST",
@@ -157,6 +133,7 @@ export async function reviewShareRequest(requestId, decision) {
   return data;
 }
 
+// A közösség által már jóváhagyott benzinkutak lekérése
 export async function getApprovedSharedStations() {
   const response = await fetch(apiUrl("/community/shared-stations/"), {
     headers: { Authorization: authHeaders().Authorization },
@@ -169,6 +146,7 @@ export async function getApprovedSharedStations() {
   return data.shared_stations || [];
 }
 
+// Megosztott benzinkút törlése (moderátori funkció)
 export async function moderatorDeleteSharedStation(requestId) {
   const response = await fetch(apiUrl(`/community/share-requests/${requestId}/`), {
     method: "DELETE",
@@ -182,6 +160,7 @@ export async function moderatorDeleteSharedStation(requestId) {
   return true;
 }
 
+// Havi statisztikai összehasonlítás lekérése két autó/felhasználó között
 export async function getCommunityMonthlyComparison({ carId, otherUserId, otherCarId }) {
   const response = await fetch(
     apiUrl(

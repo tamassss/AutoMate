@@ -6,7 +6,7 @@ from django.db.models import Sum
 from django.db.models.functions import ExtractIsoWeekDay
 from django.utils import timezone
 
-from AutoApp.models import Fueling, Maintenance, RouteUsage, User, Car
+from AutoApp.models import Event, Fueling, Maintenance, RouteUsage, User, Car
 from AutoApp.api.utils import (
     MONEY_EXPR,
     get_car_or_default,
@@ -89,29 +89,22 @@ def get_monthly_budget(user: User, car: Car) -> Dict[str, Any]:
         "percent_used": percent,
     }
 
-#
+
 def get_sidebar_events(user: User, car: Car, limit: Optional[int] = None) -> Dict[str, Any]:
-    qs = (
-        Maintenance.objects
-        .filter(user=user, car=car, service_center__name="AutoMate")
-        .order_by("-date")
-    )
+    qs = Event.objects.filter(user=user, car=car).order_by("date", "event_id")
     if limit is not None:
         qs = qs[:limit]
     return {
         "items": [
             {
-                "maintenance_id": m.maintenance_id,
-                "part_name": m.part_name,
-                "date": m.date,
-                "cost": float(m.cost) if m.cost is not None else None,
-                "reminder": m.reminder,
+                "event_id": event.event_id,
+                "title": event.title,
+                "date": event.date,
+                "reminder": event.reminder,
             }
-            for m in qs
+            for event in qs
         ]
     }
-
-
 
 def get_dashboard_payload(user: User, car_id: Optional[int] = None) -> Dict[str, Any]:
     car = get_car_or_default(user, car_id)
@@ -123,7 +116,7 @@ def get_dashboard_payload(user: User, car_id: Optional[int] = None) -> Dict[str,
             "monthly_budget": {"amount": 0.0, "currency": "HUF"} if False else None,
             "fueling_chart": [],
             "latest_fueling": None,
-            "events": [],
+            "events": {"items": []},
         }
 
     selected_car = get_selected_car_block(user, car.car_id)
@@ -148,8 +141,7 @@ def get_dashboard_payload(user: User, car_id: Optional[int] = None) -> Dict[str,
     latest_fueling = get_latest_fueling(user, car)
     chart = get_week_fueling_chart(user, car)
     budget = get_monthly_budget(user, car)
-    events = get_sidebar_events(user, car)
-
+    events = get_sidebar_events(user, car, limit=5)
     return {
         "selected_car": selected_car,
         "route_card": route_card,

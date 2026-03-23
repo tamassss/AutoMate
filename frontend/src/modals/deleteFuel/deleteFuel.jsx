@@ -8,14 +8,21 @@ export default function DeleteFuel({ onClose, onDeleted, fuelingId, datum }) {
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [deletedId, setDeletedId] = useState(null);
 
+  // Törlés
   async function handleDelete() {
     setError("");
     setIsDeleting(true);
+
     try {
+      // törlés DB-ből
       await deleteFuel(fuelingId);
-      setDeletedId(fuelingId);
+
+      const hasId = fuelingId !== null && fuelingId !== undefined;
+      if (hasId && typeof onDeleted === "function") {
+        onDeleted(fuelingId);
+      }
+
       setShowSuccess(true);
     } catch (err) {
       setError(err.message || "Nem sikerült törölni a tankolást.");
@@ -26,21 +33,31 @@ export default function DeleteFuel({ onClose, onDeleted, fuelingId, datum }) {
 
   return (
     <>
-      <Modal columns={1} onClose={onClose} title={"Biztosan törlöd?"}>
-        <p className="full-width">
-          <span className="gas-station-location">{datum}</span> tankolás törlése
+      <Modal title="Biztosan törlöd?" onClose={onClose} columns={1}>
+        <p className="full-width text-center">
+          <span className="gas-station-location" style={{ fontWeight: "bold" }}>
+            {datum}
+          </span>
+          {" tankolás törlése"}
         </p>
 
-        <Button text={isDeleting ? "Törlés..." : "Törlés"} className="mt-5" onClick={handleDelete} />
-        {error && <p className="text-danger full-width">{error}</p>}
+        {/* Törlés gomb */}
+        <Button 
+          text={isDeleting ? "Törlés..." : "Törlés"} 
+          className="mt-5" 
+          onClick={handleDelete} 
+        />
+        
+        {error && (
+          <p className="text-danger full-width text-center mt-2">{error}</p>
+        )}
       </Modal>
-
+      
       {showSuccess && (
         <SuccessModal
           description="Tankolás törölve"
-          onClose={() => {
+          onClose={function() {
             setShowSuccess(false);
-            if (deletedId !== null) onDeleted?.(deletedId);
             onClose?.();
           }}
         />

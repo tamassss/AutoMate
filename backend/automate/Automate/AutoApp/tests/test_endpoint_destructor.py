@@ -7,7 +7,7 @@ from AutoApp.models import (
     User, Brand, CarModel, FuelType, Car, CarUser,
     Address, Route, RouteUsage,
     GasStation, Fueling,
-    ServiceCenter, Maintenance
+    ServiceCenter, Maintenance, CommunityCarSetting, CommunityGasStationShare
 )
 
 class BaseDeleteAPITestCase(TestCase):
@@ -223,11 +223,94 @@ class TestDeleteAddressAndRoute(BaseDeleteAPITestCase):
 
 
 class TestDeleteCar(BaseDeleteAPITestCase):
-    def test_delete_car_blocked_if_has_related_data_409(self):
-        # self.car has fueling/maintenance/route_usage from setUpTestData
+    def test_delete_car_cascades_related_data(self):
+        CommunityCarSetting.objects.create(user=self.user, car=self.car, enabled=True)
+        CommunityGasStationShare.objects.create(
+            requester=self.user,
+            car=self.car,
+            gas_station=self.gas_station,
+            status="approved",
+        )
+
         resp = self.client.delete(f"/api/cars/{self.car.car_id}/delete/")
-        self.assertEqual(resp.status_code, 409)
-        self.assertTrue(Car.objects.filter(car_id=self.car.car_id).exists())
+        self.assertEqual(resp.status_code, 204)
+        self.assertFalse(Car.objects.filter(car_id=self.car.car_id).exists())
+        self.assertFalse(CarUser.objects.filter(car=self.car).exists())
+        self.assertFalse(Fueling.objects.filter(car=self.car).exists())
+        self.assertFalse(Maintenance.objects.filter(car=self.car).exists())
+        self.assertFalse(RouteUsage.objects.filter(car=self.car).exists())
+        self.assertFalse(CommunityCarSetting.objects.filter(car=self.car).exists())
+        self.assertFalse(CommunityGasStationShare.objects.filter(car=self.car).exists())
+        self.assertFalse(GasStation.objects.filter(gas_station_id=self.gas_station.gas_station_id).exists())
+        self.assertFalse(ServiceCenter.objects.filter(service_center_id=self.service_center.service_center_id).exists())
+        self.assertFalse(Route.objects.filter(route_id=self.route.route_id).exists())
+        self.assertFalse(Address.objects.filter(address_id=self.addr1.address_id).exists())
+        self.assertFalse(Address.objects.filter(address_id=self.addr2.address_id).exists())
+
+    def test_delete_car_keeps_shared_related_records(self):
+        shared_station = GasStation.objects.create(name="Shared Station", city="Budapest")
+        shared_center = ServiceCenter.objects.create(name="Shared Center", city="Budapest")
+        shared_addr1 = Address.objects.create(country="HU", city="Shared A")
+        shared_addr2 = Address.objects.create(country="HU", city="Shared B")
+        shared_route = Route.objects.create(from_address=shared_addr1, to_address=shared_addr2)
+
+        Fueling.objects.create(
+            user=self.user2,
+            car=self.car2,
+            gas_station=shared_station,
+            fuel_type=self.fuel_type,
+            date=timezone.now(),
+            liters=Decimal("10.00"),
+            price_per_liter=Decimal("650.00"),
+            odometer_km=60000
+        )
+        Fueling.objects.create(
+            user=self.user,
+            car=self.car,
+            gas_station=shared_station,
+            fuel_type=self.fuel_type,
+            date=timezone.now(),
+            liters=Decimal("11.00"),
+            price_per_liter=Decimal("651.00"),
+            odometer_km=123600
+        )
+        Maintenance.objects.create(
+            car=self.car2,
+            service_center=shared_center,
+            user=self.user2,
+            date=timezone.now(),
+            part_name="Shared maintenance",
+        )
+        Maintenance.objects.create(
+            car=self.car,
+            service_center=shared_center,
+            user=self.user,
+            date=timezone.now(),
+            part_name="Own maintenance",
+        )
+        RouteUsage.objects.create(
+            car=self.car2,
+            user=self.user2,
+            route=shared_route,
+            date=timezone.now(),
+            distance_km=Decimal("5.00")
+        )
+        RouteUsage.objects.create(
+            car=self.car,
+            user=self.user,
+            route=shared_route,
+            date=timezone.now(),
+            distance_km=Decimal("7.00")
+        )
+
+        resp = self.client.delete(f"/api/cars/{self.car.car_id}/delete/")
+        self.assertEqual(resp.status_code, 204)
+        self.assertFalse(Car.objects.filter(car_id=self.car.car_id).exists())
+        self.assertTrue(GasStation.objects.filter(gas_station_id=shared_station.gas_station_id).exists())
+        self.assertTrue(ServiceCenter.objects.filter(service_center_id=shared_center.service_center_id).exists())
+        self.assertTrue(Route.objects.filter(route_id=shared_route.route_id).exists())
+        self.assertTrue(Address.objects.filter(address_id=shared_addr1.address_id).exists())
+        self.assertTrue(Address.objects.filter(address_id=shared_addr2.address_id).exists())
 
     def test_delete_car_forbidden_if_not_owner(self):
         # give user "driver" permission on a new car

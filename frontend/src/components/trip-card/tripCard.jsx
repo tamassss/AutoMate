@@ -1,9 +1,11 @@
 import { useState } from "react";
+
 import Card from "../card/card";
-import "./tripCard.css";
 import Button from "../button/button";
 import DeleteTrip from "../../modals/deleteTrip/deleteTrip";
 import { formatGroupedNumber, formatMoney } from "../../actions/shared/formatters";
+
+import "./tripCard.css";
 
 export default function TripCard({ trip, onDeletedTrip }) {
   const [showDeleteTrip, setShowDeleteTrip] = useState(false);
@@ -23,9 +25,13 @@ export default function TripCard({ trip, onDeletedTrip }) {
         <p className="trip-time">
           {trip.kezdes} - {trip.vege}
         </p>
-        <p className={`trip-stat ${trip.javitas >= 0 ? "text-success" : "text-danger"}`}>
-          {formatGroupedNumber(Math.abs(trip.javitas))} perc {trip.javitas >= 0 ? "javítás" : "rontás"}
-        </p>
+        {trip.javitas == null ? (
+          <p className="trip-stat">-</p>
+        ) : (
+          <p className={`trip-stat ${trip.javitas >= 0 ? "text-success" : "text-danger"}`}>
+            {formatGroupedNumber(Math.abs(trip.javitas))} perc {trip.javitas >= 0 ? "javítás" : "rontás"}
+          </p>
+        )}
         <p className="trip-distance mb-3">
           {`${formatGroupedNumber(trip.tavolsag, { decimals: 1, trimTrailingZeros: true })} km`}
         </p>

@@ -1,4 +1,4 @@
-// Datum formazasa: YYYY. MM. DD.
+// Dátum formázása YYYY. MM. DD.
 export function formatDate(isoDate) {
   if (!isoDate) return "-";
 
@@ -12,7 +12,7 @@ export function formatDate(isoDate) {
   return `${year}. ${month}. ${day}.`;
 }
 
-// Honap kulcs formazasa: YYYY-MM -> YYYY. MM.
+// yyyy-mm -> YYYY. MM.
 export function formatMonth(monthKey) {
   if (!monthKey || !monthKey.includes("-")) return monthKey || "-";
 
@@ -20,7 +20,7 @@ export function formatMonth(monthKey) {
   return `${year}. ${month}.`;
 }
 
-// Masodperc formazasa: HH:MM:SS
+// mp -> hh:mm:ss
 export function formatHmsFromSeconds(seconds) {
   const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
   const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
@@ -29,12 +29,12 @@ export function formatHmsFromSeconds(seconds) {
   return `${h}:${m}:${s}`;
 }
 
-// Date objektum formazasa: HH:MM
+// Date -> hh:mm
 export function formatHHMMFromDate(date) {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-// Datum rovid lokalizalt formaban
+// Datum locale formában
 export function formatDateLocale(isoDate, locale = "hu-HU") {
   if (!isoDate) return "-";
 
@@ -44,7 +44,7 @@ export function formatDateLocale(isoDate, locale = "hu-HU") {
   return date.toLocaleDateString(locale);
 }
 
-// HH:MM -> ossz perc
+// hhmm -> perc
 export function hhmmToMinutes(hhmm) {
   if (!hhmm || typeof hhmm !== "string" || !hhmm.includes(":")) return null;
 
@@ -54,7 +54,7 @@ export function hhmmToMinutes(hhmm) {
   return hours * 60 + minutes;
 }
 
-// Szam formazasa ezres csoportokra: 1203000 -> 1.203.000
+// Számformázás
 export function formatGroupedNumber(value, options = {}) {
   if (value === null || value === undefined || value === "") return "-";
 
@@ -84,7 +84,7 @@ export function formatGroupedNumber(value, options = {}) {
   return `${signedInt},${fraction}`;
 }
 
-// Penz formazasa: 1203000 -> 1.203.000 Ft
+// Pénzformázás
 export function formatMoney(value) {
   if (value === null || value === undefined || value === "") return "-";
   return `${formatGroupedNumber(Math.round(Number(value) || 0))} Ft`;

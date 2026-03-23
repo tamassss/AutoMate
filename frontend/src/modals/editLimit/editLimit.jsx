@@ -5,8 +5,6 @@ import Modal from "../../components/modal/modal";
 import { clampNumberInput } from "../../actions/shared/inputValidation";
 import SuccessModal from "../../components/success-modal/successModal";
 
-import "./editLimit.css";
-
 export default function EditLimit({ onClose, onSave, initialLimit = 0 }) {
     const [maxLimit, setMaxLimit] = useState(String(initialLimit || 0));
     const [fieldError, setFieldError] = useState("");
@@ -23,6 +21,7 @@ export default function EditLimit({ onClose, onSave, initialLimit = 0 }) {
 
         setFieldError("");
         setSavedLimit(n);
+        onSave?.(n);
         setShowSuccess(true);
     }
 
@@ -55,7 +54,6 @@ export default function EditLimit({ onClose, onSave, initialLimit = 0 }) {
                     description="Sikeres limit módosítás"
                     onClose={() => {
                         setShowSuccess(false);
-                        if (savedLimit !== null) onSave?.(savedLimit);
                         onClose?.();
                     }}
                 />

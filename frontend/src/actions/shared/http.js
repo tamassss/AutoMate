@@ -16,7 +16,7 @@ export function authHeaders() {
   };
 }
 
-// 401 -> kijelentkezés
+// kijelentkezés (401 status)
 export function handleUnauthorized(response) {
   if (response.status === 401) {
     localStorage.clear();

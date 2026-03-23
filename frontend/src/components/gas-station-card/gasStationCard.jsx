@@ -36,20 +36,31 @@ export default function GasStationCard({
   const fuelTypeId = Number(station?.fuelTypeId || 0);
   const supplierText = String(station?.supplier || "").toLowerCase();
 
-  const fuelIcon =
-    fuelTypeId === 2
-      ? fuel100Icon
-      : fuelTypeId === 4
-      ? fuelDPlusIcon
-      : fuelTypeId === 3
-      ? fuelDIcon
-      : fuelTypeText.includes("100")
-      ? fuel100Icon
-      : fuelTypeText.includes("diesel plus")
-      ? fuelDPlusIcon
-      : fuelTypeText.includes("diesel")
-      ? fuelDIcon
-      : fuel95Icon;
+  let fuelIcon;
+  switch (fuelTypeId) {
+    case 1:
+      fuelIcon = fuel95Icon;
+      break;
+    case 2:
+      fuelIcon = fuel100Icon;
+      break;
+    case 3:
+      fuelIcon = fuelDIcon;
+      break;
+    case 4:
+      fuelIcon = fuelDPlusIcon;
+      break;
+    default:
+      if (fuelTypeText.includes("100")) {
+        fuelIcon = fuel100Icon;
+      } else if (fuelTypeText.includes("diesel plus")) {
+        fuelIcon = fuelDPlusIcon;
+      } else if (fuelTypeText.includes("diesel")) {
+        fuelIcon = fuelDIcon;
+      } else {
+        fuelIcon = fuel95Icon;
+      }
+  }
 
   const stationIcon = supplierText.includes("shell")
     ? shellLogo
@@ -61,22 +72,22 @@ export default function GasStationCard({
 
   return (
     <Card>
-      <div style={{ color: "white" }}>
+      <div className="gas-station-card-content" style={{ color: "white" }}>
         <div className="date-header text-center p-3">
           <p className="date-text" style={{ color: "#4CAF50" }}>
             {station?.datum || "-"}
           </p>
         </div>
 
-        <div className="p-1">
-          <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="p-1 gas-station-card-body">
+          <div className="gas-station-card-row d-flex align-items-center justify-content-center mb-3">
             <img src={stationIcon} alt={station?.supplier || "Benzinkút"} className="station-icon" />
-            <h2 className="price">{priceText}</h2>
+            <h2 className="price gas-station-card-value">{priceText}</h2>
           </div>
 
-          <div className="d-flex justify-content-between align-items-center mb-4">
+          <div className="gas-station-card-row d-flex align-items-center justify-content-center mb-4">
             <img src={fuelIcon} alt={station?.fuelType || "Üzemanyag"} className="fuel-icon" />
-            <div className="text-start">
+            <div className="text-start gas-station-card-value">
               <h4 className="m-0 station-city">{station?.helyseg || "-"}</h4>
               <p className="m-0 text-secondary station-address">{station?.cim || "-"}</p>
             </div>
@@ -84,7 +95,7 @@ export default function GasStationCard({
 
           {extraInfo ? <p className="mb-3 small text-info">{extraInfo}</p> : null}
 
-          <div className="d-flex gap-2">
+          <div className="gas-station-card-actions d-flex gap-2 justify-content-center">
             {showDefaultActions ? (
               <>
                 <div className="fuel-button">

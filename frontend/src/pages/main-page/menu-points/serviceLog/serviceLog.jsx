@@ -18,6 +18,7 @@ export default function ServiceLog() {
   const [services, setServices] = useState([]);
   const [error, setError] = useState("");
 
+  // Adatok DB-ből
   async function loadServices() {
     setError("");
     try {
@@ -29,12 +30,15 @@ export default function ServiceLog() {
     }
   }
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  // adatok betöltése
+  useEffect(function() {
+    const timer = setTimeout(function() {
       loadServices();
     }, 0);
 
-    return () => clearTimeout(timer);
+    return function() {
+      clearTimeout(timer);
+    };
   }, []);
 
   const hasServices = services.length > 0;
@@ -52,10 +56,15 @@ export default function ServiceLog() {
           <h1 className="text-center text-primary mb-5 fw-bold">Szerviznapló</h1>
 
           <div className="service-log-top-actions">
-            <Button text={"Új szerviz"} onClick={() => setShowNewService(true)} />
+            <Button 
+              text="Új szerviz" 
+              onClick={function() {
+                setShowNewService(true);
+              }} 
+            />
             <Button
-              text={"Szervizek kezelése"}
-              onClick={() => {
+              text="Szervizek kezelése"
+              onClick={function() {
                 if (!hasServices) return;
                 setShowManageServices(true);
               }}
@@ -64,19 +73,26 @@ export default function ServiceLog() {
             />
           </div>
 
+          {/* Új szerviz */}
           {showNewService && (
             <NewService
-              onClose={() => setShowNewService(false)}
-              onSave={async (formData) => {
+              onClose={function() {
+                setShowNewService(false);
+              }}
+              onSave={async function(formData) {
                 await createServiceLogEntry(formData);
                 await loadServices();
+                setShowNewService(false);
               }}
             />
           )}
 
+          {/* Szerkesztés, törlés */}
           {showManageServices && (
             <ManageServicesModal
-              onClose={() => setShowManageServices(false)}
+              onClose={function() {
+                setShowManageServices(false);
+              }}
               onChanged={loadServices}
             />
           )}
@@ -96,19 +112,21 @@ export default function ServiceLog() {
                     </tr>
                   </thead>
                   <tbody>
-                    {services.map((service) => (
-                      <tr key={service.id}>
-                        <td>{service.alkatresz}</td>
-                        <td>{service.ido}</td>
-                        <td>{service.ar}</td>
-                        <td>
-                          <div className="reminder-date">{service.emlekeztetoDatum}</div>
-                          {service.emlekeztetoKm && (
-                            <div className="reminder-km">{service.emlekeztetoKm}</div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    {services.map(function(service) {
+                      return (
+                        <tr key={service.id}>
+                          <td>{service.alkatresz}</td>
+                          <td>{service.ido}</td>
+                          <td>{service.ar}</td>
+                          <td>
+                            <div className="reminder-date">{service.emlekeztetoDatum}</div>
+                            {service.emlekeztetoKm && (
+                              <div className="reminder-km">{service.emlekeztetoKm}</div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </Card>

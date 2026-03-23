@@ -1,6 +1,6 @@
 ﻿import { apiUrl, authHeaders, handleUnauthorized, parseJsonSafe } from "../shared/http";
 
-// Általános statisztikák
+// Általános statisztikák lekérése (1 autó)
 export async function getGeneralStats() {
   const carId = localStorage.getItem("selected_car_id");
   const url = carId ? apiUrl(`/statistics/general/?car_id=${carId}`) : apiUrl("/statistics/general/");
@@ -19,7 +19,7 @@ export async function getGeneralStats() {
   return data;
 }
 
-// Összesített statisztikák
+// Összesített statisztikák (összes autó)
 export async function getSummaryStats() {
   const response = await fetch(apiUrl("/statistics/summary/"), {
     headers: { Authorization: authHeaders().Authorization },

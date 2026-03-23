@@ -5,13 +5,14 @@ import LabeledInput from "../../../components/labeledInput/labeledInput";
 import Button from "../../../components/button/button";
 import SuccessModal from "../../../components/success-modal/successModal";
 import { editCar } from "../../../actions/cars/carsActions";
+import { clampNumberInput } from "../../../actions/shared/inputValidation";
 import "./averageConsumption.css";
 
 export default function AverageConsumption() {
     const selectedCarId = localStorage.getItem("selected_car_id") || "default";
     const storageKey = `avg_consumption_form_${selectedCarId}`;
 
-    // Adatok tárolása
+    // Űrlap state
     const [form, setForm] = useState({
         startKm: "",
         endKm: "",
@@ -23,7 +24,7 @@ export default function AverageConsumption() {
     const [isSaving, setIsSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
-    // Adatok betöltése
+    // Mentett adatok betöltése (ls)
     useEffect(() => {
         const saved = localStorage.getItem(storageKey);
         if (saved) {
@@ -37,16 +38,20 @@ export default function AverageConsumption() {
         }
     }, [storageKey]);
 
-    // Adatok mentése (ls)
+    // Automatikus mentés (ls-be)
     useEffect(() => {
-        localStorage.setItem(storageKey, JSON.stringify({ ...form, calculatedAvg }));
+        if (form.startKm || form.endKm || form.refueledLiters) {
+            localStorage.setItem(storageKey, JSON.stringify({ ...form, calculatedAvg }));
+        }
     }, [form, calculatedAvg, storageKey]);
 
+    // Input változás
     const handleInput = (field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));
         setError("");
     };
 
+    // Átlagfogyasztás kiszámítása
     const handleCalculate = (e) => {
         e.preventDefault();
         const { startKm, endKm, refueledLiters } = form;
@@ -58,14 +63,16 @@ export default function AverageConsumption() {
 
         const distance = Number(endKm) - Number(startKm);
         if (distance <= 0) {
-            setError("A második kilométeróra-állás legyen nagyobb az elsőnél.");
+            setError("A végső kilométer állás legyen nagyobb!");
             return;
         }
 
+        // Képlet
         const avg = (Number(refueledLiters) / distance) * 100;
         setCalculatedAvg(Number(avg.toFixed(2)));
     };
 
+    // Mentés az autóhoz
     const handleSaveToCar = async () => {
         if (!selectedCarId || selectedCarId === "default") {
             setError("Nincs kiválasztott autó.");
@@ -77,7 +84,7 @@ export default function AverageConsumption() {
             await editCar(selectedCarId, { average_consumption: calculatedAvg });
             setShowSuccess(true);
         } catch (err) {
-            setError("Nem sikerült elmenteni az átlagfogyasztást.");
+            setError("Hiba a mentés során.");
         } finally {
             setIsSaving(false);
         }
@@ -85,12 +92,12 @@ export default function AverageConsumption() {
 
     return (
         <div className="align-middle">
-            <Navbar />
+            <Navbar backTo="/muszerfal" />
 
             <div className="container avg-cons-div">
                 <h1 className="text-center custom-title">Átlagfogyasztás</h1>
                 <h3 className="text-center mb-3 custom-subtitle">
-                    Tudd meg, mennyit fogyaszt az autód egy rövid teszttel.
+                    Számold ki autód valós fogyasztását.
                 </h3>
 
                 <div className="row justify-content-center">
@@ -98,67 +105,71 @@ export default function AverageConsumption() {
                         <Card>
                             <div className="p-3 text-start">
                                 <form onSubmit={handleCalculate}>
+                                    {/* 1. Lépés */}
                                     <div className="mt-2">
-                                        <p><span className="step-span">1. lépés:</span> Tankold tele az autót, majd írd be a kilométeróra-állást</p>
+                                        <p><span className="step-span">1. lépés:</span> Tankold tele az autót, majd add meg:</p>
                                         <div className="mt-3 col-12 col-sm-6 mx-auto">
                                             <LabeledInput
-                                                label="Kezdő kilométeróra-állás"
+                                                label="Kezdő km állás"
                                                 type="number"
                                                 value={form.startKm}
-                                                onChange={e => handleInput("startKm", e.target.value)}
+                                                onChange={e => handleInput("startKm", clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }))}
                                             />
                                         </div>
                                     </div>
 
                                     <hr />
 
+                                    {/* 2. Lépés */}
                                     <div>
-                                        <p><span className="step-span">2. lépés:</span> Használd az autót valamennyi távon</p>
-                                        <p className="small opacity-75">(minél hosszabb táv, annál pontosabb eredmény)</p>
+                                        <p><span className="step-span">2. lépés:</span> Utazz az autóval valamennyit</p>
+                                        <p style={{opacity:"0.6"}}>(minél nagyobb távot teszel meg, annál pontosabb az eredmény)</p>
                                     </div>
 
                                     <hr />
 
+                                    {/* 3. Lépés */}
                                     <div>
-                                        <p><span className="step-span">3. lépés:</span> Ismét tankold tele, majd írd be:</p>
+                                        <p><span className="step-span">3. lépés:</span>Ismét tankold tele az autót, majd add meg:</p>
                                         <div className="row g-3 mt-2">
                                             <div className="col-12 col-sm-6">
                                                 <LabeledInput
-                                                    label="Végső kilométeróra-állás"
+                                                    label="Végső km állás"
                                                     type="number"
                                                     value={form.endKm}
-                                                    onChange={e => handleInput("endKm", e.target.value)}
+                                                    onChange={e => handleInput("endKm", clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true }))}
                                                 />
                                             </div>
                                             <div className="col-12 col-sm-6">
                                                 <LabeledInput
-                                                    label="Tankolt mennyiség (liter)"
+                                                    label="Tankolt liter"
                                                     type="number"
                                                     value={form.refueledLiters}
-                                                    onChange={e => handleInput("refueledLiters", e.target.value)}
+                                                    onChange={e => handleInput("refueledLiters", clampNumberInput(e.target.value, { min: 0, max: 200, decimals: 2 }))}
                                                 />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="text-center btn-div d-flex flex-column gap-2 mt-4">
+                                    <div className="text-center mt-4">
                                         <Button text="Kalkulálás" type="submit" />
                                     </div>
                                 </form>
 
-                                <div className="text-center btn-div d-flex flex-column gap-2">
+                                {/* Eredmény megjelenítése */}
+                                <div className="text-center btn-div d-flex flex-column gap-2 mt-3">
                                     {calculatedAvg != null && (
                                         <>
-                                            <p className="text-center m-0">
-                                                Számított átlagfogyasztás: <strong>{calculatedAvg} l/100 km</strong>
+                                            <p className="fs-5">
+                                                Eredmény: <strong>{calculatedAvg} l/100 km</strong>
                                             </p>
                                             <Button
-                                                text={isSaving ? "Mentés..." : "Mentés autóhoz"}
+                                                text={isSaving ? "Mentés..." : "Mentés az autóhoz"}
                                                 onClick={handleSaveToCar}
                                             />
                                         </>
                                     )}
-                                    {error && <p className="text-danger text-center m-0">{error}</p>}
+                                    {error && <p className="text-danger m-0">{error}</p>}
                                 </div>
                             </div>
                         </Card>
@@ -168,7 +179,7 @@ export default function AverageConsumption() {
 
             {showSuccess && (
                 <SuccessModal
-                    description="Átlag fogyasztás sikeresen elmentve"
+                    description="Átlagfogyasztás elmentve!"
                     onClose={() => setShowSuccess(false)}
                 />
             )}

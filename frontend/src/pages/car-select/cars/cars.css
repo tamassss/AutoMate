@@ -6,6 +6,20 @@
     font-size: 2rem;
 }
 
+.cars-buttons {
+    width: min(100%, 520px);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.cars-button-item {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
 .cars-buttons button{
     width: 150px;
 }
@@ -28,8 +42,19 @@
         font-size: 1.2rem;
     }
 
+    .cars-buttons {
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .cars-button-item {
+        width: 100%;
+    }
+
     .cars-buttons button{
-        margin: 10px auto;
+        margin: 0 auto;
     }
 
 

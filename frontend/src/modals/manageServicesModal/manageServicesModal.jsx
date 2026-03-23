@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Loading from "../../components/loading/loading";
@@ -10,7 +9,7 @@ import {
   getServiceLog,
   updateServiceLogEntry,
 } from "../../actions/serviceLog/serviceLogActions";
-
+import { clampNumberInput, limitTextLength } from "../../actions/shared/inputValidation";
 import "./manageServicesModal.css";
 
 function parseReminder(reminder) {
@@ -20,21 +19,36 @@ function parseReminder(reminder) {
     return { reminderDate: "", reminderKm: "" };
   }
 
+  // ha | van benne
   if (text.includes("|")) {
     const parts = text.split("|");
-    const reminderDate = (parts[0] || "").trim();
-    const reminderKm = (parts[1] || "").trim().replace(" km", "");
+    let reminderDate = (parts[0] || "").trim();
+    let reminderKm = (parts[1] || "").trim();
+
+    if (reminderKm.toLowerCase().endsWith("km")) {
+      reminderKm = reminderKm.substring(0, reminderKm.length - 2).trim();
+    }
     return { reminderDate, reminderKm };
   }
 
+  // csak dátum
   if (text.includes("-")) {
     return { reminderDate: text, reminderKm: "" };
   }
 
-  return { reminderDate: "", reminderKm: text.replace(" km", "") };
+  // csak km
+  let cleanKm = text;
+  if (cleanKm.toLowerCase().endsWith("km")) {
+    cleanKm = cleanKm.substring(0, cleanKm.length - 2).trim();
+  }
+
+  return { reminderDate: "", reminderKm: cleanKm };
 }
 
 export default function ManageServicesModal({ onClose, onChanged }) {
+  const today = new Date().toISOString().slice(0, 10);
+  
+  // Állapotok
   const [services, setServices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -43,86 +57,68 @@ export default function ManageServicesModal({ onClose, onChanged }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successText, setSuccessText] = useState("");
 
-  const loadServices = useCallback(async () => {
+  // Adatok betöltése
+  const loadServices = useCallback(async function() {
     setError("");
     setIsLoading(true);
 
     try {
       const data = await getServiceLog();
-      setServices(
-        data.map((service) => {
-          const parsed = parseReminder(service.rawReminder || service.emlekeztetoDatum);
-          return {
-            id: service.id,
-            partName: service.alkatresz === "-" ? "" : service.alkatresz,
-            date: service.rawDate ? String(service.rawDate).slice(0, 10) : "",
-            cost: service.rawCost == null ? "" : String(service.rawCost),
-            reminderDate: parsed.reminderDate,
-            reminderKm: parsed.reminderKm,
-          };
-        })
-      );
+      const formatted = data.map(function(service) {
+        const parsed = parseReminder(service.rawReminder || service.emlekeztetoDatum);
+        return {
+          id: service.id,
+          partName: service.alkatresz === "-" ? "" : service.alkatresz,
+          date: service.rawDate ? String(service.rawDate).slice(0, 10) : "",
+          cost: service.rawCost == null ? "" : String(service.rawCost),
+          reminderDate: parsed.reminderDate,
+          reminderKm: parsed.reminderKm,
+        };
+      });
+      setServices(formatted);
       setFieldErrorsById({});
     } catch (err) {
       setError(err.message || "Nem sikerült betölteni a szervizeket.");
-      setServices([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadServices();
-    }, 0);
-
-    return () => clearTimeout(timer);
+  useEffect(function() {
+    loadServices();
   }, [loadServices]);
 
+  // Mező frissítése
   function updateServiceField(serviceId, key, value) {
-    setServices((prev) =>
-      prev.map((item) => (item.id === serviceId ? { ...item, [key]: value } : item))
-    );
-
-    setFieldErrorsById((prev) => {
-      const next = { ...prev };
-      if (next[serviceId]?.[key]) {
-        next[serviceId] = { ...next[serviceId], [key]: "" };
-      }
-      return next;
+    setServices(function(prev) {
+      return prev.map(function(item) {
+        return item.id === serviceId ? { ...item, [key]: value } : item;
+      });
     });
+
+    if (fieldErrorsById[serviceId]?.[key]) {
+      setFieldErrorsById(function(prev) {
+        const next = { ...prev };
+        next[serviceId] = { ...next[serviceId], [key]: "" };
+        return next;
+      });
+    }
   }
 
-  function validateService(item) {
-    const errors = {};
-
-    if (!item.partName.trim()) errors.partName = "Az alkatrész megadása kötelező.";
-    if (!item.date) errors.date = "A dátum megadása kötelező.";
-
-    if (item.cost !== "") {
-      const numericCost = Number(item.cost);
-      if (Number.isNaN(numericCost) || numericCost < 0 || numericCost > 999999999) {
-        errors.cost = "Az ár 0 és 999999999 között lehet.";
-      }
-    }
-
-    if (item.reminderKm !== "") {
-      const numericKm = Number(item.reminderKm);
-      if (Number.isNaN(numericKm) || numericKm < 0 || numericKm > 999999) {
-        errors.reminderKm = "A km érték 0 és 999999 között lehet.";
-      }
-    }
-
-    return errors;
-  }
-
+  // Mentés
   async function handleSave(serviceId) {
-    const current = services.find((item) => item.id === serviceId);
+    const current = services.find(function(item) { return item.id === serviceId; });
     if (!current) return;
 
-    const currentErrors = validateService(current);
-    if (Object.keys(currentErrors).length > 0) {
-      setFieldErrorsById((prev) => ({ ...prev, [serviceId]: currentErrors }));
+    // Validáció
+    const errors = {};
+    if (!current.partName.trim()) errors.partName = "Az alkatrész megadása kötelező.";
+    if (!current.date) errors.date = "A dátum megadása kötelező.";
+    if (current.date && current.date > today) errors.date = "A csere ideje nem lehet jövőbeli.";
+    if (current.reminderDate && current.reminderDate < today) errors.reminderDate = "Az emlékeztető nem lehet múltbeli.";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrorsById(function(prev) { return { ...prev, [serviceId]: errors }; });
       return;
     }
 
@@ -140,32 +136,28 @@ export default function ManageServicesModal({ onClose, onChanged }) {
 
       setSuccessText("Szerviz sikeresen módosítva");
       setShowSuccess(true);
-      await loadServices();
       onChanged?.();
+      await loadServices();
     } catch (err) {
-      setError(err.message || "Nem sikerült módosítani a szervizt.");
+      setError(err.message || "Hiba történt a módosítás során.");
     } finally {
       setActionLoadingId(null);
     }
   }
 
+  // Törlés
   async function handleDelete(serviceId) {
     setError("");
     setActionLoadingId(serviceId);
 
     try {
       await deleteServiceLogEntry(serviceId);
-      setServices((prev) => prev.filter((item) => item.id !== serviceId));
-      setFieldErrorsById((prev) => {
-        const next = { ...prev };
-        delete next[serviceId];
-        return next;
-      });
       setSuccessText("Szerviz sikeresen törölve");
       setShowSuccess(true);
       onChanged?.();
+      await loadServices();
     } catch (err) {
-      setError(err.message || "Nem sikerült törölni a szervizt.");
+      setError(err.message || "Hiba történt a törlés során.");
     } finally {
       setActionLoadingId(null);
     }
@@ -173,76 +165,88 @@ export default function ManageServicesModal({ onClose, onChanged }) {
 
   return (
     <>
-      <Modal title={"Szervizek kezelése"} onClose={onClose} columns={1}>
+      <Modal title="Szervizek kezelése" onClose={onClose} columns={1}>
         <div className="manage-services-wrap full-width">
           {isLoading && <Loading />}
-          {!isLoading && error && <p className="text-danger m-0">{error}</p>}
+          
+          {!isLoading && error && <p className="text-danger text-center">{error}</p>}
 
-          {!isLoading && !error && services.length === 0 && <p className="m-0">Még nincs felvett szerviz.</p>}
+          {!isLoading && !error && services.length === 0 && (
+            <p className="text-center mt-3">Még nincs felvett szerviz.</p>
+          )}
 
           {!isLoading && !error && services.length > 0 && (
             <div className="manage-services-list">
-              {services.map((service) => {
-                const errors = fieldErrorsById[service.id] || {};
-                const disabled = actionLoadingId === service.id;
+              {services.map(function(service) {
+                const rowErrors = fieldErrorsById[service.id] || {};
+                const isWorking = actionLoadingId === service.id;
 
                 return (
                   <div key={service.id} className="manage-services-item">
                     <LabeledInput
-                      label={"Alkatrész"}
-                      type={"text"}
+                      label="Alkatrész"
                       value={service.partName}
-                      onChange={(e) => updateServiceField(service.id, "partName", e.target.value)}
-                      error={errors.partName}
+                      onChange={function(e) {
+                        updateServiceField(service.id, "partName", limitTextLength(e.target.value, 50));
+                      }}
+                      error={rowErrors.partName}
                     />
 
                     <LabeledInput
-                      label={"Csere ideje"}
-                      type={"date"}
+                      label="Csere ideje"
+                      type="date"
                       value={service.date}
-                      onChange={(e) => updateServiceField(service.id, "date", e.target.value)}
-                      error={errors.date}
+                      max={today}
+                      onChange={function(e) {
+                        updateServiceField(service.id, "date", e.target.value);
+                      }}
+                      error={rowErrors.date}
                     />
 
                     <LabeledInput
-                      label={"Ár"}
-                      type={"number"}
-                      min={0}
-                      max={999999999}
+                      label="Ár (Ft)"
+                      type="number"
                       value={service.cost}
-                      onChange={(e) => updateServiceField(service.id, "cost", e.target.value)}
-                      error={errors.cost}
+                      onChange={function(e) {
+                        const val = clampNumberInput(e.target.value, { min: 0, max: 999999999, integer: true });
+                        updateServiceField(service.id, "cost", val);
+                      }}
+                      error={rowErrors.cost}
                     />
 
                     <LabeledInput
-                      label={"Emlékeztető dátum"}
-                      type={"date"}
+                      label="Emlékeztető dátum"
+                      type="date"
                       value={service.reminderDate}
-                      onChange={(e) => updateServiceField(service.id, "reminderDate", e.target.value)}
+                      min={today}
+                      onChange={function(e) {
+                        updateServiceField(service.id, "reminderDate", e.target.value);
+                      }}
+                      error={rowErrors.reminderDate}
                     />
 
                     <LabeledInput
-                      label={"Emlékeztető km"}
-                      type={"number"}
-                      min={0}
-                      max={999999}
+                      label="Emlékeztető (km)"
+                      type="number"
                       value={service.reminderKm}
-                      onChange={(e) => updateServiceField(service.id, "reminderKm", e.target.value)}
-                      error={errors.reminderKm}
+                      onChange={function(e) {
+                        const val = clampNumberInput(e.target.value, { min: 0, max: 999999, integer: true });
+                        updateServiceField(service.id, "reminderKm", val);
+                      }}
+                      error={rowErrors.reminderKm}
                     />
 
                     <div className="manage-services-actions">
                       <Button
-                        text={disabled ? "Mentés..." : "Mentés"}
-                        type={"button"}
-                        onClick={() => handleSave(service.id)}
-                        disabled={disabled}
+                        text={isWorking ? "..." : "Mentés"}
+                        onClick={function() { handleSave(service.id); }}
+                        disabled={isWorking}
                       />
                       <Button
-                        text={disabled ? "Törlés..." : "Törlés"}
-                        type={"button"}
-                        onClick={() => handleDelete(service.id)}
-                        disabled={disabled}
+                        text={isWorking ? "..." : "Törlés"}
+                        className="btn-danger"
+                        onClick={function() { handleDelete(service.id); }}
+                        disabled={isWorking}
                       />
                     </div>
                   </div>
@@ -256,7 +260,7 @@ export default function ManageServicesModal({ onClose, onChanged }) {
       {showSuccess && (
         <SuccessModal
           description={successText}
-          onClose={() => {
+          onClose={function() {
             setShowSuccess(false);
             setSuccessText("");
           }}

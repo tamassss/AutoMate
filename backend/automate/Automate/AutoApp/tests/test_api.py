@@ -9,7 +9,8 @@ from AutoApp.models import (
     User, Brand, CarModel, FuelType, Car, CarUser,
     Address, Route, RouteUsage,
     GasStation, Fueling,
-    ServiceCenter, Maintenance
+    CarGasStation,
+    ServiceCenter, Maintenance, Event
 )
 
 
@@ -68,6 +69,7 @@ class BaseAPITestCase(TestCase):
         Fueling.objects.create(
             user=cls.user,
             car=cls.car,
+            route_usage=cls.route_usage,
             gas_station=cls.gas_station,
             fuel_type=cls.fuel_type,
             date=timezone.now() - timezone.timedelta(days=1),
@@ -141,6 +143,83 @@ class TestRoutesEndpoint(BaseAPITestCase):
         resp = self.client.get(f"/api/routes/?car_id={self.car2.car_id}")
         self.assertEqual(resp.status_code, 403)
 
+    def test_route_fueling_count_ignores_zero_liter_station_entries(self):
+        Fueling.objects.create(
+            user=self.user,
+            car=self.car,
+            route_usage=self.route_usage,
+            gas_station=self.gas_station,
+            fuel_type=self.fuel_type,
+            date=timezone.now(),
+            liters=Decimal("0.00"),
+            price_per_liter=Decimal("600.00"),
+            supplier="OMV",
+            odometer_km=123550
+        )
+
+        resp = self.client.get(f"/api/routes/?car_id={self.car.car_id}")
+        self.assertEqual(resp.status_code, 200)
+        first_route = resp.json()["routes"][0]
+        self.assertEqual(first_route["fuelings_count"], 1)
+
+    def test_routes_do_not_include_unlinked_previous_fuelings(self):
+        Fueling.objects.create(
+            user=self.user,
+            car=self.car,
+            gas_station=self.gas_station,
+            fuel_type=self.fuel_type,
+            date=timezone.now(),
+            liters=Decimal("12.00"),
+            price_per_liter=Decimal("610.00"),
+            supplier="OMV",
+            odometer_km=123560
+        )
+
+        resp = self.client.get(f"/api/routes/?car_id={self.car.car_id}")
+        self.assertEqual(resp.status_code, 200)
+        first_route = resp.json()["routes"][0]
+        self.assertEqual(first_route["fuelings_count"], 1)
+
+    def test_route_usage_create_saves_arrival_delta(self):
+        resp = self.client.post(
+            "/api/route-usage/create/",
+            {
+                "car_id": self.car.car_id,
+                "route_id": self.route.route_id,
+                "date": timezone.now().isoformat(),
+                "departure_time": 480,
+                "arrival_time": 530,
+                "arrival_delta_min": 7,
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 201)
+        created = RouteUsage.objects.get(route_usage_id=resp.json()["route_usage_id"])
+        self.assertEqual(created.arrival_delta_min, 7)
+
+    def test_fueling_update_can_attach_route_usage(self):
+        fueling = Fueling.objects.create(
+            user=self.user,
+            car=self.car,
+            gas_station=self.gas_station,
+            fuel_type=self.fuel_type,
+            date=timezone.now(),
+            liters=Decimal("20.00"),
+            price_per_liter=Decimal("620.00"),
+            supplier="OMV",
+            odometer_km=123580
+        )
+
+        resp = self.client.patch(
+            f"/api/fuelings/{fueling.fueling_id}/",
+            {"route_usage_id": self.route_usage.route_usage_id},
+            format="json",
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        fueling.refresh_from_db()
+        self.assertEqual(fueling.route_usage_id, self.route_usage.route_usage_id)
+
 
 class TestFuelingsEndpoint(BaseAPITestCase):
     def test_fuelings_grouped_by_month(self):
@@ -179,6 +258,94 @@ class TestServiceLogEndpoint(BaseAPITestCase):
         self.assertIn("maintenance_id", data[0])
 
 
+class TestEventsEndpoint(BaseAPITestCase):
+    def test_events_list(self):
+        Event.objects.create(
+            user=self.user,
+            car=self.car,
+            title="Műszaki vizsga",
+            date=timezone.now() + timezone.timedelta(days=10),
+            reminder="1000 km",
+        )
+
+        resp = self.client.get(f"/api/events/?car_id={self.car.car_id}")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()["events"]
+        self.assertTrue(len(data) >= 1)
+        self.assertIn("event_id", data[0])
+
+    def test_event_create_success(self):
+        resp = self.client.post(
+            "/api/events/create/",
+            {
+                "car_id": self.car.car_id,
+                "title": "Olajcsere emlékeztető",
+                "date": (timezone.now() + timezone.timedelta(days=7)).isoformat(),
+                "reminder": "500 km",
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 201)
+        self.assertTrue(Event.objects.filter(event_id=resp.json()["event_id"]).exists())
+
+    def test_event_update_success(self):
+        event = Event.objects.create(
+            user=self.user,
+            car=self.car,
+            title="Régi cím",
+            date=timezone.now() + timezone.timedelta(days=5),
+        )
+
+        resp = self.client.patch(
+            f"/api/events/{event.event_id}/",
+            {
+                "title": "Új cím",
+                "date": (timezone.now() + timezone.timedelta(days=8)).isoformat(),
+                "reminder": "250 km",
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        event.refresh_from_db()
+        self.assertEqual(event.title, "Új cím")
+        self.assertEqual(event.reminder, "250 km")
+
+    def test_event_delete_success(self):
+        event = Event.objects.create(
+            user=self.user,
+            car=self.car,
+            title="Törlendő",
+            date=timezone.now() + timezone.timedelta(days=2),
+        )
+
+        resp = self.client.delete(f"/api/events/{event.event_id}/delete/")
+        self.assertEqual(resp.status_code, 204)
+        self.assertFalse(Event.objects.filter(event_id=event.event_id).exists())
+
+
+class TestMaintenanceUpdateEndpoint(BaseAPITestCase):
+    def test_maintenance_can_be_updated(self):
+        maintenance = Maintenance.objects.create(
+            car=self.car,
+            service_center=self.service_center,
+            user=self.user,
+            date=timezone.now(),
+            part_name="Filter",
+        )
+
+        resp = self.client.patch(
+            f"/api/maintenance/{maintenance.maintenance_id}/",
+            {
+                "part_name": "Pollenszűrő",
+                "date": timezone.now().isoformat(),
+                "reminder": "15000 km",
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["maintenance"]["part_name"], "Pollenszűrő")
+
+
 class TestGasStationsEndpoint(BaseAPITestCase):
     def test_gas_station_cards(self):
         resp = self.client.get(f"/api/gas-stations/?car_id={self.car.car_id}")
@@ -186,6 +353,24 @@ class TestGasStationsEndpoint(BaseAPITestCase):
         data = resp.json()["gas_station_cards"]
         self.assertTrue(len(data) >= 1)
         self.assertIn("gas_station", data[0])
+
+    def test_gas_station_cards_include_standalone_station_without_fueling(self):
+        standalone = GasStation.objects.create(name="Shell", city="Gyor", street="Fo ut")
+        CarGasStation.objects.create(user=self.user, car=self.car, gas_station=standalone)
+
+        resp = self.client.get(f"/api/gas-stations/?car_id={self.car.car_id}")
+        self.assertEqual(resp.status_code, 200)
+        station_ids = [item["gas_station"]["gas_station_id"] for item in resp.json()["gas_station_cards"]]
+        self.assertIn(standalone.gas_station_id, station_ids)
+
+    def test_gas_station_cards_do_not_include_other_cars_standalone_station(self):
+        other_station = GasStation.objects.create(name="Shell", city="Pecs", street="Fo ter")
+        CarGasStation.objects.create(user=self.user, car=self.car2, gas_station=other_station)
+
+        resp = self.client.get(f"/api/gas-stations/?car_id={self.car.car_id}")
+        self.assertEqual(resp.status_code, 200)
+        station_ids = [item["gas_station"]["gas_station_id"] for item in resp.json()["gas_station_cards"]]
+        self.assertNotIn(other_station.gas_station_id, station_ids)
 
     def test_gas_station_cards_forbidden_without_access(self):
         resp = self.client.get(f"/api/gas-stations/?car_id={self.car2.car_id}")

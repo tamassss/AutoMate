@@ -16,7 +16,8 @@ export default function Statistics() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    // Adatok betöltése
+    useEffect(function() {
         async function loadStats() {
             setLoading(true);
             setError("");
@@ -48,14 +49,19 @@ export default function Statistics() {
                 <div className="main-menu-scroll">
                     <div className="container py-5">
                         <h1 className="text-center text-primary mb-5 fw-bold">Statisztikák</h1>
+                        
+                        {/* Betöltés + hibakezelés */}
                         {loading && <p className="text-center text-light">Betöltés...</p>}
                         {error && <p className="text-center text-danger">{error}</p>}
+                        
                         <div className="row justify-content-center">
                             <div className="col-12 col-xl-10">
                                 <GeneralStats generalStats={generalStats} />
                                 <hr className="m-5" />
+                                
                                 <DataVisual />
                                 <hr className="m-5" />
+                                
                                 <AllCars summaryStats={summaryStats} />
                             </div>
                         </div>
@@ -65,5 +71,3 @@ export default function Statistics() {
         </div>
     );
 }
-
-
