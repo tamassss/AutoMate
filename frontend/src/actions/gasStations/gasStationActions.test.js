@@ -73,20 +73,30 @@ describe("createGasStation", function() {
 
     await expect(
       createGasStation({
+        car_id: 4,
+        date: "2026-03-23T10:00:00Z",
         name: "MOL",
         city: "Gyor",
         postal_code: "9021",
         street: "Kossuth utca",
         house_number: "1",
+        pricePerLiter: 620,
+        supplier: "MOL",
+        fuelTypeId: 2,
       }),
     ).resolves.toBe(15);
 
     expect(getLastFetchBody()).toEqual({
+      car_id: 4,
+      date: "2026-03-23T10:00:00Z",
       name: "MOL",
       city: "Gyor",
       postal_code: "9021",
       street: "Kossuth utca",
       house_number: "1",
+      price_per_liter: 620,
+      supplier: "MOL",
+      fuel_type_id: 2,
     });
   });
 });

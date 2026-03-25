@@ -1,4 +1,4 @@
-.limit-btn-wrapper button{
+﻿.limit-btn-wrapper button{
     width: 12vh;
 }
 
@@ -11,12 +11,26 @@
     letter-spacing: 2px;
 }
 
-
-
-.test-p{
+.dashboard-gauge-test-link {
+    margin: 0 auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
     color: #075DBF;
+    font-weight: 700;
     text-decoration: underline;
     text-underline-offset: 2px;
+}
+
+.dashboard-gauge-test-link:hover,
+.dashboard-gauge-test-link:focus-visible,
+.dashboard-gauge-test-link:active {
+    background: transparent;
+    color: #0A74ED;
+    border: none;
+    box-shadow: none;
+    transform: none;
 }
 
 .average-consumption-title {

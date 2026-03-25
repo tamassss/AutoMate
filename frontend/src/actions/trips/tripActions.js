@@ -169,7 +169,13 @@ export async function saveFueling(fuelData, carIdOverride = null) {
 
 // Új benzinkút
 export async function saveNewGasStation(gasStationData) {
-  await createStandaloneGasStation(gasStationData || {});
+  const carId = localStorage.getItem("selected_car_id");
+  if (!carId) throw new Error("Nincs kiválasztott autó.");
+
+  await createStandaloneGasStation({
+    ...(gasStationData || {}),
+    car_id: Number(carId),
+  });
 
   return { ok: true };
 }

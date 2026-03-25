@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./dashboardGauge.css";
 
 import Button from "../../../../components/button/button";
@@ -9,6 +9,7 @@ import { formatGroupedNumber } from "../../../../actions/shared/formatters";
 
 export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit }) {
     const [showLimit, setShowLimit] = useState(false);
+    const navigate = useNavigate();
 
     // Fogyasztás jó-e
     const avgConsumption = selectedCar?.average_consumption;
@@ -68,9 +69,13 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                                 
                                 {/* Teszt indítása link */}
                                 <td className="odd field test-td">
-                                    <Link to="/muszerfal/atlagfogyasztas">
-                                        <p className="test-p text-center">Teszt</p>
-                                    </Link>
+                                    <button
+                                        type="button"
+                                        className="dashboard-gauge-test-link"
+                                        onClick={() => navigate("/muszerfal/atlagfogyasztas")}
+                                    >
+                                        Teszt
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>

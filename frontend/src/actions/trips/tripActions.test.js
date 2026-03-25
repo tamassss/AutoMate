@@ -83,6 +83,6 @@ describe("saveNewGasStation", function() {
   it("delegates gas station creation to the shared action", async function() {
     await expect(saveNewGasStation({ name: "Shell" })).resolves.toEqual({ ok: true });
 
-    expect(createGasStation).toHaveBeenCalledWith({ name: "Shell" });
+    expect(createGasStation).toHaveBeenCalledWith({ name: "Shell", car_id: 14 });
   });
 });
