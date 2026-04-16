@@ -1,25 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { getCurrentUserMeta } from "./communityLocalActions";
-
-function createLocalStorageMock() {
-  const store = new Map();
-
-  return {
-    getItem(key) {
-      return store.has(key) ? store.get(key) : null;
-    },
-    setItem(key, value) {
-      store.set(key, String(value));
-    },
-  };
-}
+import { createLocalStorageMock } from "../shared/testHelpers";
 
 beforeEach(function() {
   globalThis.localStorage = createLocalStorageMock();
 });
 
-describe("getCurrentUserMeta", function() {
-  it("visszaadja az eltárolt helyi felhasználói adatokat", function() {
+describe("community user metadata", function() {
+  it("reads the current user metadata from local storage", function() {
     localStorage.setItem("user_id", "15");
     localStorage.setItem("full_name", "Test User");
     localStorage.setItem("role", "admin");
@@ -31,7 +19,7 @@ describe("getCurrentUserMeta", function() {
     });
   });
 
-  it("alapértelmezett értékeket ad vissza, ha üres a local storage", function() {
+  it("uses safe defaults when metadata is missing", function() {
     expect(getCurrentUserMeta()).toEqual({
       userId: "",
       fullName: "Felhasználó",

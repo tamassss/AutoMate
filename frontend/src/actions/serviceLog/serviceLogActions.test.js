@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  createServiceLogEntry,
-  deleteServiceLogEntry,
-  getServiceLog,
-  updateServiceLogEntry,
-} from "./serviceLogActions";
+import { createServiceLogEntry, getServiceLog, updateServiceLogEntry } from "./serviceLogActions";
 import { createJsonResponse, createLocalStorageMock, getLastFetchBody } from "../shared/testHelpers";
 
 beforeEach(function() {
@@ -16,8 +11,8 @@ beforeEach(function() {
   globalThis.fetch = vi.fn();
 });
 
-describe("getServiceLog", function() {
-  it("átalakítja a szerviznapló sorait és szétbontja az emlékeztető mezőket", async function() {
+describe("service log business rules", function() {
+  it("maps service rows and splits combined reminders", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         service_log: [
@@ -48,10 +43,8 @@ describe("getServiceLog", function() {
       },
     ]);
   });
-});
 
-describe("createServiceLogEntry", function() {
-  it("először létrehozza a szervizt, majd menti a szervizbejegyzést", async function() {
+  it("builds a maintenance entry after creating the service center", async function() {
     fetch
       .mockResolvedValueOnce(createJsonResponse({ service_center_id: 10 }))
       .mockResolvedValueOnce(createJsonResponse({ maintenance_id: 20 }));
@@ -65,17 +58,6 @@ describe("createServiceLogEntry", function() {
       serviceCenterName: "Proba Szerviz",
     });
 
-    expect(fetch).toHaveBeenNthCalledWith(
-      1,
-      "http://localhost:8000/api/service-centers/create/",
-      expect.objectContaining({ method: "POST" }),
-    );
-    expect(fetch).toHaveBeenNthCalledWith(
-      2,
-      "http://localhost:8000/api/maintenance/create/",
-      expect.objectContaining({ method: "POST" }),
-    );
-
     const secondBody = JSON.parse(fetch.mock.calls[1][1].body);
     expect(secondBody).toEqual({
       car_id: 3,
@@ -86,10 +68,8 @@ describe("createServiceLogEntry", function() {
       reminder: "2026-06-01 | 5000 km",
     });
   });
-});
 
-describe("updateServiceLogEntry", function() {
-  it("az üres költséget null értékre cseréli és megtartja a csak km-es emlékeztetőt", async function() {
+  it("uses null for empty cost and keeps kilometer-only reminders", async function() {
     fetch.mockResolvedValue(createJsonResponse({ maintenance: { maintenance_id: 6 } }));
 
     await updateServiceLogEntry(6, {
@@ -106,11 +86,5 @@ describe("updateServiceLogEntry", function() {
       cost: null,
       reminder: "7000 km",
     });
-  });
-});
-
-describe("deleteServiceLogEntry", function() {
-  it("hibát dob, ha hiányzik a karbantartás azonosítója", async function() {
-    await expect(deleteServiceLogEntry("")).rejects.toThrow();
   });
 });

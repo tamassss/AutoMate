@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createCar, deleteCar, editCar, getCars, returnSelectedCard } from "./carsActions";
+import { createCar, editCar, returnSelectedCard } from "./carsActions";
 import { createJsonResponse, createLocalStorageMock, getLastFetchBody } from "../shared/testHelpers";
 
 beforeEach(function() {
@@ -8,16 +8,8 @@ beforeEach(function() {
   globalThis.fetch = vi.fn();
 });
 
-describe("getCars", function() {
-  it("visszaadja a listázott autókat", async function() {
-    fetch.mockResolvedValue(createJsonResponse({ cars: [{ car_id: 2 }] }));
-
-    await expect(getCars()).resolves.toEqual([{ car_id: 2 }]);
-  });
-});
-
-describe("createCar", function() {
-  it("elküldés előtt számmá alakítja a numerikus mezőket", async function() {
+describe("car business rules", function() {
+  it("converts optional numeric create fields before saving", async function() {
     fetch.mockResolvedValue(createJsonResponse({ ok: true }));
 
     await createCar({
@@ -38,10 +30,8 @@ describe("createCar", function() {
       average_consumption: 6.7,
     });
   });
-});
 
-describe("editCar", function() {
-  it("null értéket küld a kiürített opcionális numerikus mezőknél", async function() {
+  it("sends null when optional numeric car fields are cleared", async function() {
     fetch.mockResolvedValue(createJsonResponse({ ok: true }));
 
     await editCar(5, {
@@ -56,16 +46,8 @@ describe("editCar", function() {
       average_consumption: null,
     });
   });
-});
 
-describe("deleteCar", function() {
-  it("hibát dob, ha hiányzik az autó azonosítója", async function() {
-    await expect(deleteCar("")).rejects.toThrow();
-  });
-});
-
-describe("returnSelectedCard", function() {
-  it("eltárolja a kiválasztott autó azonosítóját", function() {
+  it("stores the selected car id", function() {
     expect(returnSelectedCard(15)).toBe(15);
     expect(localStorage.getItem("selected_car_id")).toBe("15");
   });

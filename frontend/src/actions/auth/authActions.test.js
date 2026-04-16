@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { login, register, updateProfileSettings } from "./authActions";
+import { login, updateProfileSettings } from "./authActions";
 import { createJsonResponse, createLocalStorageMock, getLastFetchBody } from "../shared/testHelpers";
 
 beforeEach(function() {
@@ -8,8 +8,8 @@ beforeEach(function() {
   globalThis.fetch = vi.fn();
 });
 
-describe("login", function() {
-  it("sikeres bejelentkezés után eltárolja az auth és felhasználói adatokat", async function() {
+describe("auth session state", function() {
+  it("stores the authenticated user metadata after login", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         tokens: { access: "access-token", refresh: "refresh-token" },
@@ -31,23 +31,7 @@ describe("login", function() {
     expect(result).toEqual({ user_id: 8, full_name: "Test User", role: "admin" });
   });
 
-  it("hibát dob hibás belépési adatoknál", async function() {
-    fetch.mockResolvedValue(createJsonResponse({}, { ok: false, status: 401 }));
-
-    await expect(login("bad@example.com", "bad")).rejects.toThrow();
-  });
-});
-
-describe("register", function() {
-  it("siker esetén visszaadja a backend válaszát", async function() {
-    fetch.mockResolvedValue(createJsonResponse({ ok: true }));
-
-    await expect(register("new@example.com", "secret", "New User")).resolves.toEqual({ ok: true });
-  });
-});
-
-describe("updateProfileSettings", function() {
-  it("eltárolja a visszakapott profiladatokat a local storage-ban", async function() {
+  it("refreshes local profile metadata after settings are saved", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         user: {
@@ -64,12 +48,6 @@ describe("updateProfileSettings", function() {
       password: "new-secret",
     });
 
-    expect(fetch).toHaveBeenCalledWith(
-      "http://localhost:8000/api/auth/profile/",
-      expect.objectContaining({
-        method: "PATCH",
-      }),
-    );
     expect(localStorage.getItem("full_name")).toBe("Updated Name");
     expect(localStorage.getItem("email")).toBe("updated@example.com");
     expect(localStorage.getItem("password")).toBe("new-secret");

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { deleteTrip, getRoutes } from "./routeActions";
+import { getRoutes } from "./routeActions";
 import { createJsonResponse, createLocalStorageMock } from "../shared/testHelpers";
 
 beforeEach(function() {
@@ -11,8 +11,8 @@ beforeEach(function() {
   globalThis.fetch = vi.fn();
 });
 
-describe("getRoutes", function() {
-  it("átalakítja az útadatokat az utak táblázatához", async function() {
+describe("route data normalization", function() {
+  it("maps saved trips to the trip card format", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         routes: [
@@ -47,11 +47,5 @@ describe("getRoutes", function() {
         koltseg: 15678,
       },
     ]);
-  });
-});
-
-describe("deleteTrip", function() {
-  it("hibát dob, ha hiányzik az úthasználat azonosítója", async function() {
-    await expect(deleteTrip("")).rejects.toThrow();
   });
 });

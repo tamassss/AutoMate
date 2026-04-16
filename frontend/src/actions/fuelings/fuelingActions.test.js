@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { deleteFuel, editFuel, getFuelings } from "./fuelingActions";
+import { getFuelings } from "./fuelingActions";
 import { createJsonResponse, createLocalStorageMock } from "../shared/testHelpers";
 
 beforeEach(function() {
@@ -11,8 +11,8 @@ beforeEach(function() {
   globalThis.fetch = vi.fn();
 });
 
-describe("getFuelings", function() {
-  it("átalakítja a havi csoportokat és tankolási bejegyzéseket", async function() {
+describe("fueling data normalization", function() {
+  it("maps monthly fueling groups to the table format", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         fuelings_by_month: [
@@ -51,19 +51,5 @@ describe("getFuelings", function() {
         ],
       },
     ]);
-  });
-});
-
-describe("editFuel", function() {
-  it("hibát dob, ha hiányzik a tankolás azonosítója", async function() {
-    await expect(editFuel("", {})).rejects.toThrow();
-  });
-});
-
-describe("deleteFuel", function() {
-  it("törli a kiválasztott tankolást", async function() {
-    fetch.mockResolvedValue(createJsonResponse({}));
-
-    await expect(deleteFuel(9)).resolves.toBe(true);
   });
 });

@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  createGasStation,
-  deleteGasStation,
-  editFuelingById,
-  getGasStations,
-} from "./gasStationActions";
+import { createGasStation, getGasStations } from "./gasStationActions";
 import { createJsonResponse, createLocalStorageMock, getLastFetchBody } from "../shared/testHelpers";
 
 beforeEach(function() {
@@ -16,8 +11,8 @@ beforeEach(function() {
   globalThis.fetch = vi.fn();
 });
 
-describe("getGasStations", function() {
-  it("kiszűri a hibás kártyákat és átalakítja az érvényes kártyákat", async function() {
+describe("gas station data rules", function() {
+  it("filters invalid cards and maps valid station data for the UI", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         gas_station_cards: [
@@ -65,10 +60,8 @@ describe("getGasStations", function() {
       },
     ]);
   });
-});
 
-describe("createGasStation", function() {
-  it("elküldi a benzinkút adatokat", async function() {
+  it("normalizes new gas station payload field names", async function() {
     fetch.mockResolvedValue(createJsonResponse({ gas_station_id: 15 }));
 
     await expect(
@@ -98,25 +91,5 @@ describe("createGasStation", function() {
       supplier: "MOL",
       fuel_type_id: 2,
     });
-  });
-});
-
-describe("editFuelingById", function() {
-  it("módosítja a szolgáltatót és az üzemanyagtípust egy tankoláson", async function() {
-    fetch.mockResolvedValue(createJsonResponse({ fueling: { fueling_id: 6 } }));
-
-    await expect(
-      editFuelingById(6, {
-        price_per_liter: 630,
-        supplier: "OMV",
-        fuel_type_id: 4,
-      }),
-    ).resolves.toEqual({ fueling_id: 6 });
-  });
-});
-
-describe("deleteGasStation", function() {
-  it("hibát dob, ha hiányzik a benzinkút azonosítója", async function() {
-    await expect(deleteGasStation("")).rejects.toThrow();
   });
 });

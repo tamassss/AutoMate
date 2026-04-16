@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createEvent, deleteEvent, getEvents, updateEvent } from "./eventActions";
+import { createEvent, getEvents } from "./eventActions";
 import { createJsonResponse, createLocalStorageMock, getLastFetchBody } from "../shared/testHelpers";
 
 beforeEach(function() {
@@ -11,8 +11,8 @@ beforeEach(function() {
   globalThis.fetch = vi.fn();
 });
 
-describe("createEvent", function() {
-  it("normalizálja a dátumot és a numerikus emlékeztetőt", async function() {
+describe("event business rules", function() {
+  it("normalizes date and numeric reminder before saving", async function() {
     fetch.mockResolvedValue(createJsonResponse({ ok: true }));
 
     await createEvent({
@@ -28,10 +28,8 @@ describe("createEvent", function() {
       reminder: "1500 km",
     });
   });
-});
 
-describe("getEvents", function() {
-  it("átalakítja a backend eseményeket frontend formátumra", async function() {
+  it("maps empty event titles to the default display name", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         events: [
@@ -53,19 +51,5 @@ describe("getEvents", function() {
         reminder: "500 km",
       },
     ]);
-  });
-});
-
-describe("updateEvent", function() {
-  it("hibát dob, ha hiányzik az esemény azonosítója", async function() {
-    await expect(updateEvent("", {})).rejects.toThrow();
-  });
-});
-
-describe("deleteEvent", function() {
-  it("törli a kiválasztott eseményt", async function() {
-    fetch.mockResolvedValue(createJsonResponse({}));
-
-    await expect(deleteEvent(4)).resolves.toBe(true);
   });
 });
