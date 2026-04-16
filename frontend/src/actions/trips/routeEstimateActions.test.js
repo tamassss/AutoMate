@@ -9,7 +9,7 @@ beforeEach(function() {
 });
 
 describe("estimateRoute", function() {
-  it("posts route estimate input and returns backend data", async function() {
+  it("elküldi az útbecslés adatait és visszaadja a backend válaszát", async function() {
     fetch.mockResolvedValue(createJsonResponse({ distance_km: 144 }));
 
     await expect(estimateRoute("Budapest", "Gyor", 6.5)).resolves.toEqual({ distance_km: 144 });

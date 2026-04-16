@@ -12,7 +12,7 @@ beforeEach(function() {
 });
 
 describe("createEvent", function() {
-  it("normalizes the date and numeric reminder", async function() {
+  it("normalizálja a dátumot és a numerikus emlékeztetőt", async function() {
     fetch.mockResolvedValue(createJsonResponse({ ok: true }));
 
     await createEvent({
@@ -31,7 +31,7 @@ describe("createEvent", function() {
 });
 
 describe("getEvents", function() {
-  it("maps backend events to the frontend shape", async function() {
+  it("átalakítja a backend eseményeket frontend formátumra", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         events: [
@@ -57,13 +57,13 @@ describe("getEvents", function() {
 });
 
 describe("updateEvent", function() {
-  it("throws when event id is missing", async function() {
+  it("hibát dob, ha hiányzik az esemény azonosítója", async function() {
     await expect(updateEvent("", {})).rejects.toThrow();
   });
 });
 
 describe("deleteEvent", function() {
-  it("deletes the selected event", async function() {
+  it("törli a kiválasztott eseményt", async function() {
     fetch.mockResolvedValue(createJsonResponse({}));
 
     await expect(deleteEvent(4)).resolves.toBe(true);

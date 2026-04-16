@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { useState } from "react"
 
 import "./home.css"
@@ -7,7 +7,6 @@ import Login from "../login/login"
 import Register from "../register/register";
 import Footer from "../../../components/footer/footer";
 import Feature from "../../../components/feature/feature";
-import Button from "../../../components/button/button";
 
 import icon1 from "../../../assets/home/1.png";
 import icon2 from "../../../assets/home/2.png";
@@ -20,17 +19,10 @@ import icon5 from "../../../assets/home/5.png";
 import helpIcon from "../../../assets/icons/help.png";
 
 export default function Home() {
-    const navigate = useNavigate()
     const [showLogin, setShowLogin] = useState(true);
-    
-    const isLoggedIn = Boolean(localStorage.getItem("token"));
-    const role = localStorage.getItem("role");
 
     return (
         <>
-            {isLoggedIn &&
-                <p className="ms-4 mt-4 fs-4">Bejelentkezve: {localStorage.getItem("full_name")}</p>}
-
             <div className="landing-help-div">
                 <Link to="/tippek" className="landing-help-link">
                     <img src={helpIcon} alt="Segítség kezdőknek" title="Segítség kezdőknek" />
@@ -43,8 +35,7 @@ export default function Home() {
                 <h2 className="custom-h2 fs-4" style={{ color: "#BFBFBF", fontWeight: "bold" }}>Az autód digitális naplója</h2>
             </div>
 
-            {!isLoggedIn ?
-                (<div className="auth-div">
+            <div className="auth-div">
                     <div className="auth-tabs">
                         <div
                             className={showLogin ? "auth-tab active" : "auth-tab inactive"}
@@ -62,17 +53,7 @@ export default function Home() {
                         {showLogin ? <Login /> : <Register />}
                     </div>
 
-                </div>)
-                :
-                (
-                    <div className="home-logged-actions">
-                        <Button text={"Garázs"} onClick={() => navigate("/autok")} />
-                        {role === "admin" && (
-                            <Button text={"Admin felület"} onClick={() => navigate("/admin")} />
-                        )}
-                    </div>
-                )
-            }
+            </div>
 
             <div className="features container">
                 <h3 className="fs-3 mb-4">Teljes körű autómenedzsment</h3>

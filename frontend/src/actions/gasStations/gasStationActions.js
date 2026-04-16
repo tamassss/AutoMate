@@ -89,11 +89,16 @@ export async function editGasStation(gasStationId, gasStationData) {
     method: "PATCH",
     headers: authHeaders(),
     body: JSON.stringify({
+      car_id: localStorage.getItem("selected_car_id") || null,
+      date: gasStationData?.date ?? null,
       name: gasStationData?.name ?? null,
       city: gasStationData?.city ?? null,
       postal_code: gasStationData?.postal_code ?? null,
       street: gasStationData?.street ?? null,
       house_number: gasStationData?.house_number ?? null,
+      price_per_liter: gasStationData?.price_per_liter ?? gasStationData?.pricePerLiter ?? null,
+      supplier: gasStationData?.supplier ?? null,
+      fuel_type_id: gasStationData?.fuel_type_id ?? gasStationData?.fuelTypeId ?? null,
     }),
   });
 

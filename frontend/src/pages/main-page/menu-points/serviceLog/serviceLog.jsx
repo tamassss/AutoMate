@@ -4,6 +4,7 @@ import Button from "../../../../components/button/button";
 import Card from "../../../../components/card/card";
 import Navbar from "../../../../components/navbar/navbar";
 import Menu from "../../dashboard/menu/menu";
+import SuccessModal from "../../../../components/success-modal/successModal";
 
 import NewService from "../../../../modals/newService/newService";
 import ManageServicesModal from "../../../../modals/manageServicesModal/manageServicesModal";
@@ -17,6 +18,7 @@ export default function ServiceLog() {
   const [showManageServices, setShowManageServices] = useState(false);
   const [services, setServices] = useState([]);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Adatok DB-ből
   async function loadServices() {
@@ -82,7 +84,7 @@ export default function ServiceLog() {
               onSave={async function(formData) {
                 await createServiceLogEntry(formData);
                 await loadServices();
-                setShowNewService(false);
+                setSuccessMessage("Szerviz sikeresen hozzáadva");
               }}
             />
           )}
@@ -94,6 +96,7 @@ export default function ServiceLog() {
                 setShowManageServices(false);
               }}
               onChanged={loadServices}
+              onSuccess={setSuccessMessage}
             />
           )}
 
@@ -102,6 +105,7 @@ export default function ServiceLog() {
 
             {hasServices ? (
               <Card>
+                <div className="service-table-scroll">
                 <table className="custom-table mt-2">
                   <thead>
                     <tr>
@@ -129,6 +133,7 @@ export default function ServiceLog() {
                     })}
                   </tbody>
                 </table>
+                </div>
               </Card>
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
@@ -138,6 +143,15 @@ export default function ServiceLog() {
           </div>
         </div>
       </div>
+
+      {successMessage && (
+        <SuccessModal
+          description={successMessage}
+          onClose={function() {
+            setSuccessMessage("");
+          }}
+        />
+      )}
     </div>
   );
 }

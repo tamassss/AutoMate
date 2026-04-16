@@ -17,7 +17,7 @@ beforeEach(function() {
 });
 
 describe("getServiceLog", function() {
-  it("maps service log rows and splits reminder fields", async function() {
+  it("átalakítja a szerviznapló sorait és szétbontja az emlékeztető mezőket", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         service_log: [
@@ -51,7 +51,7 @@ describe("getServiceLog", function() {
 });
 
 describe("createServiceLogEntry", function() {
-  it("creates service center first, then saves the service entry", async function() {
+  it("először létrehozza a szervizt, majd menti a szervizbejegyzést", async function() {
     fetch
       .mockResolvedValueOnce(createJsonResponse({ service_center_id: 10 }))
       .mockResolvedValueOnce(createJsonResponse({ maintenance_id: 20 }));
@@ -89,7 +89,7 @@ describe("createServiceLogEntry", function() {
 });
 
 describe("updateServiceLogEntry", function() {
-  it("turns empty cost into null and keeps km only reminder", async function() {
+  it("az üres költséget null értékre cseréli és megtartja a csak km-es emlékeztetőt", async function() {
     fetch.mockResolvedValue(createJsonResponse({ maintenance: { maintenance_id: 6 } }));
 
     await updateServiceLogEntry(6, {
@@ -110,7 +110,7 @@ describe("updateServiceLogEntry", function() {
 });
 
 describe("deleteServiceLogEntry", function() {
-  it("throws when maintenance id is missing", async function() {
+  it("hibát dob, ha hiányzik a karbantartás azonosítója", async function() {
     await expect(deleteServiceLogEntry("")).rejects.toThrow();
   });
 });

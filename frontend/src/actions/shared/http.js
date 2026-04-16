@@ -29,3 +29,4 @@ export function handleUnauthorized(response) {
 export async function parseJsonSafe(response) {
   return response.json().catch(() => ({}));
 }
+

@@ -131,32 +131,32 @@ def _build_shared_station_card(share_row, date_value):
         "stationHouseNumber": share_row.gas_station.house_number or "",
         "datum": str(date_value.date()),
         "literft": (
-            float(latest_fueling.price_per_liter)
-            if latest_fueling and latest_fueling.price_per_liter is not None
+            float(linked_station.price_per_liter)
+            if linked_station and linked_station.price_per_liter is not None
             else (
-                float(linked_station.price_per_liter)
-                if linked_station and linked_station.price_per_liter is not None
+                float(latest_fueling.price_per_liter)
+                if latest_fueling and latest_fueling.price_per_liter is not None
                 else 0
             )
         ),
         "supplier": (
-            latest_fueling.supplier
-            if latest_fueling and latest_fueling.supplier
+            linked_station.supplier
+            if linked_station and linked_station.supplier
             else (
-                linked_station.supplier
-                if linked_station and linked_station.supplier
+                latest_fueling.supplier
+                if latest_fueling and latest_fueling.supplier
                 else (share_row.gas_station.name or "")
             )
         ),
         "fuelType": (
-            latest_fueling.fuel_type.name
-            if latest_fueling and latest_fueling.fuel_type
-            else (linked_station.fuel_type.name if linked_station and linked_station.fuel_type else "")
+            linked_station.fuel_type.name
+            if linked_station and linked_station.fuel_type
+            else (latest_fueling.fuel_type.name if latest_fueling and latest_fueling.fuel_type else "")
         ),
         "fuelTypeId": (
-            latest_fueling.fuel_type_id
-            if latest_fueling
-            else (linked_station.fuel_type_id if linked_station else None)
+            linked_station.fuel_type_id
+            if linked_station
+            else (latest_fueling.fuel_type_id if latest_fueling else None)
         ),
     }
 
@@ -311,6 +311,7 @@ def api_community_settings(request):
 @permission_classes([IsAuthenticated])
 def api_community_profiles(request):
     user = get_current_user(request)
+    can_moderate = _is_moderator_or_admin(user)
     car_id = request.query_params.get("car_id")
     if car_id in (None, ""):
         return _bad("car_id is required")
@@ -325,8 +326,9 @@ def api_community_profiles(request):
 
     my_setting = CommunityCarSetting.objects.filter(user=user, car=car).first()
     my_enabled = bool(my_setting.enabled) if my_setting else False
+    effective_my_enabled = my_enabled or can_moderate
     my_profile = None
-    if my_enabled:
+    if effective_my_enabled:
         my_stats = get_general_statistics(user, car)
         my_distance = float(my_stats.get("distance_km_total") or 0)
         my_liters = float((my_stats.get("fuelings") or {}).get("liters") or 0)
@@ -346,26 +348,36 @@ def api_community_profiles(request):
             },
         }
 
-    profile_rows = (
-        CommunityCarSetting.objects.filter(enabled=True)
-        .exclude(user=user, car=car)
-        .select_related("user", "car__brand", "car__model")
-        .order_by("updated_at")
-    )
+    if can_moderate:
+        profile_rows = (
+            CarUser.objects.filter(permission="owner")
+            .exclude(user=user, car=car)
+            .select_related("user", "car__brand", "car__model")
+            .order_by("user_id", "car_id")
+        )
+    else:
+        profile_rows = (
+            CommunityCarSetting.objects.filter(enabled=True)
+            .exclude(user=user, car=car)
+            .select_related("user", "car__brand", "car__model")
+            .order_by("updated_at")
+        )
     profiles = []
     for row in profile_rows:
-        stats = get_general_statistics(row.user, row.car)
+        profile_user = row.user
+        profile_car = row.car
+        stats = get_general_statistics(profile_user, profile_car)
         distance = float(stats.get("distance_km_total") or 0)
         liters = float((stats.get("fuelings") or {}).get("liters") or 0)
         spent = float((stats.get("fuelings") or {}).get("spent") or 0)
         profiles.append(
             {
-                "user_id": row.user.user_id,
-                "full_name": row.user.full_name or "Felhasználó",
-                "car_id": row.car.car_id,
-                "car_name": f"{row.car.brand.name} {row.car.model.name}",
-                "license_plate": row.car.license_plate,
-                "car_image": row.car.car_image,
+                "user_id": profile_user.user_id,
+                "full_name": profile_user.full_name or "Felhasználó",
+                "car_id": profile_car.car_id,
+                "car_name": f"{profile_car.brand.name} {profile_car.model.name}",
+                "license_plate": profile_car.license_plate,
+                "car_image": profile_car.car_image,
                 "stats": {
                     "distance": distance,
                     "liters": liters,
@@ -377,7 +389,7 @@ def api_community_profiles(request):
 
     return Response(
         {
-            "enabled": my_enabled,
+            "enabled": effective_my_enabled,
             "my_profile": my_profile,
             "profiles": profiles,
         }
@@ -388,6 +400,7 @@ def api_community_profiles(request):
 @permission_classes([IsAuthenticated])
 def api_community_compare_monthly(request):
     user = get_current_user(request)
+    can_moderate = _is_moderator_or_admin(user)
 
     try:
         my_car_id = int(request.query_params.get("car_id"))
@@ -401,7 +414,7 @@ def api_community_compare_monthly(request):
         return Response({"detail": "Forbidden"}, status=403)
 
     my_enabled = CommunityCarSetting.objects.filter(user=user, car=my_car, enabled=True).exists()
-    if not my_enabled:
+    if not (my_enabled or can_moderate):
         return _bad("Community is not enabled for your selected car")
 
     other_user = User.objects.filter(user_id=other_user_id).first()
@@ -411,7 +424,7 @@ def api_community_compare_monthly(request):
 
     other_has_access = CarUser.objects.filter(user=other_user, car=other_car).exists()
     other_enabled = CommunityCarSetting.objects.filter(user=other_user, car=other_car, enabled=True).exists()
-    if not other_has_access or not other_enabled:
+    if not other_has_access or (not other_enabled and not can_moderate):
         return Response({"detail": "Forbidden"}, status=403)
 
     my_series = _build_monthly_stats(user, my_car)
@@ -631,7 +644,7 @@ def api_register(request):
         return _bad("Email and password are required")
 
     if User.objects.filter(email=email).exists():
-        return _bad("Email already in use")
+        return _bad("Ezzel az e-mail címmel már van regisztrált felhasználó.")
 
     try:
         user = User.objects.create_user(email=email, password=password, full_name=full_name)
@@ -914,7 +927,13 @@ def api_car_create(request):
             )
             CarUser.objects.create(car=car, user=user, permission="owner")
     except IntegrityError:
-        return _bad("Could not create car (integrity error). Check unique license plate and ids.")
+        return Response(
+            {
+                "detail": "Nem sikerült létrehozni az autót.",
+                "field_errors": {"plate": "Ez a rendszám már regisztrálva van."},
+            },
+            status=400,
+        )
 
     return Response({"car_id": car.car_id}, status=201)
 
@@ -967,7 +986,13 @@ def api_car_update(request, car_id: int):
     try:
         car.save()
     except IntegrityError:
-        return _bad("Could not update car (integrity error). Check unique license plate and ids.")
+        return Response(
+            {
+                "detail": "Nem sikerült módosítani az autót.",
+                "field_errors": {"plate": "Ez a rendszám már regisztrálva van."},
+            },
+            status=400,
+        )
 
     return Response({"ok": True})
 
@@ -1054,6 +1079,16 @@ def api_gas_station_update(request, gas_station_id: int):
         gs.save()
     except IntegrityError:
         return _bad("Could not update gas station (integrity error).")
+
+    CommunityGasStationShare.objects.filter(
+        requester=user,
+        gas_station=gs,
+    ).exclude(status="pending").update(
+        status="pending",
+        reviewed_at=None,
+        reviewed_by=None,
+        expires_at=None,
+    )
 
     car_id = d.get("car_id")
     if car_id not in (None, ""):

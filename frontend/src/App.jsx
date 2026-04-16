@@ -63,6 +63,21 @@ function AdminRoute() {
   return <Outlet />;
 }
 
+function HomeRoute() {
+  const token = localStorage.getItem("token");
+
+  if (isTokenValid(token)) {
+    return <Navigate to="/autok" replace />;
+  }
+
+  return <Home />;
+}
+
+function NotFoundRoute() {
+  const token = localStorage.getItem("token");
+  return <Navigate to={isTokenValid(token) ? "/autok" : "/"} replace />;
+}
+
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -85,7 +100,7 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomeRoute />} />
         <Route path="/login" element={<Login />} />
         <Route path="/tippek" element={<Tips />} />
         <Route path="/tippek/muszerfal-jelzesek" element={<DashboardLights />} />
@@ -107,7 +122,7 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundRoute />} />
       </Routes>
 
       {successMessage && <SuccessModal description={successMessage} onClose={closeSuccessModal} />}

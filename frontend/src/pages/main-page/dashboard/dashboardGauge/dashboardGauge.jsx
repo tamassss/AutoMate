@@ -5,10 +5,12 @@ import "./dashboardGauge.css";
 import Button from "../../../../components/button/button";
 import EditLimit from "../../../../modals/editLimit/editLimit";
 import BudgetLimit from "../budgetLimit/budgetLimit";
+import SuccessModal from "../../../../components/success-modal/successModal";
 import { formatGroupedNumber } from "../../../../actions/shared/formatters";
 
 export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit }) {
     const [showLimit, setShowLimit] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
     const navigate = useNavigate();
 
     // Fogyasztás jó-e
@@ -35,7 +37,10 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                 {showLimit && (
                     <EditLimit
                         onClose={() => setShowLimit(false)}
-                        onSave={onSaveLimit}
+                        onSave={function(value) {
+                            onSaveLimit?.(value);
+                            setSuccessMessage("Sikeres limit módosítás");
+                        }}
                         initialLimit={monthlyBudget?.limit || 0}
                     />
                 )}
@@ -82,6 +87,15 @@ export default function DashboardGauge({ selectedCar, monthlyBudget, onSaveLimit
                     </table>
                 </div>
             </div>
+
+            {successMessage && (
+                <SuccessModal
+                    description={successMessage}
+                    onClose={function() {
+                        setSuccessMessage("");
+                    }}
+                />
+            )}
         </div>
     );
 }

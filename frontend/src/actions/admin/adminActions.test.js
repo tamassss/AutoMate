@@ -9,7 +9,7 @@ beforeEach(function() {
 });
 
 describe("getAdminUsers", function() {
-  it("loads users and adds trimmed email query", async function() {
+  it("betölti a felhasználókat és hozzáadja a levágott email keresést", async function() {
     fetch.mockResolvedValue(createJsonResponse({ users: [{ user_id: 1 }] }));
 
     const result = await getAdminUsers("  test@example.com  ");
@@ -27,11 +27,11 @@ describe("getAdminUsers", function() {
 });
 
 describe("updateAdminUser", function() {
-  it("throws when user id is missing", async function() {
+  it("hibát dob, ha hiányzik a felhasználó azonosítója", async function() {
     await expect(updateAdminUser("", {})).rejects.toThrow();
   });
 
-  it("sends patch payload and returns the updated user", async function() {
+  it("elküldi a patch adatokat és visszaadja a módosított felhasználót", async function() {
     fetch.mockResolvedValue(createJsonResponse({ user: { user_id: 4, role: "user" } }));
 
     const result = await updateAdminUser(4, { role: "user" });
@@ -48,7 +48,7 @@ describe("updateAdminUser", function() {
 });
 
 describe("deleteAdminUser", function() {
-  it("deletes the selected user", async function() {
+  it("törli a kiválasztott felhasználót", async function() {
     fetch.mockResolvedValue(createJsonResponse({}));
 
     await expect(deleteAdminUser(7)).resolves.toBe(true);

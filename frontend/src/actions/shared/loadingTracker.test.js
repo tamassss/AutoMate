@@ -9,7 +9,7 @@ beforeEach(function() {
 });
 
 describe("subscribeLoading", function() {
-  it("immediately notifies with the current pending count", async function() {
+  it("azonnal értesít az aktuális függőben lévő darabszámmal", async function() {
     const { subscribeLoading } = await import("./loadingTracker");
     const listener = vi.fn();
 
@@ -21,7 +21,7 @@ describe("subscribeLoading", function() {
 });
 
 describe("installFetchLoadingTracker", function() {
-  it("wraps fetch and notifies listeners before and after the request", async function() {
+  it("becsomagolja a fetch-et és értesíti a listenereket a kérés előtt és után", async function() {
     const originalFetch = vi.fn().mockResolvedValue({ ok: true });
     globalThis.window.fetch = originalFetch;
 
@@ -39,7 +39,7 @@ describe("installFetchLoadingTracker", function() {
     unsubscribe();
   });
 
-  it("patches fetch only once", async function() {
+  it("csak egyszer patcheli a fetch-et", async function() {
     const originalFetch = vi.fn().mockResolvedValue({ ok: true });
     globalThis.window.fetch = originalFetch;
 

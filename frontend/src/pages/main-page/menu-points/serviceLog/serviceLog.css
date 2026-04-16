@@ -7,6 +7,11 @@
     overflow: hidden;
 }
 
+.service-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
 .custom-table th {
     text-align: center;
     color: #075DBF;
@@ -35,4 +40,10 @@
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+}
+
+@media(max-width: 768px){
+    .service-table-scroll .custom-table {
+        min-width: 620px;
+    }
 }

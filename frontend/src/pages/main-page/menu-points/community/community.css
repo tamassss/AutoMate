@@ -28,3 +28,10 @@
   text-decoration: underline;
 }
 
+.community-empty-profiles {
+  min-height: 45vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+

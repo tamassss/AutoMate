@@ -16,6 +16,7 @@ export default function FuelTable({month, data, onDeletedFuel, onUpdatedFuel}){
             <h3 className="text-left mb-3 fuel-table-date" style={{ color: "#89C4FF" }}>{month}</h3>
             
             <Card>
+                <div className="fuel-table-scroll">
                 <table className="table table-dark mt-2">
                     <thead>
                         <tr>
@@ -45,6 +46,7 @@ export default function FuelTable({month, data, onDeletedFuel, onUpdatedFuel}){
                         ))}
                     </tbody>
                 </table>
+                </div>
             </Card>
 
 

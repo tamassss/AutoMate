@@ -4,6 +4,7 @@ import { getCars, returnSelectedCard } from "../../../actions/cars/carsActions";
 
 import Button from "../../../components/button/button";
 import AddCar from "../../../modals/addCar/addCar";
+import SuccessModal from "../../../components/success-modal/successModal";
 import { getCarImageSrc } from "../../../assets/car-images/carImageOptions";
 
 import plusIcon from "../../../assets/icons/plus.png";
@@ -16,6 +17,7 @@ export default function CarSelect({ refreshKey, onCarChange }) {
   const [cars, setCars] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [showAddCar, setShowAddCar] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [slideDirection, setSlideDirection] = useState("next");
   const navigate = useNavigate();
 
@@ -67,7 +69,7 @@ export default function CarSelect({ refreshKey, onCarChange }) {
   // Üres állapot
   if (cars.length === 0) {
     return (
-      <div className="d-flex justify-content-center w-100 my-5">
+      <div className="car-select-empty d-flex justify-content-center w-100">
         <div className="main-image" onClick={function() { setShowAddCar(true); }}>
           <img src={plusIcon} alt="Új" className="main-car-img" style={{ width: "30%" }} />
         </div>
@@ -77,6 +79,15 @@ export default function CarSelect({ refreshKey, onCarChange }) {
             onSave={function() {
               fetchCars();
               setShowAddCar(false);
+              setSuccessMessage("Sikeres autó felvétel");
+            }}
+          />
+        )}
+        {successMessage && (
+          <SuccessModal
+            description={successMessage}
+            onClose={function() {
+              setSuccessMessage("");
             }}
           />
         )}
@@ -127,9 +138,11 @@ export default function CarSelect({ refreshKey, onCarChange }) {
       <div className="car-layout">
         {/* Bal oldal */}
         <div className="side left" onClick={prevCar}>
-          <div className="mobile-arrow">
-            <img src={leftArrow} alt="Bal" />
-          </div>
+          {cars.length > 1 && (
+            <div className="mobile-arrow">
+              <img src={leftArrow} alt="Bal" />
+            </div>
+          )}
           {cars.length > 1 && (
             <div className="side-content desktop">
               <div className="side-image">
@@ -169,9 +182,11 @@ export default function CarSelect({ refreshKey, onCarChange }) {
 
         {/* Jobb oldal */}
         <div className="side right" onClick={nextCar}>
-          <div className="mobile-arrow">
-            <img src={rightArrow} alt="Jobb" />
-          </div>
+          {cars.length > 1 && (
+            <div className="mobile-arrow">
+              <img src={rightArrow} alt="Jobb" />
+            </div>
+          )}
           {cars.length > 1 && (
             <div className="side-content desktop">
               <div className="side-image">
@@ -182,6 +197,14 @@ export default function CarSelect({ refreshKey, onCarChange }) {
           )}
         </div>
       </div>
+      {successMessage && (
+        <SuccessModal
+          description={successMessage}
+          onClose={function() {
+            setSuccessMessage("");
+          }}
+        />
+      )}
     </div>
   );
 }

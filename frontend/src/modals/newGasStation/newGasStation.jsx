@@ -36,7 +36,7 @@ export default function NewGasStation({ onClose, onSave }) {
     // Validáció
     const tempErrors = {};
     if (!pricePerLiter) tempErrors.pricePerLiter = "Az ár/liter megadása kötelező!";
-    if (!fuelTypeId) tempErrors.fuelTypeId = "Az üzemanyag típusa megadása kötelező!";
+    if (!fuelTypeId) tempErrors.fuelTypeId = "Az üzemanyag típus megadása kötelező!";
     if (!supplier) tempErrors.supplier = "A forgalmazó megadása kötelező!";
     if (!city) tempErrors.city = "A helység megadása kötelező!";
     if (!address) tempErrors.address = "A cím megadása kötelező!";
@@ -67,7 +67,7 @@ export default function NewGasStation({ onClose, onSave }) {
       });
 
       await onSave?.();
-      setShowSuccess(true);
+      onClose?.();
     } catch (err) {
       setError(err.message || "Nem sikerült menteni a benzinkutat.");
     } finally {
@@ -138,6 +138,7 @@ export default function NewGasStation({ onClose, onSave }) {
 
         <div className="full-width text-start modal-select-group">
           <label className="modal-select-label">Forgalmazó</label>
+          {fieldErrors.supplier && <span className="error-message">{fieldErrors.supplier}</span>}
           <select
             value={supplier}
             onChange={function(e) {
@@ -148,7 +149,6 @@ export default function NewGasStation({ onClose, onSave }) {
                 });
               }
             }}
-            required
             className="modal-select"
           >
             <option value="">Válassz forgalmazót</option>
@@ -160,11 +160,11 @@ export default function NewGasStation({ onClose, onSave }) {
               );
             })}
           </select>
-          {fieldErrors.supplier && <span className="error-message">{fieldErrors.supplier}</span>}
         </div>
 
         <div className="full-width text-start modal-select-group">
           <label className="modal-select-label">Üzemanyag típusa</label>
+          {fieldErrors.fuelTypeId && <span className="error-message">{fieldErrors.fuelTypeId}</span>}
           <select
             value={fuelTypeId}
             onChange={function(e) {
@@ -175,7 +175,6 @@ export default function NewGasStation({ onClose, onSave }) {
                 });
               }
             }}
-            required
             className="modal-select"
           >
             <option value="">Válassz üzemanyag típust</option>
@@ -187,7 +186,6 @@ export default function NewGasStation({ onClose, onSave }) {
               );
             })}
           </select>
-          {fieldErrors.fuelTypeId && <span className="error-message">{fieldErrors.fuelTypeId}</span>}
         </div>
 
         {error && <p className="text-danger">{error}</p>}

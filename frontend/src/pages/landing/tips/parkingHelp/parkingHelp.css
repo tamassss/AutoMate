@@ -30,7 +30,7 @@
     margin: 0 auto;
 }
 
-.parking-content > .col-6 {
+.parking-content > .col-12 {
     padding-left: 40px;
     padding-right: 40px;
 }
@@ -43,4 +43,36 @@
     font-weight: 700;
     margin-bottom: 14px;
     color: #7ec8ff;
+}
+
+@media (max-width: 768px) {
+    .parking-nav-tab {
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
+
+    .parking-div {
+        margin-top: 30px;
+    }
+
+    .parking-title {
+        font-size: 1.5rem;
+    }
+
+    .parking-content > .col-12 {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .parking-content p {
+        font-size: 0.9rem;
+    }
+
+    .parking-content img {
+        padding: 8px !important;
+    }
+
+    .parking-content .w-50 {
+        width: 100% !important;
+    }
 }

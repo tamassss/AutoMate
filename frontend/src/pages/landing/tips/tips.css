@@ -79,11 +79,32 @@
 }
 
 @media (max-width: 992px) {
+    .tips-page-wrapper {
+        height: auto;
+        min-height: 100vh;
+        overflow: auto;
+    }
+
     .tips-full-height .row {
         flex-direction: column;
     }
+
     .tip-link {
+        min-height: 220px;
         border-right: none;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+@media (max-width: 576px) {
+    .tip-link {
+        min-height: 180px;
+        padding: 14px;
+    }
+
+    .tip-link p {
+        font-size: 1.2rem;
+        margin-top: 0;
+        padding: 8px 12px;
     }
 }

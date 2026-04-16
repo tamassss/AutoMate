@@ -21,7 +21,7 @@ beforeEach(function() {
 });
 
 describe("saveFueling", function() {
-  it("creates a fueling with default odometer value", async function() {
+  it("létrehoz egy tankolást alapértelmezett kilométeróra értékkel", async function() {
     fetch.mockResolvedValue(createJsonResponse({ fueling_id: 25 }));
 
     await expect(
@@ -50,7 +50,7 @@ describe("saveFueling", function() {
 });
 
 describe("saveTripWithFuelings", function() {
-  it("creates addresses, route, route usage and assigns fuelings", async function() {
+  it("létrehozza a címeket, az utat, az úthasználatot és hozzárendeli a tankolásokat", async function() {
     fetch
       .mockResolvedValueOnce(createJsonResponse({ address_id: 101 }))
       .mockResolvedValueOnce(createJsonResponse({ address_id: 102 }))
@@ -80,7 +80,7 @@ describe("saveTripWithFuelings", function() {
 });
 
 describe("saveNewGasStation", function() {
-  it("delegates gas station creation to the shared action", async function() {
+  it("átadja a benzinkút létrehozását a közös műveletnek", async function() {
     await expect(saveNewGasStation({ name: "Shell" })).resolves.toEqual({ ok: true });
 
     expect(createGasStation).toHaveBeenCalledWith({ name: "Shell", car_id: 14 });

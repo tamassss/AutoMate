@@ -17,7 +17,7 @@ beforeEach(function() {
 });
 
 describe("getGasStations", function() {
-  it("filters invalid cards and maps valid cards", async function() {
+  it("kiszűri a hibás kártyákat és átalakítja az érvényes kártyákat", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         gas_station_cards: [
@@ -68,7 +68,7 @@ describe("getGasStations", function() {
 });
 
 describe("createGasStation", function() {
-  it("posts the gas station payload", async function() {
+  it("elküldi a benzinkút adatokat", async function() {
     fetch.mockResolvedValue(createJsonResponse({ gas_station_id: 15 }));
 
     await expect(
@@ -102,7 +102,7 @@ describe("createGasStation", function() {
 });
 
 describe("editFuelingById", function() {
-  it("updates supplier and fuel type on a fueling", async function() {
+  it("módosítja a szolgáltatót és az üzemanyagtípust egy tankoláson", async function() {
     fetch.mockResolvedValue(createJsonResponse({ fueling: { fueling_id: 6 } }));
 
     await expect(
@@ -116,7 +116,7 @@ describe("editFuelingById", function() {
 });
 
 describe("deleteGasStation", function() {
-  it("throws when gas station id is missing", async function() {
+  it("hibát dob, ha hiányzik a benzinkút azonosítója", async function() {
     await expect(deleteGasStation("")).rejects.toThrow();
   });
 });

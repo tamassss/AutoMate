@@ -19,9 +19,11 @@ export default function CommunityProfiles({ loading, enabled, profiles, onCompar
   function renderProfiles() {
     if (profiles.length === 0) {
       return (
-        <p className="text-center text-light">
-          Még nincs másik engedélyezett profil.
-        </p>
+        <div className="col-12 community-empty-profiles">
+          <p className="text-center text-light fs-4 m-0">
+            Még nincs másik engedélyezett profil.
+          </p>
+        </div>
       );
     }
 

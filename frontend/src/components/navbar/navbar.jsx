@@ -7,30 +7,27 @@ import exitIcon from "../../assets/icons//exit.png";
 import settingsIcon from "../../assets/icons/settings.png";
 
 import Settings from "../../modals/settings/settings";
+import SuccessModal from "../success-modal/successModal";
 
 import "./navbar.css";
 
-export default function Navbar({ forceHomeLink = false, backTo = null }) {
+export default function Navbar({ backTo = null }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [showSettings, setShowSettings] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [token] = useState(localStorage.getItem("token"));
   const isCarsPage = location.pathname === "/autok";
   const isDashboardRoute = location.pathname.startsWith("/muszerfal");
 
   function goToHomeBySelectedCar() {
-    if (forceHomeLink) {
-      navigate("/");
-      return;
-    }
-
     const selectedCarId = localStorage.getItem("selected_car_id");
     if (selectedCarId && selectedCarId !== "default") {
       navigate("/muszerfal");
       return;
     }
 
-    navigate("/");
+    navigate(token ? "/autok" : "/");
   }
 
   function logout() {
@@ -43,10 +40,6 @@ export default function Navbar({ forceHomeLink = false, backTo = null }) {
   function handleBackClick() {
     if (backTo) {
       navigate(backTo);
-      return;
-    }
-    if (isCarsPage) {
-      navigate("/");
       return;
     }
     if (isDashboardRoute) {
@@ -65,9 +58,11 @@ export default function Navbar({ forceHomeLink = false, backTo = null }) {
           </div>
         )}
 
-        <div className={"nav-icons-div"} onClick={handleBackClick}>
-          <img className={"nav-icons"} src={backIcon} alt={"Vissza"} />
-        </div>
+        {!isCarsPage && (
+          <div className={"nav-icons-div"} onClick={handleBackClick}>
+            <img className={"nav-icons"} src={backIcon} alt={"Vissza"} />
+          </div>
+        )}
 
         <div className="nav-title-div">
           <p className="brand" onClick={goToHomeBySelectedCar}>
@@ -88,7 +83,23 @@ export default function Navbar({ forceHomeLink = false, backTo = null }) {
         </div>
       </nav>
 
-      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+      {showSettings && (
+        <Settings
+          onClose={() => setShowSettings(false)}
+          onSaved={function() {
+            setSuccessMessage("Sikeres módosítás");
+          }}
+        />
+      )}
+
+      {successMessage && (
+        <SuccessModal
+          description={successMessage}
+          onClose={function() {
+            setSuccessMessage("");
+          }}
+        />
+      )}
     </>
   );
 }

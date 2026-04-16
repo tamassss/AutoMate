@@ -10,6 +10,11 @@ body{
     margin: 40px 0;
 }
 
+.car-select-empty{
+    min-height: 45vh;
+    align-items: center;
+}
+
 .car-layout{
     display: flex;
     align-items: center;
@@ -148,7 +153,7 @@ body{
     font-weight: bold;
 }
 
-.left-arrow, .right-arrow{
+.mobile-arrow img{
     width: 60px;
     height: 60px;
 }
@@ -234,16 +239,22 @@ body{
 }
 
 @media (max-width: 768px){
+    .car-select{
+        margin: 0;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
     .car-layout{
         width: 100%;
         gap: 5px;
     }
 
     .main-image{
-        width: 180px;
-        height: 180px;
-        min-width: 180px;
-        min-height: 180px;
+        width: clamp(130px, 24vh, 180px);
+        height: clamp(130px, 24vh, 180px);
+        min-width: 0;
+        min-height: 0;
     }
 
     .desktop{
@@ -255,46 +266,47 @@ body{
     }
 
     .side{
-        flex: 0 0 10px;
+        flex: 0 0 44px;
     }
 
-    .main-image{
-        width: 150px;
-        height: 150px;
-    }
-
-    .main-title{
-        font-size: 1.8rem;
+    .main-info{
+        margin-top: 10px;
     }
 
     .main-title{
-        font-size: 1rem;
+        font-size: 1.2rem;
     }
 
     .license-outer{
-        width: 240px;
+        width: clamp(200px, 58vw, 240px);
+        margin: 8px auto 10px;
     }
 
     .license-inner{
-        min-height: 70px;
+        min-height: 60px;
     }
 
     .license-blue{
-        flex-basis: 40px;
+        flex-basis: 34px;
     }
 
     .license-white{
-        min-height: 68px;
+        min-height: 58px;
         padding: 0 8px;
     }
 
     .license-plate{
-        font-size: 1.7rem;
+        font-size: 1.4rem;
         letter-spacing: 0.1em;
     }
 
     .license-plate-long{
-        font-size: 1.35rem;
+        font-size: 1.2rem;
         letter-spacing: 0.03em;
+    }
+
+    .mobile-arrow img{
+        width: 44px;
+        height: 44px;
     }
 }

@@ -12,7 +12,7 @@ beforeEach(function() {
 });
 
 describe("getGeneralStats", function() {
-  it("loads general stats for the selected car", async function() {
+  it("betölti a kiválasztott autó általános statisztikáit", async function() {
     fetch.mockResolvedValue(createJsonResponse({ total_cost: 12345 }));
 
     await expect(getGeneralStats()).resolves.toEqual({ total_cost: 12345 });
@@ -24,7 +24,7 @@ describe("getGeneralStats", function() {
 });
 
 describe("getSummaryStats", function() {
-  it("returns summary array from backend", async function() {
+  it("visszaadja a backend összesítő listáját", async function() {
     fetch.mockResolvedValue(createJsonResponse({ summary: [{ car_id: 1 }] }));
 
     await expect(getSummaryStats()).resolves.toEqual([{ car_id: 1 }]);

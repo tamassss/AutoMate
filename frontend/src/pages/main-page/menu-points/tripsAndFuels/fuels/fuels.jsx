@@ -6,7 +6,7 @@ export default function Fuels({ fuelGroups, onDeletedFuel, onUpdatedFuel }) {
   if (!fuelGroups || fuelGroups.length === 0) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: "60vh" }}>
-        <p className="fs-4">Még nincsenek rögzített tankolások.</p>
+        <p className="fs-4">Még nincsenek mentett tankolások.</p>
       </div>
     );
   }

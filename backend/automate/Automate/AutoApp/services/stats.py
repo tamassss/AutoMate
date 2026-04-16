@@ -51,7 +51,57 @@ def get_general_statistics(user: User, car: Car) -> Dict[str, Any]:
             "total_cost": float(maintenance_cost),
             "last_date": last_maintenance,
         },
+        "monthly": get_monthly_statistics(user, car),
         "longest_route": longest_route,
+    }
+
+
+def get_monthly_statistics(user: User, car: Car) -> Dict[str, Any]:
+    distance_by_month = [0.0] * 12
+    liters_by_month = [0.0] * 12
+    fuel_spent_by_month = [0.0] * 12
+    service_spent_by_month = [0.0] * 12
+
+    route_rows = RouteUsage.objects.filter(user=user, car=car).only("date", "distance_km")
+    for row in route_rows:
+        if not row.date:
+            continue
+        idx = row.date.month - 1
+        distance_by_month[idx] += float(row.distance_km or 0)
+
+    fueling_rows = Fueling.objects.filter(user=user, car=car).only("date", "liters", "price_per_liter")
+    for row in fueling_rows:
+        if not row.date:
+            continue
+        idx = row.date.month - 1
+        liters = float(row.liters or 0)
+        price_per_liter = float(row.price_per_liter or 0)
+        liters_by_month[idx] += liters
+        fuel_spent_by_month[idx] += liters * price_per_liter
+
+    maintenance_rows = Maintenance.objects.filter(user=user, car=car).only("date", "cost")
+    for row in maintenance_rows:
+        if not row.date:
+            continue
+        idx = row.date.month - 1
+        service_spent_by_month[idx] += float(row.cost or 0)
+
+    price_per_km_by_month = []
+    total_spent_by_month = []
+    for i in range(12):
+        km = distance_by_month[i]
+        fuel_spent = fuel_spent_by_month[i]
+        service_spent = service_spent_by_month[i]
+        price_per_km_by_month.append(round((fuel_spent / km), 1) if km > 0 else 0.0)
+        total_spent_by_month.append(fuel_spent + service_spent)
+
+    return {
+        "distance": [round(v, 1) for v in distance_by_month],
+        "liters": [round(v, 1) for v in liters_by_month],
+        "price_per_km": price_per_km_by_month,
+        "fuel_spent": [round(v) for v in fuel_spent_by_month],
+        "service_spent": [round(v) for v in service_spent_by_month],
+        "total_spent": [round(v) for v in total_spent_by_month],
     }
 
 

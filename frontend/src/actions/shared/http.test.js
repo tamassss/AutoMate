@@ -28,17 +28,17 @@ beforeEach(function() {
 });
 
 describe("apiUrl", function() {
-  it("builds the url for paths with leading slash", function() {
+  it("összeállítja az url-t perjellel kezdődő útvonalaknál", function() {
     expect(apiUrl("/cars/")).toBe("http://localhost:8000/api/cars/");
   });
 
-  it("builds the url for paths without leading slash", function() {
+  it("összeállítja az url-t perjel nélkül kezdődő útvonalaknál", function() {
     expect(apiUrl("cars/")).toBe("http://localhost:8000/api/cars/");
   });
 });
 
 describe("authHeaders", function() {
-  it("returns json content type and bearer token", function() {
+  it("visszaadja a json content type-ot és a bearer tokent", function() {
     localStorage.setItem("token", "secret-token");
 
     expect(authHeaders()).toEqual({
@@ -49,11 +49,11 @@ describe("authHeaders", function() {
 });
 
 describe("handleUnauthorized", function() {
-  it("does nothing for non-401 response", function() {
+  it("nem csinál semmit nem 401-es válasznál", function() {
     expect(() => handleUnauthorized({ status: 200 })).not.toThrow();
   });
 
-  it("clears localStorage and throws on 401", function() {
+  it("törli a localStorage-ot és hibát dob 401-es válasznál", function() {
     localStorage.setItem("token", "secret-token");
 
     expect(function() {
@@ -66,7 +66,7 @@ describe("handleUnauthorized", function() {
 });
 
 describe("parseJsonSafe", function() {
-  it("returns parsed json when response json works", async function() {
+  it("visszaadja a feldolgozott json-t, ha működik a response json", async function() {
     const response = {
       json: vi.fn().mockResolvedValue({ ok: true }),
     };
@@ -74,7 +74,7 @@ describe("parseJsonSafe", function() {
     await expect(parseJsonSafe(response)).resolves.toEqual({ ok: true });
   });
 
-  it("returns empty object when response json fails", async function() {
+  it("üres objektumot ad vissza, ha a response json hibára fut", async function() {
     const response = {
       json: vi.fn().mockRejectedValue(new Error("bad json")),
     };

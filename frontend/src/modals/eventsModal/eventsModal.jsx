@@ -28,7 +28,7 @@ function parseReminder(reminder) {
   return cleanValue;
 }
 
-export default function EventsModal({ onClose, onChanged }) {
+export default function EventsModal({ onClose, onChanged, onSuccess }) {
   const today = new Date().toISOString().slice(0, 10);
   
   // Állapotkezelők
@@ -117,10 +117,10 @@ export default function EventsModal({ onClose, onChanged }) {
         reminder: current.reminder,
       });
 
-      setSuccessText("Esemény sikeresen módosítva");
-      setShowSuccess(true);
       onChanged?.();
       await loadEvents();
+      onSuccess?.("Esemény sikeresen módosítva");
+      onClose?.();
     } catch (err) {
       setError(err.message || "Hiba történt a mentés során.");
     } finally {
@@ -135,10 +135,10 @@ export default function EventsModal({ onClose, onChanged }) {
 
     try {
       await deleteEvent(eventId);
-      setSuccessText("Esemény sikeresen törölve");
-      setShowSuccess(true);
       onChanged?.();
       await loadEvents();
+      onSuccess?.("Esemény sikeresen törölve");
+      onClose?.();
     } catch (err) {
       setError(err.message || "Hiba történt a törlés során.");
     } finally {

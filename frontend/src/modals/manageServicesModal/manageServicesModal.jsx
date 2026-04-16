@@ -45,7 +45,7 @@ function parseReminder(reminder) {
   return { reminderDate: "", reminderKm: cleanKm };
 }
 
-export default function ManageServicesModal({ onClose, onChanged }) {
+export default function ManageServicesModal({ onClose, onChanged, onSuccess }) {
   const today = new Date().toISOString().slice(0, 10);
   
   // Állapotok
@@ -134,10 +134,10 @@ export default function ManageServicesModal({ onClose, onChanged }) {
         reminderKm: current.reminderKm,
       });
 
-      setSuccessText("Szerviz sikeresen módosítva");
-      setShowSuccess(true);
       onChanged?.();
       await loadServices();
+      onSuccess?.("Szerviz sikeresen módosítva");
+      onClose?.();
     } catch (err) {
       setError(err.message || "Hiba történt a módosítás során.");
     } finally {
@@ -152,10 +152,10 @@ export default function ManageServicesModal({ onClose, onChanged }) {
 
     try {
       await deleteServiceLogEntry(serviceId);
-      setSuccessText("Szerviz sikeresen törölve");
-      setShowSuccess(true);
       onChanged?.();
       await loadServices();
+      onSuccess?.("Szerviz sikeresen törölve");
+      onClose?.();
     } catch (err) {
       setError(err.message || "Hiba történt a törlés során.");
     } finally {

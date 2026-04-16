@@ -1,7 +1,8 @@
 ﻿// Szöveg hossz korlátozása
 export function limitTextLength(value, maxLength) {
   if (value == null) return "";
-  return String(value).slice(0, maxLength);
+  const normalized = normalizeWhitespace(value);
+  return normalized.slice(0, maxLength);
 }
 
 // Szám bemeneti értékének korlátozása
@@ -40,16 +41,21 @@ export function clampNumberInput(value, options = {}) {
   return String(clamped);
 }
 
+//rendszám formátummá alakítás
 export function normalizeLicensePlateInput(value) {
   return String(value ?? "")
     .toUpperCase()
-    .replace(/[^A-Z0-9-]/g, "")
-    .replace(/-+/g, "-")
     .slice(0, 8);
 }
 
+//rendszám formáttum ellenőrzés
 export function isValidLicensePlate(value) {
   return /^[A-Z]{3,4}-\d{3}$/.test(String(value ?? "").trim());
+}
+
+//whitespace levágás
+export function normalizeWhitespace(value) {
+  return String(value ?? "").trim();
 }
 
 // nem szám -> üres / minimum

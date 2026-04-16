@@ -17,6 +17,10 @@
   height: 40px;
 }
 
+.avg-cons-div hr {
+    margin: 32px 0;
+}
+
 
 .step-span {
     color: rgb(150, 150, 150);
@@ -33,6 +37,10 @@
 }
 
 @media (max-width: 768px) {
+    .avg-cons-div hr {
+        margin: 24px 0;
+    }
+
     .step-span {
         font-size: 1rem; 
     }

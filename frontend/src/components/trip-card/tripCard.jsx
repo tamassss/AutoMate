@@ -53,7 +53,10 @@ export default function TripCard({ trip, onDeletedTrip }) {
           fromCity={trip?.honnan}
           toCity={trip?.hova}
           datum={trip?.datum}
-          onDeleted={(deletedTripId) => onDeletedTrip?.(deletedTripId)}
+          onDeleted={function(deletedTripId) {
+            setShowDeleteTrip(false);
+            onDeletedTrip?.(deletedTripId);
+          }}
         />
       )}
     </Card>

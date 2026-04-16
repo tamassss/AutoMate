@@ -8,3 +8,9 @@ tr, h2{
     align-items: center;
     margin: 0 auto 0 auto;
 }
+
+@media(max-width: 768px){
+    .general-stat-row {
+        font-size: 0.8rem;
+    }
+}

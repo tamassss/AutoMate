@@ -37,8 +37,8 @@ beforeEach(function() {
   globalThis.window = { location: { href: "/" } };
 });
 
-describe("landing pages", function() {
-  it("renders home for logged out users", function() {
+describe("landing oldalak", function() {
+  it("megjeleníti a főoldalt kijelentkezett felhasználóknak", function() {
     const markup = renderMarkup(<Home />);
 
     expect(markup).toContain("Auto");
@@ -46,19 +46,7 @@ describe("landing pages", function() {
     expect(markup).toContain("Regisztráció");
   });
 
-  it("renders home actions for logged in admin", function() {
-    localStorage.setItem("token", "secret");
-    localStorage.setItem("role", "admin");
-    localStorage.setItem("full_name", "Teszt Elek");
-
-    const markup = renderMarkup(<Home />);
-
-    expect(markup).toContain("Teszt Elek");
-    expect(markup).toContain("Garázs");
-    expect(markup).toContain("Admin felület");
-  });
-
-  it("renders login form", function() {
+  it("megjeleníti a bejelentkezési űrlapot", function() {
     const markup = renderMarkup(<Login />);
 
     expect(markup).toContain("Bejelentkezés");
@@ -66,7 +54,7 @@ describe("landing pages", function() {
     expect(markup).toContain("Jelszó");
   });
 
-  it("renders register form", function() {
+  it("megjeleníti a regisztrációs űrlapot", function() {
     const markup = renderMarkup(<Register />);
 
     expect(markup).toContain("Regisztráció");
@@ -74,14 +62,14 @@ describe("landing pages", function() {
     expect(markup).toContain("Jelszó ismét");
   });
 
-  it("renders gallery", function() {
+  it("megjeleníti a galériát", function() {
     const markup = renderMarkup(<Gallery />);
 
     expect(markup).toContain("gallery-container");
     expect(markup).toContain("image-slider");
   });
 
-  it("renders tips landing page", function() {
+  it("megjeleníti a tippek kezdőoldalát", function() {
     const markup = renderMarkup(<Tips />);
 
     expect(markup).toContain("/tippek/muszerfal-jelzesek");
@@ -89,14 +77,14 @@ describe("landing pages", function() {
     expect(markup).toContain("/tippek/parkolasi-tippek");
   });
 
-  it("renders fuel saving tips", function() {
+  it("megjeleníti az üzemanyag-spórolási tippeket", function() {
     const markup = renderMarkup(<FuelSaving />);
 
     expect(markup).toContain("fuelSaving-container");
     expect(markup).toContain("7. tipp");
   });
 
-  it("renders parking help default tab", function() {
+  it("megjeleníti a parkolási segítség alapértelmezett fülét", function() {
     const markup = renderMarkup(<ParkingHelp />);
 
     expect(markup).toContain("parking-container");
@@ -104,7 +92,7 @@ describe("landing pages", function() {
     expect(markup).toContain("parking-title");
   });
 
-  it("renders dashboard light details when light exists", function() {
+  it("megjeleníti a műszerfal jelzés részleteit, ha létezik a jelzés", function() {
     const markup = renderMarkup(
       <DashboardLight
         light={{
@@ -121,7 +109,7 @@ describe("landing pages", function() {
     expect(markup).toContain("Teszt tennivalo");
   });
 
-  it("renders dashboard lights page", function() {
+  it("megjeleníti a műszerfal jelzések oldalát", function() {
     const markup = renderMarkup(<DashboardLights />);
 
     expect(markup).toContain("dashboard-lights-container");

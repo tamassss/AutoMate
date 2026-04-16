@@ -23,7 +23,7 @@ export default function DeleteFuel({ onClose, onDeleted, fuelingId, datum }) {
         onDeleted(fuelingId);
       }
 
-      setShowSuccess(true);
+      onClose?.();
     } catch (err) {
       setError(err.message || "Nem sikerült törölni a tankolást.");
     } finally {
@@ -35,10 +35,11 @@ export default function DeleteFuel({ onClose, onDeleted, fuelingId, datum }) {
     <>
       <Modal title="Biztosan törlöd?" onClose={onClose} columns={1}>
         <p className="full-width text-center">
-          <span className="gas-station-location" style={{ fontWeight: "bold" }}>
+          <span className="gas-station-location" style={{ color: "#075DBF", fontWeight: "bold" }}>
             {datum}
           </span>
-          {" tankolás törlése"}
+          <br />
+          {"tankolás törlése"}
         </p>
 
         {/* Törlés gomb */}

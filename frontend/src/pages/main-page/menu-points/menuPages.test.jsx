@@ -43,9 +43,6 @@ vi.mock("react-chartjs-2", function() {
     Bar: function Bar() {
       return <div>mock-bar-chart</div>;
     },
-    Pie: function Pie() {
-      return <div>mock-pie-chart</div>;
-    },
   };
 });
 
@@ -65,8 +62,8 @@ beforeEach(function() {
   };
 });
 
-describe("menu point pages", function() {
-  it("renders disabled community profiles text", function() {
+describe("menüpont oldalak", function() {
+  it("megjeleníti a kikapcsolt közösségi profilok szövegét", function() {
     const markup = renderMarkup(
       <CommunityProfiles loading={false} enabled={false} profiles={[]} onCompare={vi.fn()} />,
     );
@@ -74,7 +71,7 @@ describe("menu point pages", function() {
     expect(markup).toContain("közösségi");
   });
 
-  it("renders community gas stations empty state", function() {
+  it("megjeleníti a közösségi benzinkutak üres állapotát", function() {
     const markup = renderMarkup(
       <CommunityGasStations
         loading={false}
@@ -89,28 +86,28 @@ describe("menu point pages", function() {
     expect(markup).toContain("megosztott benzinkút");
   });
 
-  it("renders community page initial state", function() {
+  it("megjeleníti a közösségi oldal kezdő állapotát", function() {
     const markup = renderMarkup(<Community />);
 
     expect(markup).toContain("Közösség");
-    expect(markup).toContain("Loading...");
+    expect(markup).not.toContain("Loading...");
   });
 
-  it("renders gas stations page", function() {
+  it("megjeleníti a benzinkutak oldalt", function() {
     const markup = renderMarkup(<GasStations />);
 
     expect(markup).toContain("Benzinkutak");
-    expect(markup).toContain("Még nincsenek rögzített benzinkutak");
+    expect(markup).toContain("Még nincsenek mentett benzinkutak");
   });
 
-  it("renders service log page", function() {
+  it("megjeleníti a szerviznapló oldalt", function() {
     const markup = renderMarkup(<ServiceLog />);
 
     expect(markup).toContain("Szerviznapló");
     expect(markup).toContain("Új szerviz");
   });
 
-  it("renders general stats card", function() {
+  it("megjeleníti az általános statisztika kártyát", function() {
     const markup = renderMarkup(
       <GeneralStats
         generalStats={{
@@ -126,7 +123,7 @@ describe("menu point pages", function() {
     expect(markup).toContain("12.345 km");
   });
 
-  it("renders all cars summary", function() {
+  it("megjeleníti az összes autó összesítését", function() {
     const markup = renderMarkup(
       <AllCars
         summaryStats={[
@@ -143,32 +140,32 @@ describe("menu point pages", function() {
     expect(markup).toContain("1.200 km");
   });
 
-  it("renders data visual loading state", function() {
+  it("megjeleníti az adatvizualizáció betöltési állapotát", function() {
     const markup = renderMarkup(<DataVisual />);
 
     expect(markup).toContain("Betöltés...");
   });
 
-  it("renders statistics page", function() {
+  it("megjeleníti a statisztika oldalt", function() {
     const markup = renderMarkup(<Statistics />);
 
     expect(markup).toContain("Statisztikák");
     expect(markup).toContain("Betöltés...");
   });
 
-  it("renders trips empty state", function() {
+  it("megjeleníti az utak üres állapotát", function() {
     const markup = renderMarkup(<Trips trips={[]} onDeletedTrip={vi.fn()} />);
 
-    expect(markup).toContain("Még nincsenek rögzített utak");
+    expect(markup).toContain("Még nincsenek mentett utak");
   });
 
-  it("renders fuels empty state", function() {
+  it("megjeleníti a tankolások üres állapotát", function() {
     const markup = renderMarkup(<Fuels fuelGroups={[]} onDeletedFuel={vi.fn()} onUpdatedFuel={vi.fn()} />);
 
-    expect(markup).toContain("Még nincsenek rögzített tankolások");
+    expect(markup).toContain("Még nincsenek mentett tankolások");
   });
 
-  it("renders trips and fuels page", function() {
+  it("megjeleníti az utak és tankolások oldalt", function() {
     const markup = renderMarkup(<TripsAndFuels />);
 
     expect(markup).toContain("Utak");

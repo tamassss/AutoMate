@@ -19,7 +19,7 @@ beforeEach(function() {
 });
 
 describe("getCurrentUserMeta", function() {
-  it("returns stored local user data", function() {
+  it("visszaadja az eltárolt helyi felhasználói adatokat", function() {
     localStorage.setItem("user_id", "15");
     localStorage.setItem("full_name", "Test User");
     localStorage.setItem("role", "admin");
@@ -31,7 +31,7 @@ describe("getCurrentUserMeta", function() {
     });
   });
 
-  it("returns fallback values when local storage is empty", function() {
+  it("alapértelmezett értékeket ad vissza, ha üres a local storage", function() {
     expect(getCurrentUserMeta()).toEqual({
       userId: "",
       fullName: "Felhasználó",

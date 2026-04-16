@@ -25,19 +25,28 @@ beforeEach(function() {
   globalThis.window = { location: { href: "/" } };
 });
 
-describe("car pages", function() {
-  it("renders car selector empty state", function() {
+describe("autó oldalak", function() {
+  it("megjeleníti az autóválasztó üres állapotát", function() {
     const markup = renderMarkup(<CarSelect refreshKey={0} onCarChange={vi.fn()} />);
 
     expect(markup).toContain("main-image");
     expect(markup).toContain("main-car-img");
   });
 
-  it("renders cars page header and action buttons", function() {
+  it("megjeleníti az autók oldal fejlécét és műveletgombjait", function() {
     const markup = renderMarkup(<Cars />);
 
     expect(markup).toContain("Teszt Elek");
     expect(markup).toContain("cars-buttons");
     expect(markup).toContain("Új autó");
+    expect(markup).not.toContain("Vissza");
+  });
+
+  it("megjeleníti az admin linket admin felhasználónál", function() {
+    localStorage.setItem("role", "admin");
+
+    const markup = renderMarkup(<Cars />);
+
+    expect(markup).toContain("Admin felület");
   });
 });

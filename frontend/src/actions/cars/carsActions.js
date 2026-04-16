@@ -42,7 +42,9 @@ export async function createCar(carData) {
   handleUnauthorized(response);
 
   if (!response.ok) {
-    throw new Error(data.detail || "Nem sikerült létrehozni az autót.");
+    const error = new Error(data.detail || "Nem sikerült létrehozni az autót.");
+    error.fieldErrors = data.field_errors || {};
+    throw error;
   }
 
   return data;
@@ -79,7 +81,9 @@ export async function editCar(carId, carData) {
   handleUnauthorized(response);
 
   if (!response.ok) {
-    throw new Error(data.detail || "Nem sikerült módosítani az autót.");
+    const error = new Error(data.detail || "Nem sikerült módosítani az autót.");
+    error.fieldErrors = data.field_errors || {};
+    throw error;
   }
 
   return data;

@@ -7,7 +7,7 @@ export default function Trips({ trips, onDeletedTrip }) {
   if (trips.length === 0) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: "60vh" }}>
-        <p className="fs-4">Még nincsenek rögzített utak.</p>
+        <p className="fs-4">Még nincsenek mentett utak.</p>
       </div>
     );
   }

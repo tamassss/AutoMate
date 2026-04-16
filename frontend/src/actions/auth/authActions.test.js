@@ -9,7 +9,7 @@ beforeEach(function() {
 });
 
 describe("login", function() {
-  it("stores auth and user data after successful login", async function() {
+  it("sikeres bejelentkezés után eltárolja az auth és felhasználói adatokat", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         tokens: { access: "access-token", refresh: "refresh-token" },
@@ -31,7 +31,7 @@ describe("login", function() {
     expect(result).toEqual({ user_id: 8, full_name: "Test User", role: "admin" });
   });
 
-  it("throws on invalid credentials", async function() {
+  it("hibát dob hibás belépési adatoknál", async function() {
     fetch.mockResolvedValue(createJsonResponse({}, { ok: false, status: 401 }));
 
     await expect(login("bad@example.com", "bad")).rejects.toThrow();
@@ -39,7 +39,7 @@ describe("login", function() {
 });
 
 describe("register", function() {
-  it("returns backend data on success", async function() {
+  it("siker esetén visszaadja a backend válaszát", async function() {
     fetch.mockResolvedValue(createJsonResponse({ ok: true }));
 
     await expect(register("new@example.com", "secret", "New User")).resolves.toEqual({ ok: true });
@@ -47,7 +47,7 @@ describe("register", function() {
 });
 
 describe("updateProfileSettings", function() {
-  it("saves returned profile data to local storage", async function() {
+  it("eltárolja a visszakapott profiladatokat a local storage-ban", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         user: {

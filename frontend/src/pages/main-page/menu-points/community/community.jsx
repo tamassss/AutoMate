@@ -115,7 +115,7 @@ export default function Community() {
       <Navigate 
         to="/muszerfal" 
         replace 
-        state={{ successMessage: "Community features are not enabled for this car." }} 
+        state={{ successMessage: "Nincs engedélyezve a közösség ehhez az autóhoz." }} 
       />
     );
   }
@@ -149,9 +149,6 @@ export default function Community() {
           </div>
 
           <div className="container py-4">
-            <h1 className="text-center text-primary mb-4 fw-bold">Közösség</h1>
-
-            {loading && <p className="text-center text-light">Loading...</p>}
             {error && <p className="text-danger text-center">{error}</p>}
 
             {!loading && activeTab === "profiles" && (

@@ -28,7 +28,7 @@ export default function DeleteCar({ onClose, onDeleted, carId, displayName, lice
         onDeleted(carId);
       }
       
-      setShowSuccess(true);
+      onClose?.();
     } catch (err) {
       setError(err.message || "Nem sikerült törölni az autót.");
     } finally {
@@ -45,7 +45,8 @@ export default function DeleteCar({ onClose, onDeleted, carId, displayName, lice
           <span style={{ color: "#075DBF", fontWeight: "bold" }}>
             {carDescription}
           </span>
-          {" autó törlése"}
+          <br />
+          {"autó törlése"}
         </p>
 
         {/* Törlés gomb */}

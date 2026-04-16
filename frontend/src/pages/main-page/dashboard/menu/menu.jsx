@@ -11,6 +11,7 @@ import EventItem from "../../../../components/event-item/eventItem";
 import NewEvent from "../../../../modals/newEvent/newEvent";
 import EventsModal from "../../../../modals/eventsModal/eventsModal";
 import Button from "../../../../components/button/button";
+import SuccessModal from "../../../../components/success-modal/successModal";
 
 import { createEvent, getEvents } from "../../../../actions/events/eventActions";
 import { getCurrentUserMeta, isCommunityEnabledForCar, setCommunityEnabledForCar } from "../../../../actions/community/communityLocalActions";
@@ -22,12 +23,14 @@ export default function Menu({ events, onEventCreated }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showNewEvent, setShowNewEvent] = useState(false);
   const [showEventsModal, setShowEventsModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [loadedEvents, setLoadedEvents] = useState([]);
   const [communityEnabled, setCommunityEnabled] = useState(false);
   const [savingCommunity, setSavingCommunity] = useState(false);
 
   const selectedCarId = Number(localStorage.getItem("selected_car_id") || 0);
-  const { userId } = getCurrentUserMeta();
+  const { userId, role } = getCurrentUserMeta();
+  const isModerator = role === "moderator";
   const isCommunityRoute = location.pathname === "/muszerfal/kozosseg";
 
   const closeMenu = () => setIsOpen(false);
@@ -61,10 +64,15 @@ export default function Menu({ events, onEventCreated }) {
   /*****KÖZÖSSÉGI RÉSZ*****/
   // Be van-e kapcsolva a közösség az autóhoz
   useEffect(() => {
+    if (isModerator) {
+      setCommunityEnabled(true);
+      return;
+    }
+
     isCommunityEnabledForCar(userId, selectedCarId)
       .then((status) => setCommunityEnabled(status))
       .catch(() => setCommunityEnabled(false));
-  }, [selectedCarId, userId]);
+  }, [isModerator, selectedCarId, userId]);
 
   // 2. Kapcsoló kezelése (Checkbox)
   const handleCommunityToggle = async (e) => {
@@ -121,13 +129,15 @@ export default function Menu({ events, onEventCreated }) {
             <img className="menu-icon" src={communityIcon} alt="K" />
             <div className="menu-community-row w-100 d-flex justify-content-between align-items-center">
               <p className="menu-text m-0">Közösség</p>
-              <input
-                type="checkbox"
-                checked={communityEnabled}
-                disabled={isCommunityRoute || savingCommunity}
-                onChange={handleCommunityToggle}
-                onClick={(e) => e.stopPropagation()}
-              />
+              {!isModerator && (
+                <input
+                  type="checkbox"
+                  checked={communityEnabled}
+                  disabled={isCommunityRoute || savingCommunity}
+                  onChange={handleCommunityToggle}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
             </div>
           </NavLink>
         </div>
@@ -170,7 +180,7 @@ export default function Menu({ events, onEventCreated }) {
               await createEvent(payload);
             }
             await loadEvents();
-            setShowNewEvent(false);
+            setSuccessMessage("Esemény sikeresen hozzáadva");
           }}
         />
       )}
@@ -179,6 +189,16 @@ export default function Menu({ events, onEventCreated }) {
         <EventsModal
           onClose={() => setShowEventsModal(false)}
           onChanged={loadEvents}
+          onSuccess={setSuccessMessage}
+        />
+      )}
+
+      {successMessage && (
+        <SuccessModal
+          description={successMessage}
+          onClose={function() {
+            setSuccessMessage("");
+          }}
         />
       )}
     </>

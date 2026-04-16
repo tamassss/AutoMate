@@ -25,6 +25,8 @@ export default function GasStationCard({
   extraButtonText = "",
   onExtraButtonClick,
   extraInfo = "",
+  shareStatusText = "",
+  shareStatusType = "",
 }) {
   const [showEditGasStation, setShowEditGasStation] = useState(false);
   const [showDeleteGasStation, setShowDeleteGasStation] = useState(false);
@@ -77,6 +79,9 @@ export default function GasStationCard({
           <p className="date-text" style={{ color: "#4CAF50" }}>
             {station?.datum || "-"}
           </p>
+          <p className={`gas-station-share-status ${shareStatusType}`}>
+            {shareStatusText || "\u00a0"}
+          </p>
         </div>
 
         <div className="p-1 gas-station-card-body">
@@ -117,7 +122,10 @@ export default function GasStationCard({
         {showDefaultActions && showDeleteGasStation ? (
           <DeleteGasStation
             onClose={() => setShowDeleteGasStation(false)}
-            onDeleted={onDeleted}
+            onDeleted={function(deletedId) {
+              setShowDeleteGasStation(false);
+              onDeleted?.(deletedId);
+            }}
             gasStationId={station?.gasStationId}
             helyseg={station?.helyseg || "-"}
             cim={station?.cim || "-"}
@@ -128,7 +136,10 @@ export default function GasStationCard({
           <EditGasStation
             onClose={() => setShowEditGasStation(false)}
             selectedStation={station}
-            onSave={(updatedStation) => onUpdated?.(updatedStation)}
+            onSave={function(updatedStation) {
+              setShowEditGasStation(false);
+              onUpdated?.(updatedStation);
+            }}
           />
         ) : null}
       </div>

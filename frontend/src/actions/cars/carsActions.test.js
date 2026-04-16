@@ -9,7 +9,7 @@ beforeEach(function() {
 });
 
 describe("getCars", function() {
-  it("returns the listed cars", async function() {
+  it("visszaadja a listázott autókat", async function() {
     fetch.mockResolvedValue(createJsonResponse({ cars: [{ car_id: 2 }] }));
 
     await expect(getCars()).resolves.toEqual([{ car_id: 2 }]);
@@ -17,7 +17,7 @@ describe("getCars", function() {
 });
 
 describe("createCar", function() {
-  it("converts numeric fields before sending", async function() {
+  it("elküldés előtt számmá alakítja a numerikus mezőket", async function() {
     fetch.mockResolvedValue(createJsonResponse({ ok: true }));
 
     await createCar({
@@ -41,7 +41,7 @@ describe("createCar", function() {
 });
 
 describe("editCar", function() {
-  it("sends null for cleared optional numeric fields", async function() {
+  it("null értéket küld a kiürített opcionális numerikus mezőknél", async function() {
     fetch.mockResolvedValue(createJsonResponse({ ok: true }));
 
     await editCar(5, {
@@ -59,13 +59,13 @@ describe("editCar", function() {
 });
 
 describe("deleteCar", function() {
-  it("throws when car id is missing", async function() {
+  it("hibát dob, ha hiányzik az autó azonosítója", async function() {
     await expect(deleteCar("")).rejects.toThrow();
   });
 });
 
 describe("returnSelectedCard", function() {
-  it("stores the selected car id", function() {
+  it("eltárolja a kiválasztott autó azonosítóját", function() {
     expect(returnSelectedCard(15)).toBe(15);
     expect(localStorage.getItem("selected_car_id")).toBe("15");
   });

@@ -242,6 +242,8 @@ class TestStatisticsEndpoints(BaseAPITestCase):
         self.assertIn("distance_km_total", data)
         self.assertIn("fuelings", data)
         self.assertIn("maintenance", data)
+        self.assertIn("monthly", data)
+        self.assertIn("total_spent", data["monthly"])
 
     def test_summary_statistics(self):
         resp = self.client.get("/api/statistics/summary/")

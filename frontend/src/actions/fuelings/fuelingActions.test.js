@@ -12,7 +12,7 @@ beforeEach(function() {
 });
 
 describe("getFuelings", function() {
-  it("maps monthly groups and fuel entries", async function() {
+  it("átalakítja a havi csoportokat és tankolási bejegyzéseket", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         fuelings_by_month: [
@@ -55,13 +55,13 @@ describe("getFuelings", function() {
 });
 
 describe("editFuel", function() {
-  it("throws when fueling id is missing", async function() {
+  it("hibát dob, ha hiányzik a tankolás azonosítója", async function() {
     await expect(editFuel("", {})).rejects.toThrow();
   });
 });
 
 describe("deleteFuel", function() {
-  it("deletes the selected fueling", async function() {
+  it("törli a kiválasztott tankolást", async function() {
     fetch.mockResolvedValue(createJsonResponse({}));
 
     await expect(deleteFuel(9)).resolves.toBe(true);

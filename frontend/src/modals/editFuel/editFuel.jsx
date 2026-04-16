@@ -47,8 +47,6 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
     const errors = {};
     if (!liters) errors.liters = "A mennyiség megadása kötelező.";
     if (!pricePerLiter) errors.pricePerLiter = "A Ft/liter megadása kötelező.";
-    if (!odometerKm) errors.odometerKm = "A km óra állás megadása kötelező.";
-
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -57,7 +55,7 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
     // számmá alakítás
     const parsedLiters = Number(liters);
     const parsedPrice = Number(pricePerLiter);
-    const parsedOdometer = Number(odometerKm);
+    const parsedOdometer = odometerKm === "" ? 0 : Number(odometerKm);
 
     setIsSaving(true);
     try {
@@ -117,7 +115,7 @@ export default function EditFuel({ onClose, onSave, selectedFuel }) {
         />
 
         <LabeledInput
-          label="Km óra állása"
+          label="Km óra állás (opcionális)"
           type="number"
           value={odometerKm}
           onChange={function(e) {

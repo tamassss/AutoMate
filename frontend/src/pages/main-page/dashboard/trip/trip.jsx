@@ -66,8 +66,11 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
   const expectedLiters = avgConsumption > 0 ? (distanceKm * avgConsumption) / 100 : 0;
 
   const fuelings = tripData?.fuelings || [];
-  const fueledLiters = fuelings.reduce((sum, f) => sum + (f.liters || 0), 0);
-  const fueledSpent = fuelings.reduce((sum, f) => sum + (f.spent || 0), 0);
+  const fueledLiters = fuelings.reduce((sum, f) => sum + Number(f.liters || 0), 0);
+  const fueledSpent = fuelings.reduce((sum, f) => {
+    const spent = f.spent ?? (Number(f.liters || 0) * Number(f.pricePerLiter || 0));
+    return sum + Number(spent || 0);
+  }, 0);
 
   const arrivalDelta = getArrivalDelta(tripData?.expectedArrival, runtime.actualArrival);
 
@@ -114,13 +117,16 @@ export default function Trip({ tripData, onCancelFinish, onSaveFinish, onRuntime
             <td className="even field">
               {tripData?.expectedArrival || "-"}
               {runtime.showFinishResult && arrivalDelta !== null && (
-                <span style={{ 
-                  color: arrivalDelta >= 0 ? "#44d062" : "#e35b5b", 
-                  fontWeight: "bold", 
-                  marginLeft: "6px" 
-                }}>
-                  {arrivalDelta >= 0 ? ` (+${arrivalDelta} min)` : ` (${arrivalDelta} min)`}
-                </span>
+                <>
+                  <br />
+                  <span style={{ 
+                    color: arrivalDelta >= 0 ? "#44d062" : "#e35b5b", 
+                    fontSize: "0.9em",
+                    fontWeight: "bold" 
+                  }}>
+                    {arrivalDelta >= 0 ? `(+${arrivalDelta} perc)` : `(${arrivalDelta} perc)`}
+                  </span>
+                </>
               )}
             </td>
           </tr>

@@ -80,14 +80,15 @@ export default function Dashboard() {
 
   // FUNCTION-ÖK
 
-  function handleRuntimeChange(runtime) {
-    if (activeTrip) {
-      const updated = { ...activeTrip, runtime };
+  const handleRuntimeChange = useCallback(function(runtime) {
+    setActiveTrip(function(prev) {
+      if (!prev) return prev;
+      const updated = { ...prev, runtime };
       // storage + state frissítés
       localStorage.setItem("active_trip_state", JSON.stringify(updated));
-      setActiveTrip(updated);
-    }
-  }
+      return updated;
+    });
+  }, []);
 
   async function handleSaveTrip() {
     if (!activeTrip || isSaving) return;
@@ -124,6 +125,7 @@ export default function Dashboard() {
     }
     
     await loadDashboard();
+    setSuccessMessage("Tankolás sikeresen elmentve");
   }
 
   function handleStartTrip(tripDetails) {
@@ -255,7 +257,13 @@ export default function Dashboard() {
           <NewFuel onClose={() => setShowNewFuel(false)} onSave={handleSaveFuel} />
         )}
         {showNewGasStation && (
-          <NewGasStation onClose={() => setShowNewGasStation(false)} onSave={loadDashboard} />
+          <NewGasStation
+            onClose={() => setShowNewGasStation(false)}
+            onSave={async function() {
+              await loadDashboard();
+              setSuccessMessage("Benzinkút sikeresen elmentve");
+            }}
+          />
         )}
         {showNewTrip && (
           <NewTrip

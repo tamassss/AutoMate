@@ -74,13 +74,13 @@ export default function EditCar({ onClose, onSave, selectedCar }) {
       });
       
       onSave?.();
-      setShowSuccess(true);
+      onClose?.();
     } catch (err) {
       const message = err?.message || "Nem sikerült módosítani az autót";
       
       // ha már létezik a rendszám
-      if (message.toLowerCase().includes("regisztrálva van")) {
-        setFieldErrors(function(prev) { return { ...prev, plate: message }; });
+      if (err?.fieldErrors?.plate) {
+        setFieldErrors(function(prev) { return { ...prev, plate: err.fieldErrors.plate }; });
       } else {
         setServerError(message);
       }

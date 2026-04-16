@@ -48,13 +48,13 @@ export default function ParkingHelp() {
                             <>
                                 <h1 className="parking-title">Előre merőleges</h1>
                                 <div className="row parking-content gx-5 align-items-center">
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>1. lépés</p>
                                         <p>Indexelj balra, majd a parkolóhely előtti második vonalnál forgasd el a kormányt</p>
                                         <img src={em1} className="w-100 p-3" />
                                     </div>
 
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>2. lépés</p>
                                         <p>Korrigáld az autót, hogy a megfelelő helyre érkezz</p>
                                         <img src={em2} className="w-100 p-3" />
@@ -68,13 +68,13 @@ export default function ParkingHelp() {
                             <>
                                 <h1 className="parking-title">Hátra merőleges</h1>
                                 <div className="row parking-content gx-5 align-items-center">
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>1. lépés</p>
                                         <p>A parkolóhely megtalálása után hajts tovább, amíg a 3. vonal nincs a válladdal egyvonalban</p>
                                         <img src={hm1} className="w-100 p-3" />
                                     </div>
 
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>2. lépés</p>
                                         <p>Tedd az autót rükvercbe, majd amikor elindulsz kormányozz jobbra koppanásig</p>
                                         <img src={hm2} className="w-100 p-3" />
@@ -94,13 +94,13 @@ export default function ParkingHelp() {
                             <>
                                 <h1 className="parking-title">Előre párhuzamos</h1>
                                 <div className="row parking-content gx-5 align-items-center">
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>1. lépés</p>
                                         <p>Amikor a vállad egyvonalban van a melletted lévő autó elejével, kormányozz jobbra</p>
                                         <img src={ep1} className="w-100 p-3" />
                                     </div>
 
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>2. lépés</p>
                                         <p>Kormányozz balra úgy, hogy az autód a padka mellett menjen el</p>
                                         <img src={ep2} className="w-100 p-3" />
@@ -108,13 +108,13 @@ export default function ParkingHelp() {
                                 </div>
 
                                 <div className="row parking-content gx-5 align-items-center">
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>3. lépés</p>
                                         <p>Hajts egy kicsit tovább, majd tedd az autót rükvercbe</p>
                                         <img src={ep3} className="w-100 p-3" />
                                     </div>
 
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>4. lépés</p>
                                         <p>Korrigáld úgy, hogy a padkához közel állj és megfelelő távolság legyen az autók között</p>
                                         <img src={ep4} className="w-100 p-3" />
@@ -128,13 +128,13 @@ export default function ParkingHelp() {
                             <>
                                 <h1 className="parking-title">Hátra párhuzamos</h1>
                                 <div className="row parking-content gx-5 align-items-center">
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>1. lépés</p>
                                         <p>Amikor a vállad egyvonalban van a melletted lévő autó visszapillantójával, állj meg</p>
                                         <img src={hp1} className="w-100 p-3" />
                                     </div>
 
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>2. lépés</p>
                                         <p>Indulj el hátrafelé, tekerd a kormányt jobbra addig, amíg a bal visszapillantóban nem látod a mögötted álló autó jobb első lámpáját. Ezután tolass tovább egyenesen</p>
                                         <img src={hp2} className="w-100 p-3" />
@@ -142,13 +142,13 @@ export default function ParkingHelp() {
                                 </div>
 
                                 <div className="row parking-content gx-5 align-items-center">
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>3. lépés</p>
                                         <p>Amikor a jobb visszapillantód kitakarja az előtted álló autó rendszámát, tekerd balra a kormányt</p>
                                         <img src={hp3} className="w-100 p-3" />
                                     </div>
 
-                                    <div className="col-6">
+                                    <div className="col-12 col-md-6">
                                         <p>4. lépés</p>
                                         <p>Korrigáld úgy, hogy a padkához közel állj és megfelelő távolság legyen az autók között</p>
                                         <img src={hp4} className="w-100 p-3" />

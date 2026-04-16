@@ -2,10 +2,11 @@ import { useState } from "react";
 import Button from "../../components/button/button";
 import LabeledInput from "../../components/labeledInput/labeledInput";
 import Modal from "../../components/modal/modal";
+import SuccessModal from "../../components/success-modal/successModal";
 import { limitTextLength } from "../../actions/shared/inputValidation";
 import { updateProfileSettings } from "../../actions/auth/authActions";
 
-export default function Settings({ onClose }) {
+export default function Settings({ onClose, onSaved }) {
   // jelszó1
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [unlockPassword, setUnlockPassword] = useState("");
@@ -29,6 +30,7 @@ export default function Settings({ onClose }) {
   const [fieldErrors, setFieldErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // mentés
   async function handleSave(event) {
@@ -71,6 +73,7 @@ export default function Settings({ onClose }) {
         email: email.trim(),
         password: password,
       });
+      onSaved?.();
       onClose?.();
     } catch (err) {
       setErrorMessage(err.message || "Nem sikerült menteni a beállításokat.");
@@ -80,6 +83,7 @@ export default function Settings({ onClose }) {
   }
 
   return (
+    <>
     <Modal
       title="Beállítások"
       onClose={onClose}
@@ -131,6 +135,7 @@ export default function Settings({ onClose }) {
           />
           <LabeledInput
             label="E-mail cím"
+            type="email"
             value={email}
             maxLength={50}
             onChange={function(e) {
@@ -162,5 +167,16 @@ export default function Settings({ onClose }) {
       )}
       {errorMessage && <p className="text-danger m-0">{errorMessage}</p>}
     </Modal>
+
+    {showSuccess && (
+      <SuccessModal
+        description="Sikeres módosítás"
+        onClose={function() {
+          setShowSuccess(false);
+          onClose?.();
+        }}
+      />
+    )}
+    </>
   );
 }

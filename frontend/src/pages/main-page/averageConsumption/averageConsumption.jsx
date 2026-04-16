@@ -69,6 +69,11 @@ export default function AverageConsumption() {
 
         // Képlet
         const avg = (Number(refueledLiters) / distance) * 100;
+        if (avg > 100) {
+            setCalculatedAvg(null);
+            setError("Az átlagfogyasztás nem lehet több 100-nál.");
+            return;
+        }
         setCalculatedAvg(Number(avg.toFixed(2)));
     };
 

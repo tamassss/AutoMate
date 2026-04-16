@@ -32,3 +32,4 @@ export default function Modal({ title, children, onClose, columns = 2, footer, o
     </div>
   );
 }
+

@@ -113,7 +113,7 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
         });
       }
 
-      setShowSuccess(true);
+      onClose?.();
     } catch (err) {
       setServerError(err.message || "Nem sikerült módosítani a benzinkutat.");
     } finally {
@@ -126,6 +126,7 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
       <Modal
         title="Benzinkút módosítása"
         onClose={onClose}
+        columns={1}
         onSubmit={handleSave}
         footer={<Button text={isSaving ? "Mentés..." : "Módosítás"} type="submit" />}
       >
@@ -156,6 +157,7 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
 
         <div className="full-width text-start modal-select-group">
           <label className="modal-select-label">Forgalmazó</label>
+          {fieldErrors.supplier && <span className="error-message">{fieldErrors.supplier}</span>}
           <select
             value={supplier}
             className="modal-select"
@@ -172,6 +174,7 @@ export default function EditGasStation({ onClose, onSave, selectedStation }) {
 
         <div className="full-width text-start modal-select-group">
           <label className="modal-select-label">Üzemanyag típusa</label>
+          {fieldErrors.fuelTypeId && <span className="error-message">{fieldErrors.fuelTypeId}</span>}
           <select
             value={fuelTypeId}
             className="modal-select"

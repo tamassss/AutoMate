@@ -59,13 +59,13 @@ export default function AddCar({ onClose, onSave }) {
       });
       
       onSave?.();
-      setShowSuccess(true);
+      onClose?.();
     } catch (err) {
       const message = err?.message || "Nem sikerült létrehozni az autót";
       
       // foglalt rendszám
-      if (message.toLowerCase().includes("regisztrálva van")) {
-        setFieldErrors({ ...fieldErrors, plate: message });
+      if (err?.fieldErrors?.plate) {
+        setFieldErrors({ ...fieldErrors, plate: err.fieldErrors.plate });
       } else {
         setError(message);
       }

@@ -12,7 +12,7 @@ beforeEach(function() {
 });
 
 describe("getRoutes", function() {
-  it("maps route data for the trips table", async function() {
+  it("átalakítja az útadatokat az utak táblázatához", async function() {
     fetch.mockResolvedValue(
       createJsonResponse({
         routes: [
@@ -51,7 +51,7 @@ describe("getRoutes", function() {
 });
 
 describe("deleteTrip", function() {
-  it("throws when route usage id is missing", async function() {
+  it("hibát dob, ha hiányzik az úthasználat azonosítója", async function() {
     await expect(deleteTrip("")).rejects.toThrow();
   });
 });

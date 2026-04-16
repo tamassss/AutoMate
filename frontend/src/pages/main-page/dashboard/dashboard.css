@@ -116,7 +116,7 @@
 }
 
 
-@media (max-width: 1200px) {
+@media (max-width: 1199px) {
     .dashboard-layout .container-fluid {
       display: block;
       padding-bottom: 0;

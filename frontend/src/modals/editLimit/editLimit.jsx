@@ -1,6 +1,6 @@
 ﻿import { useState } from "react";
 import Button from "../../components/button/button";
-import LabeledInput from "../../components/labeledInput/labeledInput";
+import Input from "../../components/input/input";
 import Modal from "../../components/modal/modal";
 import { clampNumberInput } from "../../actions/shared/inputValidation";
 import SuccessModal from "../../components/success-modal/successModal";
@@ -22,7 +22,7 @@ export default function EditLimit({ onClose, onSave, initialLimit = 0 }) {
         setFieldError("");
         setSavedLimit(n);
         onSave?.(n);
-        setShowSuccess(true);
+        onClose?.();
     }
 
     return (
@@ -35,8 +35,7 @@ export default function EditLimit({ onClose, onSave, initialLimit = 0 }) {
                 footer={<Button text={"Mentés"} type={"submit"} />}
             >
                 <p className="full-width">Mennyit szeretnél költeni üzemanyagra ebben a hónapban?</p>
-                <LabeledInput
-                    label={"Maximum"}
+                <Input
                     type={"number"}
                     value={maxLimit}
                     min={0}

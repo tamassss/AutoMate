@@ -54,7 +54,7 @@ export default function NewService({ onClose, onSave }) {
                 ...(reminderDate ? { reminderDate: reminderDate } : {}),
                 ...(reminderKm ? { reminderKm: reminderKm } : {}),
             });
-            setShowSuccess(true);
+            onClose?.();
         } catch (err) {
             setError(err.message || "Nem sikerült menteni a szervizt.");
         } finally {

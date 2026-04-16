@@ -1,19 +1,11 @@
 *** PROJEKT INDÍTÁSA ***
---- FRONTEND ---
 cd frontend
 npm i
 npm run dev
-
---- BACKEND ---
-
-
-**************************
+----------------
 
 *** TESZTEK ***
---- FRONTEND ---
 cd frontend
 npm i
 npm test
-
---- BACKEND ---
 ----------------

@@ -67,7 +67,7 @@ export default function NewFuel({ onClose, onSave }) {
             };
 
             await onSave?.(fuelData);
-            setShowSuccess(true);
+            onClose?.();
         } catch (err) {
             setError(err.message || "Nem sikerült menteni a tankolást.");
         } finally {

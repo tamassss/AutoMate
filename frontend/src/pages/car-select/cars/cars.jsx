@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import Navbar from "../../../components/navbar/navbar";
 import Button from "../../../components/button/button";
@@ -7,17 +8,20 @@ import AddCar from "../../../modals/addCar/addCar";
 import DeleteCar from "../../../modals/deleteCar/deleteCar";
 import CarSelect from "../carSelect/carSelect";
 import Settings from "../../../modals/settings/settings";
+import SuccessModal from "../../../components/success-modal/successModal";
 
 import "./cars.css";
 
 export default function Cars() {
   const fullName = localStorage.getItem("full_name") || "Felhasználó";
+  const role = localStorage.getItem("role");
 
   // Modal állapotok
   const [showAddCar, setShowAddCar] = useState(false);
   const [showEditCar, setShowEditCar] = useState(false);
   const [showDeleteCar, setShowDeleteCar] = useState(false);
   const [showSetting, setShowSettings] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Adatok
   const [selectedCar, setSelectedCar] = useState(null);
@@ -35,6 +39,15 @@ export default function Cars() {
   return (
     <>
       <Navbar />
+      <div className="cars-page-content">
+
+      {role === "admin" && (
+        <div className="cars-admin-link-wrap">
+          <Link className="cars-admin-link" to="/admin">
+            Admin felület
+          </Link>
+        </div>
+      )}
 
       {/* Beállítások */}
       {showSetting && (
@@ -42,13 +55,16 @@ export default function Cars() {
           onClose={function() {
             setShowSettings(false);
           }} 
+          onSaved={function() {
+            setSuccessMessage("Sikeres módosítás");
+          }}
         />
       )}
 
       <h1 className="title fs-1 mt-3">{fullName}</h1>
       <h2 className="subtitle fw-4 opacity-75">garázsa</h2>
 
-      <div className="my-4">
+      <div className="cars-select-wrap">
         {/* Autó választó */}
         <CarSelect 
           refreshKey={refreshKey} 
@@ -79,7 +95,7 @@ export default function Cars() {
 
         <div className="cars-button-item">
           <Button
-            text="Autó törlése"
+            text="Törlés"
             onClick={function() {
               setDeleteTargetCar(selectedCar);
               setShowDeleteCar(true);
@@ -89,14 +105,18 @@ export default function Cars() {
           />
         </div>
       </div>
-
+      </div>
+      
       {/* Autó szerkesztése */}
       {showEditCar && (
         <EditCar 
           onClose={function() {
             setShowEditCar(false);
           }} 
-          onSave={triggerRefresh} 
+          onSave={function() {
+            triggerRefresh();
+            setSuccessMessage("Sikeres módosítás");
+          }} 
           selectedCar={selectedCar} 
         />
       )}
@@ -107,7 +127,10 @@ export default function Cars() {
           onClose={function() {
             setShowAddCar(false);
           }} 
-          onSave={triggerRefresh} 
+          onSave={function() {
+            triggerRefresh();
+            setSuccessMessage("Sikeres autó felvétel");
+          }} 
         />
       )}
 
@@ -121,10 +144,20 @@ export default function Cars() {
           onDeleted={function() {
             setSelectedCar(null);
             triggerRefresh();
+            setSuccessMessage("Autó törölve");
           }}
           carId={deleteTargetCar.car_id}
           displayName={deleteTargetCar.display_name}
           licensePlate={deleteTargetCar.license_plate}
+        />
+      )}
+
+      {successMessage && (
+        <SuccessModal
+          description={successMessage}
+          onClose={function() {
+            setSuccessMessage("");
+          }}
         />
       )}
     </>

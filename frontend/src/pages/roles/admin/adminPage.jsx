@@ -94,13 +94,13 @@ export default function AdminPage() {
 
   return (
     <div className="admin-page">
-      <Navbar forceHomeLink />
+      <Navbar />
 
       <div className="admin-page-content container">
         <div className="admin-header-row">
           <h1 className="admin-title">Admin felület</h1>
-          <Link className="admin-home-link" to="/">
-            Főoldal
+          <Link className="admin-home-link" to="/autok">
+            Autók
           </Link>
         </div>
 
@@ -115,6 +115,7 @@ export default function AdminPage() {
           <Input
             type="text"
             value={searchEmail}
+            maxLength={50}
             onChange={function(e) {
               setSearchEmail(e.target.value);
             }}
@@ -157,8 +158,9 @@ export default function AdminPage() {
                     >
                       <td>
                         <Input
-                          type="text"
+                          type="email"
                           value={user.email}
+                          maxLength={50}
                           onChange={function(e) {
                             handleChange(user.user_id, "email", e.target.value);
                           }}
@@ -169,6 +171,7 @@ export default function AdminPage() {
                         <Input
                           type="text"
                           value={user.full_name}
+                          maxLength={30}
                           onChange={function(e) {
                             handleChange(user.user_id, "full_name", e.target.value);
                           }}
@@ -179,6 +182,7 @@ export default function AdminPage() {
                         <Input
                           type="password"
                           value={user.password}
+                          maxLength={50}
                           onChange={function(e) {
                             handleChange(user.user_id, "password", e.target.value);
                           }}
@@ -196,7 +200,7 @@ export default function AdminPage() {
                           disabled={isDisabled}
                         >
                           <option value="user">Felhasználó</option>
-                          <option value="admin">Admin</option>
+                          {currentIsSuperadmin && <option value="admin">Admin</option>}
                           <option value="moderator">Moderátor</option>
                         </select>
                       </td>

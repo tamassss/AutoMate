@@ -38,9 +38,6 @@ vi.mock("react-chartjs-2", function() {
     Bar: function Bar() {
       return <div>mock-bar-chart</div>;
     },
-    Pie: function Pie() {
-      return <div>mock-pie-chart</div>;
-    },
   };
 });
 
@@ -58,22 +55,22 @@ beforeEach(function() {
   globalThis.alert = vi.fn();
 });
 
-describe("dashboard pages", function() {
-  it("renders average consumption page", function() {
+describe("dashboard oldalak", function() {
+  it("megjeleníti az átlagfogyasztás oldalt", function() {
     const markup = renderMarkup(<AverageConsumption />);
 
     expect(markup).toContain("avg-cons-div");
     expect(markup).toContain("Kalkulálás");
   });
 
-  it("renders budget limit stats", function() {
+  it("megjeleníti a költségkeret statisztikát", function() {
     const markup = renderMarkup(<BudgetLimit spent={5000} limit={10000} />);
 
     expect(markup).toContain("HAVI");
     expect(markup).toContain("50%");
   });
 
-  it("renders dashboard gauge", function() {
+  it("megjeleníti a dashboard mérőt", function() {
     const markup = renderMarkup(
       <DashboardGauge
         selectedCar={{ average_consumption: 6.3 }}
@@ -86,7 +83,7 @@ describe("dashboard pages", function() {
     expect(markup).toContain("Teszt");
   });
 
-  it("renders fuel card with chart and last fueling", function() {
+  it("megjeleníti a tankolás kártyát diagrammal és utolsó tankolással", function() {
     const markup = renderMarkup(
       <Fuel
         fuelingChart={{ points: [{ spent: 1000, liters: 5 }] }}
@@ -98,14 +95,14 @@ describe("dashboard pages", function() {
     expect(markup).toContain("12.345 Ft");
   });
 
-  it("renders fuel info placeholder", function() {
+  it("megjeleníti a tankolás infó helykitöltőjét", function() {
     const markup = renderMarkup(<FuelInfo />);
 
     expect(markup).toContain("Tankolás");
     expect(markup).toContain("ul");
   });
 
-  it("renders trip page", function() {
+  it("megjeleníti az út oldalt", function() {
     const markup = renderMarkup(
       <Trip
         tripData={{
@@ -130,21 +127,21 @@ describe("dashboard pages", function() {
     expect(markup).toContain("08:00");
   });
 
-  it("renders trip info placeholder", function() {
+  it("megjeleníti az út infó helykitöltőjét", function() {
     const markup = renderMarkup(<TripInfo />);
 
     expect(markup).toContain("Út");
     expect(markup).toContain("ul");
   });
 
-  it("renders menu page structure", function() {
+  it("megjeleníti a menü oldal szerkezetét", function() {
     const markup = renderMarkup(<Menu />);
 
     expect(markup).toContain("menu-panel");
     expect(markup).toContain("menu-events-empty");
   });
 
-  it("renders dashboard layout", function() {
+  it("megjeleníti a dashboard elrendezést", function() {
     const markup = renderMarkup(<Dashboard />);
 
     expect(markup).toContain("dashboard-layout");

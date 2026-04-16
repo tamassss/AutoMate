@@ -26,15 +26,15 @@ beforeEach(function() {
   globalThis.window = { location: { href: "/" } };
 });
 
-describe("role pages", function() {
-  it("renders admin page", function() {
+describe("jogosultsági oldalak", function() {
+  it("megjeleníti az admin oldalt", function() {
     const markup = renderMarkup(<AdminPage />);
 
     expect(markup).toContain("Admin felület");
     expect(markup).toContain("Keresés");
   });
 
-  it("renders moderator page empty state", function() {
+  it("megjeleníti a moderátor oldal üres állapotát", function() {
     const markup = renderMarkup(<ModeratorPage pendingRequests={[]} onReview={vi.fn()} />);
 
     expect(markup).toContain("Várólista");

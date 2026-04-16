@@ -43,10 +43,6 @@ describe("normalizeLicensePlateInput", function() {
     expect(normalizeLicensePlateInput("abc-123")).toBe("ABC-123");
   });
 
-  it("kiszűri a nem megengedett karaktereket", function() {
-    expect(normalizeLicensePlateInput("ab*c 123")).toBe("ABC123");
-  });
-
   it("maximum 8 karakterre vág", function() {
     expect(normalizeLicensePlateInput("ABCDE-12345")).toBe("ABCDE-12");
   });

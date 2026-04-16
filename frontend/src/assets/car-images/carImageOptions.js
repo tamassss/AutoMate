@@ -11,12 +11,12 @@ export const DEFAULT_CAR_IMAGE_SRC = car0;
 
 export const CAR_IMAGE_OPTIONS = [
   { id: "car_0", label: "Alap ikon", src: car0 },
-  { id: "car_1", label: "Autó 1", typeLabel: "Sedan", src: car1 },
-  { id: "car_2", label: "Autó 2", typeLabel: "Coupe", src: car2 },
+  { id: "car_1", label: "Autó 1", typeLabel: "Pickup", src: car1 },
+  { id: "car_2", label: "Autó 2", typeLabel: "Kombi", src: car2 },
   { id: "car_3", label: "Autó 3", typeLabel: "SUV", src: car3 },
-  { id: "car_4", label: "Autó 4", typeLabel: "Pickup", src: car4 },
-  { id: "car_5", label: "Autó 5", typeLabel: "Kombi", src: car5 },
-  { id: "car_6", label: "Autó 6", typeLabel: "Hatchback", src: car6 },
+  { id: "car_4", label: "Autó 4", typeLabel: "Hatchback", src: car4 },
+  { id: "car_5", label: "Autó 5", typeLabel: "Sedan", src: car5 },
+  { id: "car_6", label: "Autó 6", typeLabel: "Coupe", src: car6 },
 ];
 
 export const CAR_IMAGE_PICKER_OPTIONS = CAR_IMAGE_OPTIONS.filter((item) => item.id !== DEFAULT_CAR_IMAGE_ID);

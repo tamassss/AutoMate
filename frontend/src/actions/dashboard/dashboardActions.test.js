@@ -12,7 +12,7 @@ beforeEach(function() {
 });
 
 describe("getDashboard", function() {
-  it("loads dashboard data for the selected car", async function() {
+  it("betölti a kiválasztott autó dashboard adatait", async function() {
     fetch.mockResolvedValue(createJsonResponse({ summary: true }));
 
     await expect(getDashboard()).resolves.toEqual({ summary: true });
@@ -26,7 +26,7 @@ describe("getDashboard", function() {
     );
   });
 
-  it("throws when backend returns an error", async function() {
+  it("hibát dob, ha a backend hibával tér vissza", async function() {
     fetch.mockResolvedValue(createJsonResponse({}, { ok: false, status: 500 }));
 
     await expect(getDashboard()).rejects.toThrow();

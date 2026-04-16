@@ -22,7 +22,7 @@ export default function DeleteGasStation({ onClose, onDeleted, gasStationId, hel
         onDeleted(gasStationId);
       }
 
-      setShowSuccess(true);
+      onClose?.();
     } catch (err) {
       setError(err.message || "Nem sikerült törölni a benzinkutat.");
     } finally {
@@ -41,7 +41,8 @@ export default function DeleteGasStation({ onClose, onDeleted, gasStationId, hel
             <span style={{ color: "#075DBF", fontWeight: "bold" }}>
               {stationAddress || "Ismeretlen kút"}
             </span>
-            {" benzinkút törlése"}
+            <br />
+            {"benzinkút törlése"}
           </p>
         </div>
 

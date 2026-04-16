@@ -11,9 +11,9 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-  ArcElement,
   PointElement,
   LineElement,
+  Filler,
   Tooltip,
   Legend
 } from "chart.js";
@@ -22,9 +22,9 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
-  ArcElement,
   PointElement,
   LineElement,
+  Filler,
   Tooltip,
   Legend
 );

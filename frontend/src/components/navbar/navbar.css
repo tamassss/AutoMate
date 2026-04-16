@@ -78,4 +78,15 @@
     .custom-navbar{
         gap: 15px;
     }
+
+    .nav-icons {
+        height: 32px;
+        width: 32px;
+    }
+
+    .settings-icon,
+    .help-link img {
+        height: 30px;
+        width: 30px;
+    }
 }

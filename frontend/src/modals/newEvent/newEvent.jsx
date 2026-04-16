@@ -49,7 +49,7 @@ export default function NewEvent({ onClose, onSave }) {
                 reminder: reminderValue,
             });
             
-            setShowSuccess(true);
+            onClose?.();
         } catch (err) {
             setError(err.message || "Nem sikerült létrehozni az eseményt.");
         } finally {

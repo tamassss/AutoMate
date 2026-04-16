@@ -4,12 +4,6 @@
     align-items: center;
 }
 
-.home-logged-actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-}
-
 .landing-help-div {
     position: fixed;
     right: 14px;

@@ -133,7 +133,7 @@ export async function reviewShareRequest(requestId, decision) {
   return data;
 }
 
-// A közösség által már jóváhagyott benzinkutak lekérése
+// A jóváhagyott benzinkutak lekérése
 export async function getApprovedSharedStations() {
   const response = await fetch(apiUrl("/community/shared-stations/"), {
     headers: { Authorization: authHeaders().Authorization },

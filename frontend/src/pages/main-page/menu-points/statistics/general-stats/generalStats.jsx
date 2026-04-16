@@ -54,7 +54,7 @@ export default function GeneralStats({ generalStats }) {
         <div className="container">
           
           {stats.map((stat, index) => (
-            <div key={index} className={"row p-2 " + (index % 2 === 0 ? "odd" : "even")}>
+            <div key={index} className={"row p-2 general-stat-row " + (index % 2 === 0 ? "odd" : "even")}>
               <div className="col-6 text-start" style={{ color: "white", opacity: "0.7" }}>
                 {stat.label}
               </div>

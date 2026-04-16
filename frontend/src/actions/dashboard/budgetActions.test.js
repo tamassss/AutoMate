@@ -25,18 +25,18 @@ beforeEach(function() {
 });
 
 describe("getStoredBudgetLimit", function() {
-  it("returns null when no value is stored", function() {
+  it("null értéket ad vissza, ha nincs eltárolt érték", function() {
     expect(getStoredBudgetLimit()).toBe(null);
   });
 
-  it("returns the stored value for the selected car", function() {
+  it("visszaadja a kiválasztott autó eltárolt értékét", function() {
     localStorage.setItem("selected_car_id", "12");
     localStorage.setItem("budget_limit_12", "45000");
 
     expect(getStoredBudgetLimit()).toBe(45000);
   });
 
-  it("returns null for invalid stored value", function() {
+  it("null értéket ad vissza hibás eltárolt értéknél", function() {
     localStorage.setItem("selected_car_id", "12");
     localStorage.setItem("budget_limit_12", "abc");
 
@@ -45,7 +45,7 @@ describe("getStoredBudgetLimit", function() {
 });
 
 describe("setStoredBudgetLimit", function() {
-  it("stores the limit for the selected car", function() {
+  it("eltárolja a limitet a kiválasztott autóhoz", function() {
     localStorage.setItem("selected_car_id", "8");
 
     const result = setStoredBudgetLimit(12000);
@@ -54,7 +54,7 @@ describe("setStoredBudgetLimit", function() {
     expect(localStorage.getItem("budget_limit_8")).toBe("12000");
   });
 
-  it("clamps negative values to zero", function() {
+  it("nullára korlátozza a negatív értékeket", function() {
     const result = setStoredBudgetLimit(-5);
 
     expect(result).toBe(0);

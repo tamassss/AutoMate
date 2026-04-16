@@ -121,6 +121,14 @@ export default function GasStations() {
         };
       });
     });
+    setShareStatuses(function(prev) {
+      const stationId = Number(updatedStation.gasStationId);
+      if (!prev[stationId] || prev[stationId] === "pending") {
+        return prev;
+      }
+      return { ...prev, [stationId]: "pending" };
+    });
+    setSuccessMessage("Benzinkút sikeresen módosítva");
   }
 
   // Megosztás toggle
@@ -158,13 +166,21 @@ export default function GasStations() {
   // Megosztás gomb felirata
   function getButtonText(station) {
     const status = shareStatuses[Number(station.gasStationId)] || "none";
-    if (status === "pending") {
-      return "Visszavonás (függőben)";
-    }
-    if (status === "approved") {
-      return "Megosztás visszavonása";
+    if (status === "pending" || status === "approved") {
+      return "Visszavonás";
     }
     return "Megosztás";
+  }
+
+  function getShareStatus(station) {
+    const status = shareStatuses[Number(station.gasStationId)] || "none";
+    if (status === "pending") {
+      return { text: "függőben", type: "pending" };
+    }
+    if (status === "approved") {
+      return { text: "megosztva", type: "approved" };
+    }
+    return null;
   }
 
   return (
@@ -185,19 +201,22 @@ export default function GasStations() {
           {/* Üres lista */}
           {stations.length === 0 && !error && (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
-              <p className="fs-4 text-light">Még nincsenek rögzített benzinkutak.</p>
+              <p className="fs-4 text-light">Még nincsenek mentett benzinkutak.</p>
             </div>
           )}
 
           {/* elrendezés */}
           <div className="row g-4 justify-content-center">
             {stations.map(function(station) {
+              const shareStatus = communityEnabled ? getShareStatus(station) : null;
               return (
                 <div key={station.id} className="col-11 col-md-6 col-lg-4 d-flex justify-content-center">
                   <GasStationCard
                     station={station}
                     onDeleted={handleDeletedGasStation}
                     onUpdated={handleUpdatedGasStation}
+                    shareStatusText={shareStatus?.text || ""}
+                    shareStatusType={shareStatus?.type || ""}
                     extraButtonText={communityEnabled ? getButtonText(station) : ""}
                     onExtraButtonClick={async function() {
                       try {
